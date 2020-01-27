@@ -11,6 +11,8 @@ states:
 - wasSortedBeforeFirst
 - wasSortedAfterLast
 - isSortedBeforeFirst
+- isSortedAfterLast
+- isSortedBeforeFirst
 - isSortedAfterFirst
 - sortParamsChanged
 - previousStateUnknown
