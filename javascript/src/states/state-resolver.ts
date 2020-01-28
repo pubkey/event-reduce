@@ -6,6 +6,10 @@ export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
 }
 
+export const isFindOne: StateResolveFunction<any> = (input) => {
+    return input.queryParams.limit === 1;
+}
+
 export const hasSkip: StateResolveFunction<any> = (input) => {
     return input.queryParams.skip && input.queryParams.skip > 0;
 }

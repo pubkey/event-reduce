@@ -15,14 +15,12 @@ export function calculateActionFromMap<DocType>(
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): ActionName {
-
     const stateSet: StateSet = getStateSet({
         queryParams,
         changeEvent,
         previousResults,
         keyDocumentMap
     });
-
     const actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return 'runFullQueryAgain';
@@ -32,7 +30,9 @@ export function calculateActionFromMap<DocType>(
 }
 
 /**
- * for performance reasons, this mutates the input
+ * for performance reasons, 
+ * @mutates the input
+ * @returns the new results
  */
 export function runAction<DocType>(
     action: ActionName,

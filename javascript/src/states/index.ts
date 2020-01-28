@@ -10,6 +10,7 @@ import {
 
 import {
     hasLimit,
+    isFindOne,
     hasSkip,
     isDelete,
     isInsert,
@@ -33,6 +34,7 @@ import {
  */
 export const orderedStateList: StateName[] = [
     'hasLimit',
+    'isFindOne',
     'hasSkip',
     'isDelete',
     'isInsert',
@@ -65,6 +67,7 @@ export const stateResolveFunctions: {
     [k: string]: StateResolveFunction<any>
 } = {
     hasLimit,
+    isFindOne,
     hasSkip,
     isDelete,
     isInsert,

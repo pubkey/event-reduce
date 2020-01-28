@@ -88,7 +88,7 @@ export async function testResults(
                 break;
             case 'DELETE':
                 await new Promise(
-                    (resolve, reject) => collection.remove(changeEvent.key, resolve, reject)
+                    (resolve, reject) => collection.remove(changeEvent.id, resolve, reject)
                 );
                 break;
         }
@@ -105,7 +105,8 @@ export async function testResults(
                 (resolve, reject) => collection.find(query.query).fetch(resolve, reject)
             );
 
-            const action = calculateAction(
+            const action = calculateActionFromMap(
+                stateSetToActionMap,
                 query.queryParams,
                 changeEvent,
                 query.results,
@@ -133,6 +134,8 @@ export async function testResults(
             )) {
                 // TODO better logging
                 return false;
+            } else {
+                return true;
             }
         }
     }

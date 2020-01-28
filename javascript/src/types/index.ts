@@ -8,7 +8,9 @@ export type UNKNOWN = 'UNKNOWN';
 export type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
 
 export type ActionName = string;
-export type StateName = 'hasLimit' |
+export type StateName =
+    'hasLimit' |
+    'isFindOne' |
     'hasSkip' |
     'isDelete' |
     'isInsert' |
