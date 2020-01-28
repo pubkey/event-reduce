@@ -1,9 +1,6 @@
 import {
     StateName,
     StateResolveFunction,
-    QueryParams,
-    ChangeEvent,
-    ResultKeyDocumentMap,
     StateSet,
     StateResolveFunctionInput
 } from "../types";
@@ -28,7 +25,7 @@ import {
 } from './state-resolver';
 
 /**
- * all states orders by performance-cost
+ * all states ordered by performance-cost
  * cheapest first
  * TODO run tests on which is really the fastest
  */

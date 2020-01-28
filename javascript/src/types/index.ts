@@ -1,5 +1,4 @@
 import { ChangeEvent } from './change-event';
-
 export * from './change-event';
 
 export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
@@ -7,7 +6,17 @@ export type UNKNOWN = 'UNKNOWN';
 
 export type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
 
-export type ActionName = string;
+export type ActionName =
+    'doNothing' |
+    'insertFirst' |
+    'insertLast' |
+    'removeFirstItem' |
+    'removeLastItem' |
+    'removeExisting' |
+    'replaceExisting' |
+    'insertAtSortPosition' |
+    'removeExistingAndInsertAtSortPosition' |
+    'runFullQueryAgain';
 export type StateName =
     'hasLimit' |
     'isFindOne' |
@@ -38,14 +47,13 @@ export interface QueryParams<DocType> {
 export type QueryMatcher<DocType> = (doc: DocType) => boolean;
 export type SortComparator<DocType> = (a: DocType, b: DocType) => 1 | 0 | -1;
 
-
 /**
  * A map contains a stateSet as key and an ActionName as value
  * State-sets that are not in the Map have 'runFullQueryAgain' as value
  * 
  * The key is a binary-representation of the ordered state-list
  * like '010110110111...'
- * where the first '0' means that the first state is false
+ * where the first '0' means that the first state (hasLimit) is false
  */
 export type StateSet = string;
 export type StateSetToActionMap = Map<StateSet, ActionName>;
@@ -60,3 +68,13 @@ export interface StateResolveFunctionInput<DocType> {
 export type StateResolveFunction<DocType> = (
     input: StateResolveFunctionInput<DocType>
 ) => boolean;
+
+export type ActionFunctionInput<DocType> = StateResolveFunctionInput<DocType>;
+
+/**
+ * for performance-reasons,
+ * action-function mutate the input
+ */
+export type ActionFunction<DocType> = (
+    input: ActionFunctionInput<DocType>
+) => void;

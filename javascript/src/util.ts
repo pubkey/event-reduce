@@ -1,4 +1,4 @@
-import { StateResolveFunctionInput, UNKNOWN, UNKNOWN_VALUE } from "./types";
+import { StateResolveFunctionInput, UNKNOWN, UNKNOWN_VALUE, ActionFunctionInput } from "./types";
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];
