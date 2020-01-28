@@ -9,9 +9,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/deep-equal": "1.0.1",
+    "@types/faker": "4.1.9",
+    "assert": "2.0.0",
     "clone": "2.1.2",
+    "deep-equal": "2.0.1",
     "faker": "4.1.0",
     "minimongo": "6.4.0",
     "pouchdb-selector-core": "7.1.1"
+  },
+  "dependencies": {
+    "object-path": "0.11.4"
   }
 }

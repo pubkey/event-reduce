@@ -2,18 +2,33 @@ import {
     ChangeEvent,
     ActionName,
     ResultKeyDocumentMap,
-    QueryParams
+    QueryParams,
+    StateSetToActionMap,
+    StateSet
 } from './types';
+import { getStateSet } from './states';
 
-export function calculateAction<DocType>(
+export function calculateActionFromMap<DocType>(
+    stateSetToActionMap: StateSetToActionMap,
     queryParams: QueryParams<DocType>,
     changeEvent: ChangeEvent<DocType>,
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): ActionName {
 
+    const stateSet: StateSet = getStateSet({
+        queryParams,
+        changeEvent,
+        previousResults,
+        keyDocumentMap
+    });
 
-    return '';
+    const actionName = stateSetToActionMap.get(stateSet);
+    if (!actionName) {
+        return 'runFullQueryAgain';
+    } else {
+        return actionName;
+    }
 }
 
 /**
@@ -25,6 +40,6 @@ export function runAction<DocType>(
     changeEvent: ChangeEvent<DocType>,
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
-) {
+): DocType[] {
 
 }

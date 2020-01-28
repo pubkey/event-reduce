@@ -1,4 +1,11 @@
-import { QueryParams, ResultKeyDocumentMap } from "../src/types";
+import deepEqual from 'deep-equal';
+
+import {
+    QueryParams,
+    ResultKeyDocumentMap,
+    ChangeEvent,
+    StateSetToActionMap
+} from "../src/types";
 import {
     Human,
     MongoQuery
@@ -13,8 +20,13 @@ import {
     compileDocumentSelector,
     compileSort
 } from 'minimongo/src/selector';
-import { randomWrite } from "./helper/data-generator";
-import { calculateAction } from "../src";
+import {
+    randomChangeEvent
+} from "./helper/data-generator";
+import {
+    calculateActionFromMap,
+    runAction
+} from "../src";
 
 const COLLECTION_NAME = 'humans';
 
@@ -32,7 +44,8 @@ export type UseQuery = {
  */
 export async function testResults(
     queries: MongoQuery[],
-    writesAmount: number = 100
+    writesAmount: number = 100,
+    stateSetToActionMap: StateSetToActionMap
 ) {
     const db: MemoryDb = new MemoryDb();
     db.addCollection(COLLECTION_NAME);
@@ -55,24 +68,27 @@ export async function testResults(
     });
 
     let allDocs: Human[] = [];
+    const handledEvents: ChangeEvent<Human>[] = [];
+
     while (writesAmount > 0) {
 
         // make change to database
-        const write = randomWrite(allDocs);
-        switch (write.op) {
+        const changeEvent = randomChangeEvent(allDocs);
+        handledEvents.push(changeEvent);
+        switch (changeEvent.operation) {
             case 'INSERT':
                 await new Promise(
-                    (resolve, reject) => collection.upsert(write.doc, resolve, reject)
+                    (resolve, reject) => collection.upsert(changeEvent.doc, resolve, reject)
                 );
                 break;
             case 'UPDATE':
                 await new Promise(
-                    (resolve, reject) => collection.upsert(write.doc, resolve, reject)
+                    (resolve, reject) => collection.upsert(changeEvent.doc, resolve, reject)
                 );
                 break;
             case 'DELETE':
                 await new Promise(
-                    (resolve, reject) => collection.remove(write._id, resolve, reject)
+                    (resolve, reject) => collection.remove(changeEvent.key, resolve, reject)
                 );
                 break;
         }
@@ -91,13 +107,33 @@ export async function testResults(
 
             const action = calculateAction(
                 query.queryParams,
-                {},
+                changeEvent,
                 query.results,
                 query.resultKeyDocumentMap
             );
 
-            // TODO continue here
+            let calculatedResults: Human[];
+            if (action === 'runFullQueryAgain') {
+                calculatedResults = await new Promise(
+                    (resolve, reject) => collection.find(query.query).fetch(resolve, reject)
+                );
+            } else {
+                calculatedResults = runAction(
+                    action,
+                    query.queryParams,
+                    changeEvent,
+                    query.results,
+                    query.resultKeyDocumentMap
+                );
+            }
+
+            if (!deepEqual(
+                resultsFromExecute,
+                calculatedResults
+            )) {
+                // TODO better logging
+                return false;
+            }
         }
     }
-
 }

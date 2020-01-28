@@ -10,4 +10,5 @@ export type MongoQuery = {
     selector: any; // TODO,
     skip?: number;
     limit?: number;
+    sort?: any[]
 };

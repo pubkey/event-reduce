@@ -6,11 +6,13 @@ import {
   arrayElement
 } from 'faker';
 import * as Faker from 'faker';
-import * as clone from 'clone';
 import {
   Human
 } from './types';
-import { WriteOperation } from '../../src/types';
+import {
+  WriteOperation,
+  ChangeEvent
+} from '../../src/types';
 
 /**
  * use a seed to ensure each time we generate the same data
@@ -40,7 +42,7 @@ const keyToChangeFn = {
 };
 
 export function randomChangeHuman(input: Human): Human {
-  const cloned: Human = clone(input);
+  const cloned: Human = Object.assign({}, input);
 
   const field = number({ min: 1, max: 4 });
   keyToChangeFn[field](cloned);
@@ -56,37 +58,34 @@ export function randomOperation(): WriteOperation {
   ]);
 }
 
-export function randomWrite(allDocs: Human[]) {
-  const op = randomOperation();
+export function randomChangeEvent(allDocs: Human[]): ChangeEvent<Human> {
+  const operation = randomOperation();
 
-  const ret = {
-    _id: undefined,
-    op,
-    doc: undefined,
-    previous: undefined
-  };
-
-  switch (op) {
+  switch (operation) {
     case 'INSERT':
       const newDoc = randomHuman();
-      ret._id = newDoc._id;
-      ret.doc = newDoc;
-      ret.previous = null;
-      break;
+      return {
+        operation,
+        key: newDoc._id,
+        doc: newDoc,
+        previous: null
+      };
     case 'UPDATE':
       const oldDoc = arrayElement(allDocs);
       const changedDoc = randomChangeHuman(oldDoc);
-      ret._id = oldDoc._id;
-      ret.doc = changedDoc;
-      ret.previous = oldDoc;
-      break;
+      return {
+        operation,
+        key: oldDoc._id,
+        doc: changedDoc,
+        previous: oldDoc
+      };
     case 'DELETE':
       const docToDelete: Human = arrayElement(allDocs);
-      ret._id = docToDelete._id;
-      ret.doc = null;
-      ret.previous = docToDelete;
-      break;
+      return {
+        operation,
+        key: oldDoc._id,
+        doc: null,
+        previous: docToDelete
+      };
   }
-
-  return ret;
 }
