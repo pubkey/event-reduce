@@ -12,6 +12,8 @@ export type ActionName =
     'insertLast' |
     'removeFirstItem' |
     'removeLastItem' |
+    'removeFirstInsertLast' |
+    'removeLastInsertFirst' |
     'removeExisting' |
     'replaceExisting' |
     'insertAtSortPosition' |
@@ -38,8 +40,8 @@ export type StateName =
 export interface QueryParams<DocType> {
     primaryKey: string;
     sortFields: string[];
-    skip: number;
-    limit: number;
+    skip?: number;
+    limit?: number;
     queryMatcher: QueryMatcher<DocType>;
     sortComparator: SortComparator<DocType>;
 }

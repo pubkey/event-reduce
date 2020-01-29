@@ -11,7 +11,11 @@ export const isFindOne: StateResolveFunction<any> = (input) => {
 };
 
 export const hasSkip: StateResolveFunction<any> = (input) => {
-    return input.queryParams.skip && input.queryParams.skip > 0;
+    if (input.queryParams.skip && input.queryParams.skip > 0) {
+        return true;
+    } else {
+        return false;
+    }
 };
 
 export const isDelete: StateResolveFunction<any> = (input) => {

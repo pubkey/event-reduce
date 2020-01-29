@@ -32,6 +32,7 @@ export const removeFirstItem: ActionFunction<any> = (input) => {
     }
     input.previousResults.shift();
 };
+
 export const removeLastItem: ActionFunction<any> = (input) => {
     if (input.keyDocumentMap) {
         const last = lastOfArray(input.previousResults);
@@ -41,6 +42,18 @@ export const removeLastItem: ActionFunction<any> = (input) => {
     }
     input.previousResults.pop();
 };
+
+export const removeFirstInsertLast: ActionFunction<any> = (input) => {
+    removeFirstItem(input);
+    insertLast(input);
+};
+
+export const removeLastInsertFirst: ActionFunction<any> = (input) => {
+    removeLastItem(input);
+    insertFirst(input);
+};
+
+
 export const removeExisting: ActionFunction<any> = (input) => {
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(
@@ -102,4 +115,8 @@ export const insertAtSortPosition: ActionFunction<any> = (input) => {
 export const removeExistingAndInsertAtSortPosition: ActionFunction<any> = (input) => {
     removeExisting(input);
     insertAtSortPosition(input);
+};
+
+export const runFullQueryAgain: ActionFunction<any> = (_input) => {
+    throw new Error('Action runFullQueryAgain must be implemented by yourself');
 };

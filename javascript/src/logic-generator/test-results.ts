@@ -5,16 +5,11 @@ import {
     ResultKeyDocumentMap,
     ChangeEvent,
     StateSetToActionMap
-} from "../src/types";
+} from '../types';
 import {
     Human,
     MongoQuery
-} from "./helper/types";
-
-import {
-    MemoryDb,
-    MinimongoCollection
-} from 'minimongo';
+} from './types';
 
 import {
     compileDocumentSelector,
@@ -22,13 +17,15 @@ import {
 } from 'minimongo/src/selector';
 import {
     randomChangeEvent
-} from "./helper/data-generator";
+} from './data-generator';
 import {
     calculateActionFromMap,
     runAction
-} from "../src";
-
-const COLLECTION_NAME = 'humans';
+} from '../';
+import {
+    getMinimongoCollection, minimongoUpsert, minimongoRemove, minimongoFind
+} from './minimongo-helper';
+import { findAllQuery } from './queries';
 
 export type UseQuery = {
     query: MongoQuery,
@@ -36,6 +33,13 @@ export type UseQuery = {
     results: Human[],
     resultKeyDocumentMap: ResultKeyDocumentMap<Human>
 };
+
+export interface TestResultsReturn {
+    correct: boolean;
+    handledEvents: ChangeEvent<Human>[];
+    useQueries: UseQuery[];
+    allDocs: Human[];
+}
 
 /**
  * runs many changes over the database
@@ -46,22 +50,22 @@ export async function testResults(
     queries: MongoQuery[],
     writesAmount: number = 100,
     stateSetToActionMap: StateSetToActionMap
-) {
-    const db: MemoryDb = new MemoryDb();
-    db.addCollection(COLLECTION_NAME);
-    const collection: MinimongoCollection<Human> = db.collections[COLLECTION_NAME];
+): Promise<TestResultsReturn> {
+    const collection = getMinimongoCollection();
 
     const useQueries: UseQuery[] = queries.map(query => {
+        const sort = query.sort ? query.sort : [];
+        const queryParams: QueryParams<Human> = {
+            primaryKey: '_id',
+            sortFields: [], // TODO https://github.com/pubkey/rxdb/blob/master/src/query-change-detector.ts#L289
+            skip: query.skip ? query.skip : undefined,
+            limit: query.limit ? query.limit : undefined,
+            queryMatcher: compileDocumentSelector(query.selector),
+            sortComparator: compileSort(sort)
+        };
         return {
             query,
-            queryParams: {
-                primaryKey: '_id',
-                sortFields: [], // TODO https://github.com/pubkey/rxdb/blob/master/src/query-change-detector.ts#L289
-                skip: query.skip ? query.skip : undefined,
-                limit: query.limit ? query.limit : undefined,
-                queryMatcher: compileDocumentSelector(query.selector),
-                sortComparator: compileSort(query.sort)
-            },
+            queryParams,
             results: [],
             resultKeyDocumentMap: new Map()
         };
@@ -71,39 +75,41 @@ export async function testResults(
     const handledEvents: ChangeEvent<Human>[] = [];
 
     while (writesAmount > 0) {
+        writesAmount--;
 
         // make change to database
         const changeEvent = randomChangeEvent(allDocs);
         handledEvents.push(changeEvent);
         switch (changeEvent.operation) {
             case 'INSERT':
-                await new Promise(
-                    (resolve, reject) => collection.upsert(changeEvent.doc, resolve, reject)
+                await minimongoUpsert(
+                    collection,
+                    changeEvent.doc
                 );
                 break;
             case 'UPDATE':
-                await new Promise(
-                    (resolve, reject) => collection.upsert(changeEvent.doc, resolve, reject)
+                await minimongoUpsert(
+                    collection,
+                    changeEvent.doc
                 );
                 break;
             case 'DELETE':
-                await new Promise(
-                    (resolve, reject) => collection.remove(changeEvent.id, resolve, reject)
+                await minimongoRemove(
+                    collection,
+                    changeEvent.id
                 );
                 break;
         }
 
+
+
         // update allDocs
-        allDocs = await new Promise(
-            (resolve, reject) => collection.find({}).fetch(resolve, reject)
-        );
+        allDocs = await minimongoFind(collection, findAllQuery);
 
         // check if results matches for each query
         for (let i = 0; i < useQueries.length; i++) {
             const query: UseQuery = useQueries[i];
-            const resultsFromExecute = await new Promise(
-                (resolve, reject) => collection.find(query.query).fetch(resolve, reject)
-            );
+            const resultsFromExecute = await minimongoFind(collection, query.query);
 
             const action = calculateActionFromMap(
                 stateSetToActionMap,
@@ -115,9 +121,7 @@ export async function testResults(
 
             let calculatedResults: Human[];
             if (action === 'runFullQueryAgain') {
-                calculatedResults = await new Promise(
-                    (resolve, reject) => collection.find(query.query).fetch(resolve, reject)
-                );
+                calculatedResults = await minimongoFind(collection, query.query);
             } else {
                 calculatedResults = runAction(
                     action,
@@ -133,10 +137,19 @@ export async function testResults(
                 calculatedResults
             )) {
                 // TODO better logging
-                return false;
-            } else {
-                return true;
+                return {
+                    correct: false,
+                    handledEvents,
+                    useQueries,
+                    allDocs
+                };
             }
         }
     }
+    return {
+        correct: true,
+        handledEvents,
+        useQueries,
+        allDocs
+    };
 }

@@ -9,9 +9,7 @@
     "transpile": "tsc -p ./ && echo '# transpile es5 sucess!'",
     "transpile:es6": "tsc -p ./ --target ES6 --outDir ./dist/es6 && echo '# transpile es6 sucess!'",
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es6",
-    "test": "mocha -r ts-node/register test/unit/index.test.ts",
-    "test:performance": "mocha -r ts-node/register --bail --exit ./test/performance.test.ts",
-    "test:efficiency": "mocha -r ts-node/register --bail --exit ./test/efficiency.test.ts",
+    "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 20000",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
   },
   "author": "",

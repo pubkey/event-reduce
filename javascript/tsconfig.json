@@ -11,6 +11,7 @@
         "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true,
         "moduleResolution": "node",
+        "esModuleInterop": true,
         "target": "es5",
         "outDir": "./dist/es5",
         "lib": [

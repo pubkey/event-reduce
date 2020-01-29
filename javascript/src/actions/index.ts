@@ -1,8 +1,22 @@
 import {
     ActionName,
-    ActionFunction,
-    StateName
+    ActionFunction
 } from '../types';
+
+import {
+    doNothing,
+    insertFirst,
+    insertLast,
+    removeFirstItem,
+    removeLastItem,
+    removeFirstInsertLast,
+    removeLastInsertFirst,
+    removeExisting,
+    replaceExisting,
+    insertAtSortPosition,
+    removeExistingAndInsertAtSortPosition,
+    runFullQueryAgain
+} from './action-functions';
 
 /**
  * all actions ordered by performance-cost
@@ -15,6 +29,8 @@ export const orderedActionList: ActionName[] = [
     'insertLast',
     'removeFirstItem',
     'removeLastItem',
+    'removeFirstInsertLast',
+    'removeLastInsertFirst',
     'removeExisting',
     'replaceExisting',
     'insertAtSortPosition',
@@ -26,4 +42,16 @@ export const orderedActionList: ActionName[] = [
 export const actionFunctions: {
     [k: string]: ActionFunction<any>
 } = {
+    doNothing,
+    insertFirst,
+    insertLast,
+    removeFirstItem,
+    removeLastItem,
+    removeFirstInsertLast,
+    removeLastInsertFirst,
+    removeExisting,
+    replaceExisting,
+    insertAtSortPosition,
+    removeExistingAndInsertAtSortPosition,
+    runFullQueryAgain
 };

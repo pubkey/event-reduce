@@ -69,7 +69,6 @@ export const stateResolveFunctions: {
     doesMatchNow
 };
 
-
 export function resolveState<DocType>(
     stateName: StateName,
     input: StateResolveFunctionInput<DocType>

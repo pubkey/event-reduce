@@ -41,5 +41,5 @@ export function runAction<DocType>(
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): DocType[] {
-
+    return [];
 }
