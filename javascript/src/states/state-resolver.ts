@@ -1,38 +1,38 @@
 import objectPath from 'object-path';
-import { StateResolveFunction, UNKNOWN_VALUE } from "../types";
-import { lastOfArray } from "../util";
+import { StateResolveFunction, UNKNOWN_VALUE } from '../types';
+import { lastOfArray } from '../util';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
-}
+};
 
 export const isFindOne: StateResolveFunction<any> = (input) => {
     return input.queryParams.limit === 1;
-}
+};
 
 export const hasSkip: StateResolveFunction<any> = (input) => {
     return input.queryParams.skip && input.queryParams.skip > 0;
-}
+};
 
 export const isDelete: StateResolveFunction<any> = (input) => {
     return input.changeEvent.operation === 'DELETE';
-}
+};
 
 export const isInsert: StateResolveFunction<any> = (input) => {
     return input.changeEvent.operation === 'INSERT';
-}
+};
 
 export const isUpdate: StateResolveFunction<any> = (input) => {
     return input.changeEvent.operation === 'UPDATE';
-}
+};
 
 export const previousStateUnknown: StateResolveFunction<any> = (input) => {
     return input.changeEvent.previous === UNKNOWN_VALUE;
-}
+};
 
 export const wasLimitReached: StateResolveFunction<any> = (input) => {
     return hasLimit(input) && input.previousResults.length === input.queryParams.limit;
-}
+};
 
 export const sortParamsChanged: StateResolveFunction<any> = (input) => {
     const sortFields = input.queryParams.sortFields;
@@ -54,7 +54,7 @@ export const sortParamsChanged: StateResolveFunction<any> = (input) => {
         }
     }
     return false;
-}
+};
 
 export const wasInResult: StateResolveFunction<any> = (input) => {
     const id = input.changeEvent.id;
@@ -71,7 +71,7 @@ export const wasInResult: StateResolveFunction<any> = (input) => {
         }
         return false;
     }
-}
+};
 
 export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
     const first = input.previousResults[0];
@@ -88,7 +88,7 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         first
     );
     return comp < 0;
-}
+};
 
 export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
     const last = lastOfArray(input.previousResults);
@@ -105,7 +105,7 @@ export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
         last
     );
     return comp > 0;
-}
+};
 
 export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
     const first = input.previousResults[0];
@@ -122,7 +122,7 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         first
     );
     return comp < 0;
-}
+};
 
 export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
     const last = lastOfArray(input.previousResults);
@@ -139,7 +139,7 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
         last
     );
     return comp > 0;
-}
+};
 
 
 export const wasMatching: StateResolveFunction<any> = (input) => {
@@ -150,7 +150,7 @@ export const wasMatching: StateResolveFunction<any> = (input) => {
     return input.queryParams.queryMatcher(
         prev
     );
-}
+};
 
 export const doesMatchNow: StateResolveFunction<any> = (input) => {
     const doc = input.changeEvent.doc;
@@ -160,4 +160,4 @@ export const doesMatchNow: StateResolveFunction<any> = (input) => {
     return input.queryParams.queryMatcher(
         doc
     );
-}
+};

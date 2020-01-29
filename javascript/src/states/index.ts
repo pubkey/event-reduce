@@ -3,7 +3,7 @@ import {
     StateResolveFunction,
     StateSet,
     StateResolveFunctionInput
-} from "../types";
+} from '../types';
 
 import {
     hasLimit,
@@ -48,18 +48,6 @@ export const orderedStateList: StateName[] = [
     'doesMatchNow'
 ];
 
-
-export function resolveState<DocType>(
-    stateName: StateName,
-    input: StateResolveFunctionInput<DocType>
-): boolean {
-    const fn: StateResolveFunction<DocType> = stateResolveFunctions[stateName];
-    if (!fn) {
-        throw new Error('resolveState() has no function for ' + stateName);
-    }
-    return fn(input);
-}
-
 export const stateResolveFunctions: {
     [k: string]: StateResolveFunction<any>
 } = {
@@ -80,6 +68,18 @@ export const stateResolveFunctions: {
     wasMatching,
     doesMatchNow
 };
+
+
+export function resolveState<DocType>(
+    stateName: StateName,
+    input: StateResolveFunctionInput<DocType>
+): boolean {
+    const fn: StateResolveFunction<DocType> = stateResolveFunctions[stateName];
+    if (!fn) {
+        throw new Error('resolveState() has no function for ' + stateName);
+    }
+    return fn(input);
+}
 
 export function getStateSet<DocType>(
     input: StateResolveFunctionInput<DocType>

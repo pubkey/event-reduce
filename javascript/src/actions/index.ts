@@ -2,7 +2,7 @@ import {
     ActionName,
     ActionFunction,
     StateName
-} from "../types";
+} from '../types';
 
 /**
  * all actions ordered by performance-cost

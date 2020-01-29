@@ -50,7 +50,7 @@ export type SortComparator<DocType> = (a: DocType, b: DocType) => 1 | 0 | -1;
 /**
  * A map contains a stateSet as key and an ActionName as value
  * State-sets that are not in the Map have 'runFullQueryAgain' as value
- * 
+ *
  * The key is a binary-representation of the ordered state-list
  * like '010110110111...'
  * where the first '0' means that the first state (hasLimit) is false

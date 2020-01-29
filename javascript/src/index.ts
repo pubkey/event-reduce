@@ -30,7 +30,7 @@ export function calculateActionFromMap<DocType>(
 }
 
 /**
- * for performance reasons, 
+ * for performance reasons,
  * @mutates the input
  * @returns the new results
  */

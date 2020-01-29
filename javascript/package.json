@@ -4,21 +4,37 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
+    "transpile": "tsc -p ./ && echo '# transpile es5 sucess!'",
+    "transpile:es6": "tsc -p ./ --target ES6 --outDir ./dist/es6 && echo '# transpile es6 sucess!'",
+    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es6",
+    "test": "mocha -r ts-node/register test/unit/index.test.ts",
+    "test:performance": "mocha -r ts-node/register --bail --exit ./test/performance.test.ts",
+    "test:efficiency": "mocha -r ts-node/register --bail --exit ./test/efficiency.test.ts",
+    "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
     "@types/faker": "4.1.9",
+    "@types/mocha": "5.2.7",
+    "@types/node": "13.5.1",
     "assert": "2.0.0",
+    "async-test-util": "1.7.3",
     "clone": "2.1.2",
     "deep-equal": "2.0.1",
     "faker": "4.1.0",
     "minimongo": "6.4.0",
-    "pouchdb-selector-core": "7.1.1"
+    "mocha": "7.0.1",
+    "pouchdb-selector-core": "7.1.1",
+    "ts-node": "8.6.2",
+    "tslint": "6.0.0",
+    "typescript": "3.7.5"
   },
   "dependencies": {
+    "array-push-at-sort-position": "1.2.0",
     "object-path": "0.11.4"
   }
 }

@@ -1,7 +1,7 @@
 import {
     WriteOperation,
     UNKNOWN
-} from "./index";
+} from './index';
 
 export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 
