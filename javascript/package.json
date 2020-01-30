@@ -10,15 +10,16 @@
     "transpile:es6": "tsc -p ./ --target ES6 --outDir ./dist/es6 && echo '# transpile es6 sucess!'",
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es6",
     "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 20000",
-    "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts"
+    "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
+    "generate-logic-map": "ts-node ./src/logic-generator/generate-logic-map.node.ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
     "@types/faker": "4.1.9",
-    "@types/mocha": "5.2.7",
-    "@types/node": "13.5.1",
+    "@types/mocha": "7.0.1",
+    "@types/node": "13.5.2",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
     "clone": "2.1.2",

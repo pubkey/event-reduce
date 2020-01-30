@@ -26,6 +26,7 @@ import {
     getMinimongoCollection, minimongoUpsert, minimongoRemove, minimongoFind
 } from './minimongo-helper';
 import { findAllQuery } from './queries';
+import { getSortFieldsOfQuery } from '../util';
 
 export type UseQuery = {
     query: MongoQuery,
@@ -57,7 +58,7 @@ export async function testResults(
         const sort = query.sort ? query.sort : [];
         const queryParams: QueryParams<Human> = {
             primaryKey: '_id',
-            sortFields: [], // TODO https://github.com/pubkey/rxdb/blob/master/src/query-change-detector.ts#L289
+            sortFields: getSortFieldsOfQuery(query),
             skip: query.skip ? query.skip : undefined,
             limit: query.limit ? query.limit : undefined,
             queryMatcher: compileDocumentSelector(query.selector),
@@ -136,7 +137,6 @@ export async function testResults(
                 resultsFromExecute,
                 calculatedResults
             )) {
-                // TODO better logging
                 return {
                     correct: false,
                     handledEvents,

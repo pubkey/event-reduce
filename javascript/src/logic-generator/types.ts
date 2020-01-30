@@ -7,7 +7,7 @@ export interface Human {
 }
 
 export type MongoQuery = {
-    selector: any; // TODO,
+    selector: any;
     skip?: number;
     limit?: number;
     sort?: any[]

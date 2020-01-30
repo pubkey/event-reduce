@@ -4,8 +4,7 @@ import {
     ActionName
 } from '../types';
 import {
-    orderedActionList,
-    actionFunctions
+    orderedActionList
 } from '../actions';
 
 import {
@@ -22,6 +21,7 @@ import {
  */
 export async function calculateActionForState(
     stateSet: StateSet,
+    amountOfTestEvents: number = 100,
     // if map is passed, it will be used so this function runs faster
     stateSetToActionMap?: StateSetToActionMap
 ): Promise<ActionName> {
@@ -33,7 +33,7 @@ export async function calculateActionForState(
 
         const valid = await testResults(
             allQueries,
-            100,
+            amountOfTestEvents,
             useActionMap
         );
         if (valid.correct) {

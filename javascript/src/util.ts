@@ -1,4 +1,5 @@
 import { StateResolveFunctionInput, UNKNOWN, UNKNOWN_VALUE, ActionFunctionInput } from './types';
+import { MongoQuery } from './logic-generator/types';
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];
@@ -28,4 +29,19 @@ export function tryToFillPreviousDoc<DocType>(
             }
         }
     }
+}
+
+
+export function getSortFieldsOfQuery(query: MongoQuery): string[] {
+    if (!query.sort) {
+        // if no sort-order is set, use the primary key
+        return ['_id'];
+    }
+    return query.sort.map(maybeArray => {
+        if (Array.isArray(maybeArray)) {
+            return maybeArray[0];
+        } else {
+            return maybeArray;
+        }
+    });
 }

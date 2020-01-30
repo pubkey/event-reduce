@@ -30,7 +30,7 @@ export const isUpdate: StateResolveFunction<any> = (input) => {
     return input.changeEvent.operation === 'UPDATE';
 };
 
-export const previousStateUnknown: StateResolveFunction<any> = (input) => {
+export const previousUnknown: StateResolveFunction<any> = (input) => {
     return input.changeEvent.previous === UNKNOWN_VALUE;
 };
 
