@@ -9,6 +9,7 @@ import {
 import {
     orderedStateList
 } from '../../src/states';
+import { StateSet } from '../../src/types';
 
 describe('binary-state.test.ts', () => {
     describe('FIRST_STATE_SET', () => {
@@ -57,6 +58,21 @@ describe('binary-state.test.ts', () => {
                 binaryToDecimal(getNextStateSet(FIRST_STATE_SET)),
                 1
             );
+        });
+        it('all stateSets should have the correct length', () => {
+            let lastSet = FIRST_STATE_SET;
+            const sets: StateSet[] = new Array(10).fill(0)
+                .map(() => {
+                    lastSet = getNextStateSet(lastSet);
+                    return lastSet;
+                });
+            sets.forEach(set => {
+                assert.strictEqual(
+                    set.length,
+                    orderedStateList.length
+                );
+                assert.ok(set.startsWith('0'));
+            });
         });
 
     });

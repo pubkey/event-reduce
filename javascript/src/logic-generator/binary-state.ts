@@ -1,8 +1,9 @@
 import { StateSet } from '../types';
 import { orderedStateList } from '../states';
 
-export const FIRST_STATE_SET: StateSet = new Array(orderedStateList.length).fill(0).map(() => '0').join('');
-export const LAST_STATE_SET: StateSet = new Array(orderedStateList.length).fill(0).map(() => '1').join('');
+export const STATE_SET_LENGTH = orderedStateList.length;
+export const FIRST_STATE_SET: StateSet = new Array(STATE_SET_LENGTH).fill(0).map(() => '0').join('');
+export const LAST_STATE_SET: StateSet = new Array(STATE_SET_LENGTH).fill(0).map(() => '1').join('');
 
 export function getNextStateSet(
     stateSet?: StateSet
@@ -12,7 +13,9 @@ export function getNextStateSet(
     }
     const decimal = binaryToDecimal(stateSet);
     const increase = decimal + 1;
-    return decimalToBinary(increase);
+    const binary = decimalToBinary(increase);
+    const padded = binary.padStart(STATE_SET_LENGTH, '0');
+    return padded;
 }
 
 /**
