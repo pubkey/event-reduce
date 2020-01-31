@@ -11,7 +11,8 @@
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es6",
     "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 20000",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
-    "generate-logic-map": "ts-node ./src/logic-generator/generate-logic-map.node.ts"
+    "generate-logic-map": "ts-node ./src/logic-generator/runner.node.ts logic-map",
+    "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 0000000000000000 0011111111111111"
   },
   "author": "",
   "license": "ISC",
@@ -34,6 +35,7 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "1.2.0",
+    "child-process-promise": "2.2.1",
     "object-path": "0.11.4",
     "read-last-lines": "1.7.2"
   }

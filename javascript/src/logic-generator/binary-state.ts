@@ -13,16 +13,17 @@ export function getNextStateSet(
     }
     const decimal = binaryToDecimal(stateSet);
     const increase = decimal + 1;
-    const binary = decimalToBinary(increase);
-    const padded = binary.padStart(STATE_SET_LENGTH, '0');
-    return padded;
+    const binary = decimalToPaddedBinary(increase);
+    return binary;
 }
 
 /**
  * @link https://stackoverflow.com/a/16155417
  */
-export function decimalToBinary(decimal: number) {
-    return (decimal >>> 0).toString(2);
+export function decimalToPaddedBinary(decimal: number) {
+    const binary = (decimal >>> 0).toString(2);
+    const padded = binary.padStart(STATE_SET_LENGTH, '0');
+    return padded;
 }
 
 export function binaryToDecimal(binary: string): number {

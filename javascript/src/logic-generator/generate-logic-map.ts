@@ -1,13 +1,11 @@
-import * as path from 'path';
 import * as fs from 'fs';
 import {
     read as readLastLines
 } from 'read-last-lines';
 
 import {
-    FIRST_STATE_SET,
-    LAST_STATE_SET,
-    getNextStateSet
+    getNextStateSet,
+    binaryToDecimal
 } from './binary-state';
 import {
     StateSet,
@@ -16,52 +14,46 @@ import {
 } from '../types';
 import { calculateActionForState } from './calculate-action-for-state';
 
-export const LOGIC_MAP_PATH = path.join(
-    __dirname,
-    'logic-map.txt'
-);
+export async function generateLogicMap(
+    logicMapFilePath: string,
+    startStateSet: StateSet,
+    endStateSet: StateSet
+) {
+    let stateSet: StateSet = startStateSet;
+    const totalAmount = binaryToDecimal(endStateSet) - binaryToDecimal(startStateSet);
 
-export async function run() {
-    let stateSet: StateSet = FIRST_STATE_SET;
-
-    if (fs.existsSync(LOGIC_MAP_PATH)) {
+    if (fs.existsSync(logicMapFilePath)) {
         // file exists continue from there
-        const lastLine = await readLastLines(LOGIC_MAP_PATH, 1);
+        const lastLine = await readLastLines(logicMapFilePath, 1);
         console.log('last line of previous calculation: ' + lastLine);
         const split = lastLine.split(':');
         stateSet = split[0];
     }
 
+    const writeStream = fs.createWriteStream(logicMapFilePath, {});
+
+    let done = binaryToDecimal(stateSet) - binaryToDecimal(startStateSet);
+
 
     const stateSetToActionMap: StateSetToActionMap = new Map();
-    while (stateSet !== LAST_STATE_SET) {
-        console.log('stateSet: ' + stateSet);
+    while (stateSet !== endStateSet) {
         const action: ActionName = await calculateActionForState(
             stateSet,
             20,
             stateSetToActionMap
         );
-        if (action !== 'doNothing') {
-            console.log('#'.repeat(40));
-            console.log('#'.repeat(40));
-            console.log('#'.repeat(40));
-            console.log('#'.repeat(40));
-            console.log('#'.repeat(40));
-            console.log('#'.repeat(40));
-            console.log('#'.repeat(40));
-        }
 
         const keyValue = stateSet + ':' + action;
         console.log(keyValue);
-        fs.appendFileSync(LOGIC_MAP_PATH, keyValue + '\n');
+        writeStream.write(keyValue + '\n');
 
         // add to map so later runs go faster
         stateSetToActionMap.set(stateSet, action);
 
+        done++;
         stateSet = getNextStateSet(stateSet);
+
+        console.log('# processing: ' + done + '/' + totalAmount);
     }
 
 }
-
-
-run();

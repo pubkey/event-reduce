@@ -44,4 +44,4 @@ export async function calculateActionForState(
 
 
     return 'runFullQueryAgain';
-}
+};
