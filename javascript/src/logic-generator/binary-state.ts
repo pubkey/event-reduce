@@ -29,3 +29,13 @@ export function decimalToPaddedBinary(decimal: number) {
 export function binaryToDecimal(binary: string): number {
     return parseInt(binary, 2);
 }
+
+export function oppositeBinary(i: string): string {
+    if (i === '1') {
+        return '0';
+    } else if (i === '0') {
+        return '1';
+    } else {
+        throw new Error('non-binary given');
+    }
+}

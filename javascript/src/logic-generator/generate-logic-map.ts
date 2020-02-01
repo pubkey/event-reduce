@@ -14,6 +14,8 @@ import {
 } from '../types';
 import { calculateActionForState } from './calculate-action-for-state';
 
+export const KEY_VALUE_DELIMITER = ':';
+
 export async function generateLogicMap(
     logicMapFilePath: string,
     startStateSet: StateSet,
@@ -30,21 +32,25 @@ export async function generateLogicMap(
         stateSet = split[0];
     }
 
-    const writeStream = fs.createWriteStream(logicMapFilePath, {});
+    const writeStream = fs.createWriteStream(
+        logicMapFilePath, {
+        flags: 'a' // append to existing file
+    });
 
     let done = binaryToDecimal(stateSet) - binaryToDecimal(startStateSet);
-
+    let logState = 0;
 
     const stateSetToActionMap: StateSetToActionMap = new Map();
     while (stateSet !== endStateSet) {
+        logState++;
         const action: ActionName = await calculateActionForState(
             stateSet,
             20,
             stateSetToActionMap
         );
 
-        const keyValue = stateSet + ':' + action;
-        console.log(keyValue);
+        const keyValue = stateSet + KEY_VALUE_DELIMITER + action;
+        // console.log(keyValue);
         writeStream.write(keyValue + '\n');
 
         // add to map so later runs go faster
@@ -53,7 +59,10 @@ export async function generateLogicMap(
         done++;
         stateSet = getNextStateSet(stateSet);
 
-        console.log('# processing: ' + done + '/' + totalAmount);
+        if (logState >= 111) {
+            logState = 0;
+            console.log('# processing: ' + done + '/' + totalAmount);
+        }
     }
 
 }

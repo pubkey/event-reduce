@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
     FIRST_STATE_SET,
     getNextStateSet,
-    decimalToBinary,
+    decimalToPaddedBinary,
     binaryToDecimal,
     LAST_STATE_SET
 } from '../../src/logic-generator/binary-state';
@@ -32,17 +32,15 @@ describe('binary-state.test.ts', () => {
             assert.ok(!nonOne);
         });
     });
-    describe('decimalToBinary()', () => {
+    describe('decimalToPaddedBinary()', () => {
         it('should be zero', () => {
-            assert.strictEqual(
-                '0',
-                decimalToBinary(0)
+            assert.ok(
+                decimalToPaddedBinary(0).endsWith('0')
             );
         });
         it('should be seven', () => {
-            assert.strictEqual(
-                '111',
-                decimalToBinary(7)
+            assert.ok(
+                decimalToPaddedBinary(7).endsWith('0111')
             );
         });
     });

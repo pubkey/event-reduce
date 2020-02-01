@@ -45,3 +45,32 @@ export function getSortFieldsOfQuery(query: MongoQuery): string[] {
         }
     });
 }
+
+/**
+ *  @link https://stackoverflow.com/a/1431113
+ */
+export function replaceCharAt(str: string, index: number, replacement: string) {
+    return str.substr(0, index) + replacement + str.substr(index + replacement.length);
+}
+
+export function mapToObject<K, V>(map: Map<K, V>): {
+    [k: string]: V
+} {
+    const ret = {};
+    map.forEach(
+        (value: V, key: K) => {
+            ret[key as any] = value;
+        }
+    );
+    return ret;
+}
+
+export function objectToMap<K, V>(object: {
+    [k: string]: V
+}): Map<K, V> {
+    const ret = new Map();
+    Object.entries(object).forEach(([k, v]) => {
+        ret.set(k, v);
+    });
+    return ret;
+}

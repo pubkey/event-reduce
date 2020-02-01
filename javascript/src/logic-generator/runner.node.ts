@@ -3,27 +3,19 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import {
-    spawn,
-    exec
+    spawn
 } from 'child_process';
 
 import {
     binaryToDecimal,
     LAST_STATE_SET,
-    decimalToPaddedBinary
+    decimalToPaddedBinary,
+    STATE_SET_LENGTH
 } from './binary-state';
 import { StateSet } from '../types';
 import { generateLogicMap } from './generate-logic-map';
-
-export const LOGIC_MAP_PATH = path.join(
-    __dirname,
-    'logic-map-output'
-);
-
-const MODULE_BASE_PATH = path.join(
-    __dirname,
-    '../../'
-);
+import { LOGIC_MAP_PATH } from './config';
+import { readTruthTable, flagNonRelevant } from './truth-table';
 
 async function run() {
 
@@ -38,16 +30,18 @@ async function run() {
                 fs.mkdirSync(LOGIC_MAP_PATH);
             }
 
-            // one process does not full-block the CPU
+            // one process does not full-block the CPU (only about 33% of an i7)
             // so use a higher number then the amount of CPUs
-            const processes = os.cpus().length * 3;
+            const processes = os.cpus().length * 4;
 
             let lastBatch = binaryToDecimal(LAST_STATE_SET);
             const batchSize = Math.ceil(lastBatch / processes);
 
             let id = 0;
+            let runningChilds: number[] = [];
             new Array(processes).fill(0).forEach(() => {
                 const childId = id;
+                runningChilds.push(childId);
                 id++;
                 const endState: StateSet = decimalToPaddedBinary(lastBatch);
                 lastBatch = lastBatch - batchSize;
@@ -81,6 +75,8 @@ async function run() {
                 childProcess.on('exit', function () {
                     console.log('#'.repeat(10));
                     console.log('child process exited (#' + childId + '): ' + childCommand);
+                    runningChilds = runningChilds.filter(i => i !== childId);
+                    console.log('still running: ' + runningChilds.join(', '));
                     console.log('#'.repeat(10));
                 });
             });
@@ -98,9 +94,27 @@ async function run() {
                 endStateSet
             );
             break;
+        case 'flag-non-relevant':
+            let truthTable = await readTruthTable();
+            console.log('start map size: ' + truthTable.size);
+
+            let i = STATE_SET_LENGTH;
+            while (i > 0) {
+                i--;
+                const flaggedResult = flagNonRelevant(truthTable, i);
+                truthTable = flaggedResult as any;
+                console.log('got new truth table:');
+                console.log('new map size: ' + truthTable.size);
+            }
+
+            truthTable.forEach((value: string, key: string) => {
+                console.log(key + ': ' + value);
+            });
+            console.log('got new truth table:');
+            console.log('new map size: ' + truthTable.size);
+            break;
         default:
             throw new Error('no use for command ' + command);
-            break;
     }
 
 }

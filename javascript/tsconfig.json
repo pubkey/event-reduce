@@ -29,7 +29,8 @@
     "exclude": [
         "node_modules",
         "**/node_modules/*",
-        "dist"
+        "dist",
+        "src/logic-generator/logic-map-output"
     ],
     "compileOnSave": false
 }
