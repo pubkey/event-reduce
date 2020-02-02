@@ -8,14 +8,13 @@ import {
 import {
     randomChangeEvent
 } from '../../src/logic-generator/data-generator';
+import { getQueryParamsByMongoQuery } from '../../src/logic-generator/minimongo-helper';
 export function getExampleStateResolveFunctionInput(): StateResolveFunctionInput<Human> {
-    const queryParams: QueryParams<Human> = {
+    const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery({
+        selector: {},
         limit: 100,
-        primaryKey: '_id',
-        queryMatcher: () => true,
-        sortComparator: () => -1,
-        sortFields: ['_id']
-    };
+        sort: ['_id']
+    });
     return {
         previousResults: [],
         changeEvent: randomChangeEvent([]),

@@ -53,10 +53,6 @@ describe('truth-table.test.ts', () => {
         );
     });
     it('should have correct results with two actions', () => {
-        console.log('1-'.repeat(22));
-        console.log('-'.repeat(22));
-        console.log('-'.repeat(22));
-
         const table = objectToMap<string, string>({
             '000': 'a',
             '001': 'a',
@@ -69,8 +65,6 @@ describe('truth-table.test.ts', () => {
         });
         const flagged = flagNonRelevant(table, 2, false);
         const obj = mapToObject(flagged);
-
-        console.dir(obj);
 
         assert.deepStrictEqual(
             obj,

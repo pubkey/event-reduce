@@ -30,7 +30,6 @@ export async function calculateActionForState(
     for (let i = 0; i < orderedActionList.length; i++) {
         const action: ActionName = orderedActionList[i];
         useActionMap.set(stateSet, action);
-
         const valid = await testResults(
             allQueries,
             amountOfTestEvents,
@@ -44,4 +43,4 @@ export async function calculateActionForState(
 
 
     return 'runFullQueryAgain';
-};
+}

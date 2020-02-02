@@ -1,5 +1,8 @@
-import { StateResolveFunctionInput, UNKNOWN, UNKNOWN_VALUE, ActionFunctionInput } from './types';
+import {
+    StateResolveFunctionInput
+} from './types';
 import { MongoQuery } from './logic-generator/types';
+import { UNKNOWN_VALUE } from './logic-generator/config';
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];

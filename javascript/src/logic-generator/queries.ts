@@ -24,6 +24,20 @@ export const findOneQuery: MongoQuery = {
     limit: 1
 };
 
+export const findOneMatchingQuery: MongoQuery = {
+    selector: {
+        gender: 'm'
+    },
+    limit: 1
+};
+
+
+export const findTenQuery: MongoQuery = {
+    selector: {},
+    limit: 10
+};
+
+
 export const findSortedQuery: MongoQuery = {
     selector: {
         age: {
@@ -74,6 +88,8 @@ export const allQueries: MongoQuery[] = [
     findBasicMatchQuery,
     findNoneQuery,
     findOneQuery,
+    findOneMatchingQuery,
+    findTenQuery,
     findSortedQuery,
     findMultiSortedQuery,
     findSkippedButRestQuery,

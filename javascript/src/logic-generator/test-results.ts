@@ -12,10 +12,6 @@ import {
 } from './types';
 
 import {
-    compileDocumentSelector,
-    compileSort
-} from 'minimongo/src/selector';
-import {
     getReuseableChangeEvents
 } from './data-generator';
 import {
@@ -25,9 +21,10 @@ import {
 import {
     getMinimongoCollection,
     minimongoFind,
-    applyChangeEvent
+    applyChangeEvent,
+    getQueryParamsByMongoQuery
 } from './minimongo-helper';
-import { getSortFieldsOfQuery } from '../util';
+import { MinimongoCollection } from 'minimongo';
 
 export type UseQuery = {
     query: MongoQuery,
@@ -40,6 +37,7 @@ export interface TestResultsReturn {
     correct: boolean;
     handledEvents: ChangeEvent<Human>[];
     useQueries: UseQuery[];
+    collection: MinimongoCollection<Human>;
 }
 
 /**
@@ -56,15 +54,7 @@ export async function testResults(
     const useChangeEvents: ChangeEvent<Human>[] = await getReuseableChangeEvents(writesAmount);
 
     const useQueries: UseQuery[] = queries.map(query => {
-        const sort = query.sort ? query.sort : [];
-        const queryParams: QueryParams<Human> = {
-            primaryKey: '_id',
-            sortFields: getSortFieldsOfQuery(query),
-            skip: query.skip ? query.skip : undefined,
-            limit: query.limit ? query.limit : undefined,
-            queryMatcher: compileDocumentSelector(query.selector),
-            sortComparator: compileSort(sort)
-        };
+        const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery(query);
         return {
             query,
             queryParams,
@@ -122,7 +112,8 @@ export async function testResults(
                 return {
                     correct: false,
                     handledEvents,
-                    useQueries
+                    useQueries,
+                    collection
                 };
             }
         }
@@ -131,6 +122,7 @@ export async function testResults(
     return {
         correct: true,
         handledEvents,
-        useQueries
+        useQueries,
+        collection
     };
 }

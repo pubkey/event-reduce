@@ -4,8 +4,7 @@ import {
 } from './types';
 import {
   WriteOperation,
-  ChangeEvent,
-  UNKNOWN_VALUE
+  ChangeEvent
 } from '../../src/types';
 import {
   getMinimongoCollection,
@@ -13,6 +12,7 @@ import {
   applyChangeEvent
 } from './minimongo-helper';
 import { findAllQuery } from './queries';
+import { UNKNOWN_VALUE } from './config';
 
 /**
  * use a seed to ensure each time we generate the same data

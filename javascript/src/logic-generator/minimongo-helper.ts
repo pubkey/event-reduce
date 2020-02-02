@@ -6,7 +6,12 @@ import {
     randomString
 } from 'async-test-util';
 import { Human, MongoQuery } from './types';
-import { ChangeEvent } from '../types';
+import { ChangeEvent, QueryParams } from '../types';
+import { getSortFieldsOfQuery } from '../util';
+import {
+    compileDocumentSelector,
+    compileSort
+} from 'minimongo/src/selector';
 
 export function getMinimongoCollection(): MinimongoCollection<Human> {
     const db: MemoryDb = new MemoryDb();
@@ -74,4 +79,16 @@ export async function applyChangeEvent<DocType>(
             );
             break;
     }
+}
+
+export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> {
+    const sort = query.sort ? query.sort : [];
+    return {
+        primaryKey: '_id',
+        sortFields: getSortFieldsOfQuery(query),
+        skip: query.skip ? query.skip : undefined,
+        limit: query.limit ? query.limit : undefined,
+        queryMatcher: compileDocumentSelector(query.selector),
+        sortComparator: compileSort(sort)
+    };
 }

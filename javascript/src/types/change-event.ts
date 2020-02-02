@@ -3,8 +3,6 @@ import {
     UNKNOWN
 } from './index';
 
-export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
-
 export interface ChangeEventBase {
     operation: WriteOperation;
     id: string; // value of the primary key

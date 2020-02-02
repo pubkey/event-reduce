@@ -3,13 +3,16 @@ import {
     calculateActionForState
 } from '../../src/logic-generator/calculate-action-for-state';
 import {
+    STATE_SET_LENGTH
+} from '../../src/logic-generator/binary-state';
+import {
     getStateSet
 } from '../../src/states';
 import {
     orderedActionList
 } from '../../src/actions';
 import {
-    ActionName
+    ActionName, StateSet
 } from '../../src/types';
 import {
     getExampleStateResolveFunctionInput
@@ -21,9 +24,25 @@ describe('calculate-action-for-state.test.ts', () => {
         const action: ActionName = await calculateActionForState(
             stateSet
         );
-
-        console.log('action: ' + action);
-
         assert.ok(orderedActionList.includes(action));
+    });
+    it('should have the given action insertFirst', async () => {
+        const input = getExampleStateResolveFunctionInput();
+        const stateSet = getStateSet(input); // 10001000100101011
+        const action: ActionName = await calculateActionForState(
+            stateSet,
+            1
+        );
+        assert.equal(action, 'insertFirst');
+    });
+    it('should doNothing on impossible state', async () => {
+        const stateSet: StateSet = new Array(STATE_SET_LENGTH)
+            .fill('1')
+            .join(''); // '111111111...'
+        const action: ActionName = await calculateActionForState(
+            stateSet,
+            1
+        );
+        assert.equal(action, 'doNothing');
     });
 });

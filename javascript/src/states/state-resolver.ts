@@ -1,6 +1,7 @@
 import objectPath from 'object-path';
-import { StateResolveFunction, UNKNOWN_VALUE } from '../types';
+import { StateResolveFunction } from '../types';
 import { lastOfArray } from '../util';
+import { UNKNOWN_VALUE } from '../logic-generator/config';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;

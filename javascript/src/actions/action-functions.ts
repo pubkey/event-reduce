@@ -27,9 +27,11 @@ export const insertLast: ActionFunction<any> = (input) => {
 export const removeFirstItem: ActionFunction<any> = (input) => {
     if (input.keyDocumentMap) {
         const first = input.previousResults[0];
-        input.keyDocumentMap.delete(
-            first[input.queryParams.primaryKey]
-        );
+        if (first) {
+            input.keyDocumentMap.delete(
+                first[input.queryParams.primaryKey]
+            );
+        }
     }
     input.previousResults.shift();
 };
@@ -37,9 +39,11 @@ export const removeFirstItem: ActionFunction<any> = (input) => {
 export const removeLastItem: ActionFunction<any> = (input) => {
     if (input.keyDocumentMap) {
         const last = lastOfArray(input.previousResults);
-        input.keyDocumentMap.delete(
-            last[input.queryParams.primaryKey]
-        );
+        if (last) {
+            input.keyDocumentMap.delete(
+                last[input.queryParams.primaryKey]
+            );
+        }
     }
     input.previousResults.pop();
 };
