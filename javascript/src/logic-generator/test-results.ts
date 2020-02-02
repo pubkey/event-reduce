@@ -16,16 +16,17 @@ import {
     compileSort
 } from 'minimongo/src/selector';
 import {
-    randomChangeEvent
+    getReuseableChangeEvents
 } from './data-generator';
 import {
     calculateActionFromMap,
     runAction
 } from '../';
 import {
-    getMinimongoCollection, minimongoUpsert, minimongoRemove, minimongoFind
+    getMinimongoCollection,
+    minimongoFind,
+    applyChangeEvent
 } from './minimongo-helper';
-import { findAllQuery } from './queries';
 import { getSortFieldsOfQuery } from '../util';
 
 export type UseQuery = {
@@ -39,7 +40,6 @@ export interface TestResultsReturn {
     correct: boolean;
     handledEvents: ChangeEvent<Human>[];
     useQueries: UseQuery[];
-    allDocs: Human[];
 }
 
 /**
@@ -53,6 +53,7 @@ export async function testResults(
     stateSetToActionMap: StateSetToActionMap
 ): Promise<TestResultsReturn> {
     const collection = getMinimongoCollection();
+    const useChangeEvents: ChangeEvent<Human>[] = await getReuseableChangeEvents(writesAmount);
 
     const useQueries: UseQuery[] = queries.map(query => {
         const sort = query.sort ? query.sort : [];
@@ -72,40 +73,21 @@ export async function testResults(
         };
     });
 
-    let allDocs: Human[] = [];
     const handledEvents: ChangeEvent<Human>[] = [];
 
     while (writesAmount > 0) {
         writesAmount--;
 
         // make change to database
-        const changeEvent = randomChangeEvent(allDocs);
-        handledEvents.push(changeEvent);
-        switch (changeEvent.operation) {
-            case 'INSERT':
-                await minimongoUpsert(
-                    collection,
-                    changeEvent.doc
-                );
-                break;
-            case 'UPDATE':
-                await minimongoUpsert(
-                    collection,
-                    changeEvent.doc
-                );
-                break;
-            case 'DELETE':
-                await minimongoRemove(
-                    collection,
-                    changeEvent.id
-                );
-                break;
+        const changeEvent = useChangeEvents.shift();
+        if (!changeEvent) {
+            throw new Error('no more change events');
         }
-
-
-
-        // update allDocs
-        allDocs = await minimongoFind(collection, findAllQuery);
+        handledEvents.push(changeEvent);
+        await applyChangeEvent(
+            collection,
+            changeEvent
+        );
 
         // check if results matches for each query
         for (let i = 0; i < useQueries.length; i++) {
@@ -122,7 +104,7 @@ export async function testResults(
 
             let calculatedResults: Human[];
             if (action === 'runFullQueryAgain') {
-                calculatedResults = await minimongoFind(collection, query.query);
+                calculatedResults = resultsFromExecute.slice();
             } else {
                 calculatedResults = runAction(
                     action,
@@ -140,16 +122,15 @@ export async function testResults(
                 return {
                     correct: false,
                     handledEvents,
-                    useQueries,
-                    allDocs
+                    useQueries
                 };
             }
         }
     }
+
     return {
         correct: true,
         handledEvents,
-        useQueries,
-        allDocs
+        useQueries
     };
 }

@@ -4,9 +4,11 @@ import {
     ResultKeyDocumentMap,
     QueryParams,
     StateSetToActionMap,
-    StateSet
+    StateSet,
+    ActionFunction
 } from './types';
 import { getStateSet } from './states';
+import { actionFunctions } from './actions';
 
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,
@@ -41,5 +43,12 @@ export function runAction<DocType>(
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): DocType[] {
-    return [];
+    const fn: ActionFunction<DocType> = actionFunctions[action];
+    fn({
+        queryParams,
+        changeEvent,
+        previousResults,
+        keyDocumentMap
+    });
+    return previousResults;
 }

@@ -3,6 +3,7 @@ import {
 } from 'array-push-at-sort-position';
 import { ActionFunction } from '../types';
 import { lastOfArray } from '../util';
+import { STATIC_RANDOM_HUMAN } from '../logic-generator/data-generator';
 
 export const doNothing: ActionFunction<any> = (input) => { };
 export const insertFirst: ActionFunction<any> = (input) => {
@@ -93,6 +94,22 @@ export const replaceExisting: ActionFunction<any> = (input) => {
             results.splice(i, 0, doc);
             break;
         }
+    }
+};
+
+/**
+ * this function always returns wrong results
+ * it must be later optimised out
+ */
+export const alwaysWrong: ActionFunction<any> = (input) => {
+    input.previousResults.length = 0; // clear array
+    input.previousResults.push(STATIC_RANDOM_HUMAN);
+    if (input.keyDocumentMap) {
+        input.keyDocumentMap.clear();
+        input.keyDocumentMap.set(
+            STATIC_RANDOM_HUMAN._id,
+            STATIC_RANDOM_HUMAN
+        );
     }
 };
 

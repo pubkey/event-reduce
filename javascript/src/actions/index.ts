@@ -13,6 +13,7 @@ import {
     removeLastInsertFirst,
     removeExisting,
     replaceExisting,
+    alwaysWrong,
     insertAtSortPosition,
     removeExistingAndInsertAtSortPosition,
     runFullQueryAgain
@@ -33,6 +34,7 @@ export const orderedActionList: ActionName[] = [
     'removeLastInsertFirst',
     'removeExisting',
     'replaceExisting',
+    'alwaysWrong',
     'insertAtSortPosition',
     'removeExistingAndInsertAtSortPosition',
     'runFullQueryAgain'
@@ -51,6 +53,7 @@ export const actionFunctions: {
     removeLastInsertFirst,
     removeExisting,
     replaceExisting,
+    alwaysWrong,
     insertAtSortPosition,
     removeExistingAndInsertAtSortPosition,
     runFullQueryAgain

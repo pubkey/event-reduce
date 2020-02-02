@@ -12,7 +12,7 @@
     "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 20000 --bail",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-logic-map": "ts-node ./src/logic-generator/runner.node.ts logic-map",
-    "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 0000000000000000 0011111111111111",
+    "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 11110111111111111 11111111111111111",
     "flag-non-relevant": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts flag-non-relevant"
   },
   "author": "",

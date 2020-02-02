@@ -7,6 +7,12 @@ import {
   ChangeEvent,
   UNKNOWN_VALUE
 } from '../../src/types';
+import {
+  getMinimongoCollection,
+  minimongoFind,
+  applyChangeEvent
+} from './minimongo-helper';
+import { findAllQuery } from './queries';
 
 /**
  * use a seed to ensure each time we generate the same data
@@ -22,6 +28,8 @@ export function randomHuman(): Human {
     alive: Faker.random.boolean()
   };
 }
+
+export const STATIC_RANDOM_HUMAN: Human = randomHuman();
 
 export function randomHumans(amount = 0): Human[] {
   return new Array(amount).fill(0).map(() => randomHuman());
@@ -94,4 +102,34 @@ export function randomChangeEvent(allDocs: Human[]): ChangeEvent<Human> {
   }
 
   return ret;
+}
+
+
+
+/**
+ * returns a list of changeEvents
+ * that can be reused
+ * These events can only be applied to an empty collection
+ */
+let resuseableChangeEventsList: ChangeEvent<Human>[];
+export async function getReuseableChangeEvents(amount: number = 100): Promise<ChangeEvent<Human>[]> {
+  if (resuseableChangeEventsList && resuseableChangeEventsList.length === 0) {
+    throw new Error('you run this twice in parallel');
+  }
+  if (!resuseableChangeEventsList || resuseableChangeEventsList.length < amount) {
+    resuseableChangeEventsList = [];
+    const collection = getMinimongoCollection();
+    let allDocs: Human[] = [];
+    while (amount > 0) {
+      amount--;
+      const changeEvent = randomChangeEvent(allDocs);
+      resuseableChangeEventsList.push(changeEvent);
+      await applyChangeEvent(
+        collection,
+        changeEvent
+      );
+      allDocs = await minimongoFind(collection, findAllQuery);
+    }
+  }
+  return resuseableChangeEventsList.slice();
 }

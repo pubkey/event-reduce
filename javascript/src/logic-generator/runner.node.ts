@@ -91,7 +91,8 @@ async function run() {
             await generateLogicMap(
                 logicMapFilePath,
                 startStateSet,
-                endStateSet
+                endStateSet,
+                200 // amount of random changeEvents per test
             );
             break;
         case 'flag-non-relevant':

@@ -2,13 +2,17 @@ import {
     MemoryDb,
     MinimongoCollection
 } from 'minimongo';
+import {
+    randomString
+} from 'async-test-util';
 import { Human, MongoQuery } from './types';
+import { ChangeEvent } from '../types';
 
-const COLLECTION_NAME = 'humans';
 export function getMinimongoCollection(): MinimongoCollection<Human> {
     const db: MemoryDb = new MemoryDb();
-    db.addCollection(COLLECTION_NAME);
-    const collection: MinimongoCollection<Human> = db.collections[COLLECTION_NAME];
+    const collectionName = randomString(12);
+    db.addCollection(collectionName);
+    const collection: MinimongoCollection<Human> = db.collections[collectionName];
     return collection;
 }
 
@@ -44,4 +48,30 @@ export async function minimongoFind<DocType>(
         ).fetch(resolve, reject)
     );
     return results;
+}
+
+export async function applyChangeEvent<DocType>(
+    collection: MinimongoCollection<DocType>,
+    changeEvent: ChangeEvent<DocType>
+): Promise<void> {
+    switch (changeEvent.operation) {
+        case 'INSERT':
+            await minimongoUpsert(
+                collection,
+                changeEvent.doc
+            );
+            break;
+        case 'UPDATE':
+            await minimongoUpsert(
+                collection,
+                changeEvent.doc
+            );
+            break;
+        case 'DELETE':
+            await minimongoRemove(
+                collection,
+                changeEvent.id
+            );
+            break;
+    }
 }

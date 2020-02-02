@@ -16,6 +16,7 @@ export type ActionName =
     'removeLastInsertFirst' |
     'removeExisting' |
     'replaceExisting' |
+    'alwaysWrong' | // this should be optimised out by later steps
     'insertAtSortPosition' |
     'removeExistingAndInsertAtSortPosition' |
     'runFullQueryAgain';
@@ -35,7 +36,9 @@ export type StateName =
     'isSortedAfterLast' |
     'isSortedBeforeFirst' |
     'wasMatching' |
-    'doesMatchNow';
+    'doesMatchNow' |
+    'alwaysTrue' // this should be optimised out by later steps
+    ;
 
 export interface QueryParams<DocType> {
     primaryKey: string;
