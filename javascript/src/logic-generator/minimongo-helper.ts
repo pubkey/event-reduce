@@ -13,6 +13,11 @@ import {
     compileSort
 } from 'minimongo/src/selector';
 
+export {
+    compileDocumentSelector,
+    compileSort
+} from 'minimongo/src/selector';
+
 export function getMinimongoCollection(): MinimongoCollection<Human> {
     const db: MemoryDb = new MemoryDb();
     const collectionName = randomString(12);

@@ -25,6 +25,7 @@ import {
     getQueryParamsByMongoQuery
 } from './minimongo-helper';
 import { MinimongoCollection } from 'minimongo';
+import { getStateSet } from '../states';
 
 export type UseQuery = {
     query: MongoQuery,
@@ -35,7 +36,6 @@ export type UseQuery = {
 
 export interface TestResultsReturn {
     correct: boolean;
-    handledEvents: ChangeEvent<Human>[];
     useQueries: UseQuery[];
     collection: MinimongoCollection<Human>;
 }
@@ -47,12 +47,19 @@ export interface TestResultsReturn {
  */
 export async function testResults(
     queries: MongoQuery[],
-    writesAmount: number = 100,
-    stateSetToActionMap: StateSetToActionMap
+    stateSetToActionMap: StateSetToActionMap,
+    useChangeEvents: ChangeEvent<Human>[],
+    showLogs: boolean = false
 ): Promise<TestResultsReturn> {
-    const collection = getMinimongoCollection();
-    const useChangeEvents: ChangeEvent<Human>[] = await getReuseableChangeEvents(writesAmount);
 
+    if (showLogs) {
+        console.log(
+            'testResults() with ' + queries.length + ' queries and ' +
+            useChangeEvents.length + ' events'
+        );
+    }
+
+    const collection = getMinimongoCollection();
     const useQueries: UseQuery[] = queries.map(query => {
         const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery(query);
         return {
@@ -63,17 +70,13 @@ export async function testResults(
         };
     });
 
-    const handledEvents: ChangeEvent<Human>[] = [];
-
-    while (writesAmount > 0) {
-        writesAmount--;
-
+    useChangeEvents = useChangeEvents.slice();
+    while (useChangeEvents.length > 0) {
         // make change to database
         const changeEvent = useChangeEvents.shift();
         if (!changeEvent) {
             throw new Error('no more change events');
         }
-        handledEvents.push(changeEvent);
         await applyChangeEvent(
             collection,
             changeEvent
@@ -84,6 +87,17 @@ export async function testResults(
             const query: UseQuery = useQueries[i];
             const resultsFromExecute = await minimongoFind(collection, query.query);
 
+
+            /*
+            if (showLogs && query.query.limit === 5 && query.query.sort) {
+                console.log('#'.repeat(200));
+                console.dir(query.query);
+                console.dir(changeEvent);
+                console.dir(query.results);
+                console.log('fromExec:');
+                console.dir(resultsFromExecute);
+            }*/
+
             const action = calculateActionFromMap(
                 stateSetToActionMap,
                 query.queryParams,
@@ -92,9 +106,16 @@ export async function testResults(
                 query.resultKeyDocumentMap
             );
 
+
+
             let calculatedResults: Human[];
             if (action === 'runFullQueryAgain') {
                 calculatedResults = resultsFromExecute.slice();
+                query.resultKeyDocumentMap.clear();
+                calculatedResults.forEach(doc => query.resultKeyDocumentMap.set(
+                    doc._id,
+                    doc
+                ));
             } else {
                 calculatedResults = runAction(
                     action,
@@ -105,13 +126,20 @@ export async function testResults(
                 );
             }
 
+
+
+            query.results = calculatedResults;
+            if (showLogs && query.query.limit === 5 && query.query.sort) {
+                console.log('after:');
+                console.dir(query.results);
+            }
+
             if (!deepEqual(
                 resultsFromExecute,
                 calculatedResults
             )) {
                 return {
                     correct: false,
-                    handledEvents,
                     useQueries,
                     collection
                 };
@@ -121,7 +149,6 @@ export async function testResults(
 
     return {
         correct: true,
-        handledEvents,
         useQueries,
         collection
     };

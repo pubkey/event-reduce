@@ -3,7 +3,6 @@ export interface Human {
     name: string;
     gender: 'm' | 'f';
     age: number;
-    alive: boolean;
 }
 
 export type MongoQuery = {

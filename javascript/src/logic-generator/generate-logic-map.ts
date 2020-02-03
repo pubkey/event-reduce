@@ -56,7 +56,6 @@ export async function generateLogicMap(
         logState++;
         const action: ActionName = await calculateActionForState(
             stateSet,
-            amountOfTestEvents,
             stateSetToActionMap
         );
 

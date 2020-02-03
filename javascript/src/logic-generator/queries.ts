@@ -1,98 +1,105 @@
-import Faker from 'faker';
 import {
     MongoQuery
 } from './types';
+
+export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {
+    selector: {},
+    limit: 100,
+    sort: ['_id']
+};
 
 export const findAllQuery: MongoQuery = {
     selector: {}
 };
 
-export const findBasicMatchQuery: MongoQuery = {
-    selector: {
-        gender: 'm'
+
+export const SELECTOR_VARIATIONS: any[] = [
+    // find all
+    findAllQuery as any,
+    // find none
+    {
+        selector: {
+            gender: 'x'
+        }
+    },
+    // find half of all
+    {
+        selector: {
+            gender: 'm'
+        }
     }
-};
-
-export const findNoneQuery: MongoQuery = {
-    selector: {
-        _id: Faker.random.alphaNumeric()
-    }
-}
-
-export const findOneQuery: MongoQuery = {
-    selector: {},
-    limit: 1
-};
-
-export const findOneMatchingQuery: MongoQuery = {
-    selector: {
-        gender: 'm'
-    },
-    limit: 1
-};
-
-
-export const findTenQuery: MongoQuery = {
-    selector: {},
-    limit: 10
-};
-
-
-export const findSortedQuery: MongoQuery = {
-    selector: {
-        age: {
-            $gt: 20
-        }
-    },
-    limit: 1,
-    sort: [
-        'age'
-    ]
-};
-
-export const findMultiSortedQuery: MongoQuery = {
-    selector: {
-        age: {
-            $gt: 20
-        }
-    },
-    limit: 1,
-    sort: [
-        'age',
-        ['gender', 'desc']
-    ]
-};
-
-export const findSkippedButRestQuery: MongoQuery = {
-    selector: {
-        age: {
-            $gt: 20
-        }
-    },
-    skip: 10
-};
-
-
-export const findSkippedAndLimitedQuery: MongoQuery = {
-    selector: {
-        age: {
-            $gt: 20
-        }
-    },
-    skip: 10,
-    limit: 10
-};
-
-export const allQueries: MongoQuery[] = [
-    findAllQuery,
-    findBasicMatchQuery,
-    findNoneQuery,
-    findOneQuery,
-    findOneMatchingQuery,
-    findTenQuery,
-    findSortedQuery,
-    findMultiSortedQuery,
-    findSkippedButRestQuery,
-    findSkippedAndLimitedQuery
 ];
 
+export const SKIP_VARIATIONS: { skip: number | undefined }[] = [
+    // no skip
+    {
+        skip: undefined
+    },
+    // skip all
+    {
+        skip: 10000
+    },
+    // skip few
+    {
+        skip: 5
+    },
+    // skip many
+    {
+        skip: 15
+    }
+];
+
+export const LIMIT_VARIATIONS: { limit: number | undefined }[] = [
+    // no limit
+    {
+        limit: undefined
+    },
+    // limit one
+    {
+        limit: 1
+    },
+    // limit few
+    {
+        limit: 5
+    },
+    // limit many
+    {
+        limit: 15
+    }
+];
+
+export const SORT_VARIATION: { sort: string[] | string[][] }[] = [
+    // sort by immutable primary
+    {
+        sort: ['_id']
+    },
+    // sort by mutable age
+    {
+        sort: ['age']
+    }
+];
+
+let QUERY_VARIATIONS_CACHE: MongoQuery[];
+
+export function getQueryVariations(): MongoQuery[] {
+    if (!QUERY_VARIATIONS_CACHE) {
+        QUERY_VARIATIONS_CACHE = [];
+        SELECTOR_VARIATIONS.forEach(selectorV => {
+            SKIP_VARIATIONS.forEach(skipV => {
+                LIMIT_VARIATIONS.forEach(limitV => {
+                    SORT_VARIATION.forEach(sortV => {
+                        const query = Object.assign(
+                            {},
+                            selectorV,
+                            skipV,
+                            limitV,
+                            sortV
+                        );
+                        QUERY_VARIATIONS_CACHE.push(query);
+                    });
+                });
+            });
+        });
+    }
+    return QUERY_VARIATIONS_CACHE;
+}

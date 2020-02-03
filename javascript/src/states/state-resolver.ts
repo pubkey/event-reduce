@@ -36,7 +36,7 @@ export const previousUnknown: StateResolveFunction<any> = (input) => {
 };
 
 export const wasLimitReached: StateResolveFunction<any> = (input) => {
-    return hasLimit(input) && input.previousResults.length === input.queryParams.limit;
+    return hasLimit(input) && input.previousResults.length >= (input.queryParams.limit as number);
 };
 
 export const sortParamsChanged: StateResolveFunction<any> = (input) => {
@@ -64,7 +64,8 @@ export const sortParamsChanged: StateResolveFunction<any> = (input) => {
 export const wasInResult: StateResolveFunction<any> = (input) => {
     const id = input.changeEvent.id;
     if (input.keyDocumentMap) {
-        return input.keyDocumentMap.has(input.changeEvent.id);
+        const has = input.keyDocumentMap.has(id);
+        return has;
     } else {
         const primary = input.queryParams.primaryKey;
         const results = input.previousResults;

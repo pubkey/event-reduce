@@ -21,11 +21,10 @@ Faker.seed(2345);
 
 export function randomHuman(): Human {
   return {
-    _id: Faker.random.alphaNumeric(),
+    _id: Faker.random.alphaNumeric(10),
     name: Faker.name.firstName().toLowerCase(),
     gender: Faker.random.boolean() ? 'f' : 'm',
-    age: Faker.random.number({ min: 1, max: 100 }),
-    alive: Faker.random.boolean()
+    age: Faker.random.number({ min: 1, max: 100 })
   };
 }
 
@@ -39,14 +38,13 @@ export function randomHumans(amount = 0): Human[] {
 const keyToChangeFn = {
   1: (i: Human) => i.name = Faker.name.firstName().toLowerCase(),
   2: (i: Human) => i.gender = Faker.random.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = Faker.random.number({ min: 1, max: 100 }),
-  4: (i: Human) => i.alive = Faker.random.boolean()
+  3: (i: Human) => i.age = Faker.random.number({ min: 1, max: 100 })
 };
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = Faker.random.number({ min: 1, max: 4 });
+  const field = Faker.random.number({ min: 1, max: 3 });
   keyToChangeFn[field](cloned);
 
   return cloned;
@@ -63,7 +61,6 @@ export function randomOperation(): WriteOperation {
 
 export function randomChangeEvent(allDocs: Human[]): ChangeEvent<Human> {
   const operation = allDocs.length === 0 ? 'INSERT' : randomOperation();
-
   let ret;
   switch (operation) {
     case 'INSERT':

@@ -6,13 +6,15 @@ import {
 import {
     orderedActionList
 } from '../actions';
-
 import {
     testResults
 } from './test-results';
 import {
-    allQueries
+    getQueryVariations
 } from './queries';
+import { isStateSetReachable } from './binary-state';
+import { MongoQuery } from './types';
+import { getTestProcedures } from './test-procedures';
 
 /**
  * calculates the best action for a given StateSet
@@ -21,26 +23,37 @@ import {
  */
 export async function calculateActionForState(
     stateSet: StateSet,
-    amountOfTestEvents: number = 100,
     // if map is passed, it will be used so this function runs faster
-    stateSetToActionMap?: StateSetToActionMap
+    stateSetToActionMap: StateSetToActionMap = new Map(),
+    queries: MongoQuery[] = getQueryVariations(),
+    showLogs: boolean = false
 ): Promise<ActionName> {
-    const useActionMap: StateSetToActionMap = stateSetToActionMap ? stateSetToActionMap : new Map();
-
+    if (!isStateSetReachable(stateSet)) {
+        return 'doNothing';
+    }
+    const prods = await getTestProcedures();
     for (let i = 0; i < orderedActionList.length; i++) {
         const action: ActionName = orderedActionList[i];
-        useActionMap.set(stateSet, action);
-        const valid = await testResults(
-            allQueries,
-            amountOfTestEvents,
-            useActionMap
-        );
-        if (valid.correct) {
+        stateSetToActionMap.set(stateSet, action);
+
+        let broken = false;
+        for (let t = 0; t < prods.length; t++) {
+            const useChangeEvents = prods[t];
+            const valid = await testResults(
+                queries,
+                stateSetToActionMap,
+                useChangeEvents,
+                showLogs
+            );
+            if (!valid.correct) {
+                broken = true;
+                break;
+            }
+        }
+        if (!broken) {
             return action;
         }
     }
 
-
-
-    return 'runFullQueryAgain';
+    throw new Error('this should not happen');
 }

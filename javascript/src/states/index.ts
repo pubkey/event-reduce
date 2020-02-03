@@ -31,12 +31,14 @@ import {
  * TODO run tests on which is really the fastest
  */
 export const orderedStateList: StateName[] = [
+    // operation-states must be first
+    'isInsert',
+    'isUpdate',
+    'isDelete',
+
     'hasLimit',
     'isFindOne',
     'hasSkip',
-    'isDelete',
-    'isInsert',
-    'isUpdate',
     'previousUnknown',
     'wasLimitReached',
     'sortParamsChanged',
@@ -53,12 +55,12 @@ export const orderedStateList: StateName[] = [
 export const stateResolveFunctions: {
     [k: string]: StateResolveFunction<any>
 } = {
+    isInsert,
+    isUpdate,
+    isDelete,
     hasLimit,
     isFindOne,
     hasSkip,
-    isDelete,
-    isInsert,
-    isUpdate,
     previousUnknown,
     wasLimitReached,
     sortParamsChanged,

@@ -4,12 +4,15 @@ import {
     getNextStateSet,
     decimalToPaddedBinary,
     binaryToDecimal,
-    LAST_STATE_SET
+    LAST_STATE_SET,
+    isStateOperation,
+    isStateSetReachable
 } from '../../src/logic-generator/binary-state';
 import {
-    orderedStateList
+    orderedStateList, getStateSet
 } from '../../src/states';
 import { StateSet } from '../../src/types';
+import { getExampleStateResolveFunctionInput } from '../helper/input';
 
 describe('binary-state.test.ts', () => {
     describe('FIRST_STATE_SET', () => {
@@ -72,7 +75,30 @@ describe('binary-state.test.ts', () => {
                 assert.ok(set.startsWith('0'));
             });
         });
-
+    });
+    describe('isStateSetReachable()', () => {
+        it('should be an unreachable state', () => {
+            const stateSet: StateSet = orderedStateList.map(stateName => {
+                if (isStateOperation(stateName)) {
+                    return '1';
+                } else {
+                    return '0';
+                }
+            }).join('');
+            const reachable = isStateSetReachable(stateSet);
+            assert.strictEqual(reachable, false);
+        });
+        it('should be reachable state', () => {
+            const input = getExampleStateResolveFunctionInput();
+            const stateSet = getStateSet(input);
+            const reachable = isStateSetReachable(stateSet);
+            assert.strictEqual(reachable, true);
+        });
+        it('should be unreacheable if hasLimit && wasLimitReached', () => {
+            const stateSet: StateSet = orderedStateList.map(() => '0').join('');
+            const reachable = isStateSetReachable(stateSet);
+            assert.strictEqual(reachable, false);
+        });
     });
 
 });

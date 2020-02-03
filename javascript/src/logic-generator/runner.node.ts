@@ -70,6 +70,7 @@ async function run() {
                 });
                 childProcess.stderr.on('data', (data: any) => {
                     console.error('#' + childId + ': ' + data.toString().trim());
+                    process.exit();
                 });
 
                 childProcess.on('exit', function () {
