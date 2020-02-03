@@ -4,16 +4,13 @@ import {
     QueryParams,
     ResultKeyDocumentMap,
     ChangeEvent,
-    StateSetToActionMap
+    StateSetToActionMap,
+    StateSet
 } from '../types';
 import {
     Human,
     MongoQuery
 } from './types';
-
-import {
-    getReuseableChangeEvents
-} from './data-generator';
 import {
     calculateActionFromMap,
     runAction
@@ -25,7 +22,7 @@ import {
     getQueryParamsByMongoQuery
 } from './minimongo-helper';
 import { MinimongoCollection } from 'minimongo';
-import { getStateSet } from '../states';
+import { mapToObject } from '../util';
 
 export type UseQuery = {
     query: MongoQuery,
@@ -36,7 +33,8 @@ export type UseQuery = {
 
 export interface TestResultsReturn {
     correct: boolean;
-    useQueries: UseQuery[];
+    // list of all traversed states
+    stateSets: Set<StateSet>;
     collection: MinimongoCollection<Human>;
 }
 
@@ -51,6 +49,8 @@ export async function testResults(
     useChangeEvents: ChangeEvent<Human>[],
     showLogs: boolean = false
 ): Promise<TestResultsReturn> {
+
+    const travsersedStates: Set<StateSet> = new Set();
 
     if (showLogs) {
         console.log(
@@ -73,10 +73,7 @@ export async function testResults(
     useChangeEvents = useChangeEvents.slice();
     while (useChangeEvents.length > 0) {
         // make change to database
-        const changeEvent = useChangeEvents.shift();
-        if (!changeEvent) {
-            throw new Error('no more change events');
-        }
+        const changeEvent = useChangeEvents.shift() as ChangeEvent<Human>;
         await applyChangeEvent(
             collection,
             changeEvent
@@ -98,18 +95,17 @@ export async function testResults(
                 console.dir(resultsFromExecute);
             }*/
 
-            const action = calculateActionFromMap(
+            const actionResult = calculateActionFromMap(
                 stateSetToActionMap,
                 query.queryParams,
                 changeEvent,
                 query.results,
                 query.resultKeyDocumentMap
             );
-
-
+            travsersedStates.add(actionResult.stateSet);
 
             let calculatedResults: Human[];
-            if (action === 'runFullQueryAgain') {
+            if (actionResult.action === 'runFullQueryAgain') {
                 calculatedResults = resultsFromExecute.slice();
                 query.resultKeyDocumentMap.clear();
                 calculatedResults.forEach(doc => query.resultKeyDocumentMap.set(
@@ -118,7 +114,7 @@ export async function testResults(
                 ));
             } else {
                 calculatedResults = runAction(
-                    action,
+                    actionResult.action,
                     query.queryParams,
                     changeEvent,
                     query.results,
@@ -126,30 +122,57 @@ export async function testResults(
                 );
             }
 
-
-
             query.results = calculatedResults;
+
+            /*
             if (showLogs && query.query.limit === 5 && query.query.sort) {
                 console.log('after:');
                 console.dir(query.results);
-            }
+            }*/
 
-            if (!deepEqual(
-                resultsFromExecute,
-                calculatedResults
-            )) {
+            if (
+                // optimisation shortcut, this is faster because we know we have two arrays
+                resultsFromExecute.length !== calculatedResults.length ||
+                !deepEqual(
+                    resultsFromExecute,
+                    calculatedResults
+                )
+            ) {
                 return {
                     correct: false,
-                    useQueries,
-                    collection
+                    collection,
+                    stateSets: travsersedStates
                 };
+            }
+
+            // set this to true if you think there might be some bug
+            // on calculating the document map
+            const checkKeyDocumentMap = true;
+            if (checkKeyDocumentMap) {
+                if (query.results.length !== query.resultKeyDocumentMap.size) {
+                    console.log('-----------');
+                    console.dir(query.results);
+                    console.dir(mapToObject(query.resultKeyDocumentMap));
+                    throw new Error('key document map has wrong size ' + actionResult.action);
+                }
+                query.results.forEach(doc => {
+                    const mapValue = query.resultKeyDocumentMap.get(doc._id);
+                    if (!deepEqual(
+                        doc,
+                        mapValue
+                    )) {
+                        console.dir(doc);
+                        console.dir(mapValue);
+                        throw new Error('key document map has wrong doc ' + actionResult.action);
+                    }
+                });
             }
         }
     }
 
     return {
         correct: true,
-        useQueries,
-        collection
+        collection,
+        stateSets: travsersedStates
     };
 }

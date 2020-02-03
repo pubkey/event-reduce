@@ -23,8 +23,6 @@ import { getTestProcedures } from './test-procedures';
  */
 export async function calculateActionForState(
     stateSet: StateSet,
-    // if map is passed, it will be used so this function runs faster
-    stateSetToActionMap: StateSetToActionMap = new Map(),
     queries: MongoQuery[] = getQueryVariations(),
     showLogs: boolean = false
 ): Promise<ActionName> {
@@ -34,6 +32,7 @@ export async function calculateActionForState(
     const prods = await getTestProcedures();
     for (let i = 0; i < orderedActionList.length; i++) {
         const action: ActionName = orderedActionList[i];
+        const stateSetToActionMap = new Map();
         stateSetToActionMap.set(stateSet, action);
 
         let broken = false;
@@ -54,6 +53,9 @@ export async function calculateActionForState(
             return action;
         }
     }
+
+    console.error('calculateActionForState(): Fatal error on state ' + stateSet);
+    console.error('it looks like event "runFullQueryAgain" did not return the correct results');
 
     throw new Error('this should not happen');
 }

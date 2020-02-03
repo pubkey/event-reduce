@@ -80,13 +80,14 @@ export const wasInResult: StateResolveFunction<any> = (input) => {
 };
 
 export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
+    const prev = input.changeEvent.previous;
+    if (!prev || prev === UNKNOWN_VALUE) {
+        return false;
+    }
+
     const first = input.previousResults[0];
     if (!first) {
         return false;
-    }
-    const prev = input.changeEvent.previous;
-    if (!prev || prev === UNKNOWN_VALUE) {
-        return true;
     }
 
     const comp = input.queryParams.sortComparator(
@@ -97,12 +98,13 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
 };
 
 export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
-    const last = lastOfArray(input.previousResults);
-    if (!last) {
-        return true;
-    }
     const prev = input.changeEvent.previous;
     if (!prev || prev === UNKNOWN_VALUE) {
+        return false;
+    }
+
+    const last = lastOfArray(input.previousResults);
+    if (!last) {
         return false;
     }
 
@@ -114,13 +116,14 @@ export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
 };
 
 export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
+    const doc = input.changeEvent.doc;
+    if (!doc) {
+        return false;
+    }
+
     const first = input.previousResults[0];
     if (!first) {
         return false;
-    }
-    const doc = input.changeEvent.doc;
-    if (!doc) {
-        return true;
     }
 
     const comp = input.queryParams.sortComparator(
@@ -131,12 +134,13 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
 };
 
 export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
-    const last = lastOfArray(input.previousResults);
-    if (!last) {
-        return true;
-    }
     const doc = input.changeEvent.doc;
     if (!doc) {
+        return false;
+    }
+
+    const last = lastOfArray(input.previousResults);
+    if (!last) {
         return false;
     }
 

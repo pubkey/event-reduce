@@ -32,10 +32,11 @@ import {
  */
 export const orderedStateList: StateName[] = [
     // operation-states must be first
+    // this will later have a better tree-split
+    // on the binary decision diagramm
     'isInsert',
     'isUpdate',
     'isDelete',
-
     'hasLimit',
     'isFindOne',
     'hasSkip',

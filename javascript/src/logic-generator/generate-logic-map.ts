@@ -49,22 +49,15 @@ export async function generateLogicMap(
     let doneAmount = binaryToDecimal(stateSet) - binaryToDecimal(startStateSet);
     let logState = 0;
 
-    const stateSetToActionMap: StateSetToActionMap = new Map();
-
     let done = false;
     while (!done) {
         logState++;
         const action: ActionName = await calculateActionForState(
-            stateSet,
-            stateSetToActionMap
+            stateSet
         );
 
         const keyValue = stateSet + KEY_VALUE_DELIMITER + action;
         writeStream.write(keyValue + '\n');
-
-        // add to map so later runs go faster
-        stateSetToActionMap.set(stateSet, action);
-
         doneAmount++;
 
         // do not log each time because that would kill the performance

@@ -77,3 +77,11 @@ export function objectToMap<K, V>(object: {
     });
     return ret;
 }
+
+export function mergeSets<T>(sets: Set<T>[]): Set<T> {
+    let ret: Set<T> = new Set();
+    sets.forEach(set => {
+        ret = new Set([...ret, ...set]);
+    });
+    return ret;
+}

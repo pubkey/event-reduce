@@ -4,7 +4,7 @@ import {
     calculateActionForState
 } from '../../src/logic-generator/calculate-action-for-state';
 import {
-    STATE_SET_LENGTH, stateSetToObject
+    STATE_SET_LENGTH
 } from '../../src/logic-generator/binary-state';
 import {
     getStateSet
@@ -31,7 +31,6 @@ describe('calculate-action-for-state.test.ts', () => {
         const stateSet = getStateSet(input);
         const action: ActionName = await calculateActionForState(
             stateSet,
-            new Map(),
             [
                 getQueryVariations()[0]
             ]
@@ -43,7 +42,6 @@ describe('calculate-action-for-state.test.ts', () => {
         const stateSet = getStateSet(input); // 10001000100101011
         const action: ActionName = await calculateActionForState(
             stateSet,
-            new Map(),
             [
                 DEFAULT_EXAMPLE_QUERY
             ]
@@ -81,12 +79,11 @@ describe('calculate-action-for-state.test.ts', () => {
         const stateSet = getStateSet(input);
         const action: ActionName = await calculateActionForState(
             stateSet,
-            new Map(),
             [query]
         );
         assert.strictEqual(
-            action,
-            'removeExistingAndInsertAtSortPosition'
+            'removeExistingAndInsertAtSortPosition',
+            action
         );
     });
 });

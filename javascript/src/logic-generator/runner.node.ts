@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import {
-    spawn
+    spawn, ChildProcessWithoutNullStreams
 } from 'child_process';
 
 import {
@@ -14,10 +14,54 @@ import {
 } from './binary-state';
 import { StateSet } from '../types';
 import { generateLogicMap } from './generate-logic-map';
-import { LOGIC_MAP_PATH } from './config';
+import { LOGIC_MAP_PATH, VALID_STATE_SET_PATH } from './config';
 import { readTruthTable, flagNonRelevant } from './truth-table';
+import { findValidStates } from './find-valid-states';
+
+declare interface Batch {
+    childId: number;
+    fromState: StateSet;
+    endState: StateSet;
+    childArgs: string[];
+};
+
+const childProcesses: ChildProcessWithoutNullStreams[] = [];
+
+function startBatch(batch: Batch, batches: Batch[]) {
+    const childId = batch.childId;
+    console.log('startBatch() #' + childId);
+    const childProcess = spawn('ts-node', batch.childArgs);
+    childProcesses.push(childProcess);
+    childProcess.stdout.on('data', (data: any) => {
+        console.log('#' + childId + ': ' + data.toString().trim());
+    });
+    childProcess.stderr.on('data', (data: any) => {
+        console.error('ERROR: got fatal error with input ' + batch.fromState + ' ' + batch.endState);
+        console.error('#' + childId + ': ' + data.toString().trim());
+
+        // kill all child processes, then exit
+        childProcesses.forEach(c => c.kill('SIGINT'));
+        process.exit(1);
+    });
+
+    childProcess.on('exit', function () {
+        console.log('#'.repeat(10));
+        console.log('child process exited (#' + childId + '): ' + batch.fromState + ' ' + batch.endState);
+        console.log('# missing batches: ' + batches.length);
+        console.log('#'.repeat(10));
+
+        const nextBatch = batches.pop();
+        if (nextBatch) {
+            startBatch(nextBatch, batches);
+        }
+    });
+};
 
 async function run() {
+
+    if (!fs.existsSync(LOGIC_MAP_PATH)) {
+        fs.mkdirSync(LOGIC_MAP_PATH);
+    }
 
     const args = process.argv;
     const command = args[2];
@@ -25,61 +69,52 @@ async function run() {
     console.log(__filename);
 
     switch (command) {
+        case 'find-valid-state-sets':
+            const states = await findValidStates();
+            const saveJson = Array.from(states);
+            fs.writeFileSync(
+                VALID_STATE_SET_PATH,
+                JSON.stringify(saveJson, null, 2),
+                { encoding: 'utf8', flag: 'w' }
+            );
+            console.log('found ' + states.size + ' different states');
+            break;
         case 'logic-map':
-            if (!fs.existsSync(LOGIC_MAP_PATH)) {
-                fs.mkdirSync(LOGIC_MAP_PATH);
-            }
-
             // one process does not full-block the CPU (only about 33% of an i7)
             // so use a higher number then the amount of CPUs
-            const processes = os.cpus().length * 4;
+            const parallel = os.cpus().length * 3;
+            const batchesAmount = parallel * 8;
 
             let lastBatch = binaryToDecimal(LAST_STATE_SET);
-            const batchSize = Math.ceil(lastBatch / processes);
+            const batchSize = Math.ceil(lastBatch / batchesAmount);
 
             let id = 0;
-            let runningChilds: number[] = [];
-            new Array(processes).fill(0).forEach(() => {
-                const childId = id;
-                runningChilds.push(childId);
-                id++;
-                const endState: StateSet = decimalToPaddedBinary(lastBatch);
-                lastBatch = lastBatch - batchSize;
-                if (lastBatch < 0) {
-                    lastBatch = 0;
-                }
-                const fromState: StateSet = decimalToPaddedBinary(lastBatch);
+            const batches: Batch[] = new Array(batchesAmount).fill(0)
+                .map(() => {
+                    const childId = id;
+                    id++;
+                    const endState: StateSet = decimalToPaddedBinary(lastBatch);
+                    lastBatch = lastBatch - batchSize;
+                    if (lastBatch < 0) {
+                        lastBatch = 0;
+                    }
+                    const fromState: StateSet = decimalToPaddedBinary(lastBatch);
 
-                const childCommand = [
-                    'ts-node',
-                    __filename,
-                    'logic-map-child',
-                    fromState,
-                    endState
-                ].join(' ');
-                console.log('childCommand: ' + childCommand);
-                const childProcess = spawn('ts-node', [
-                    __filename,
-                    'logic-map-child',
-                    fromState,
-                    endState
-                ]);
-
-                childProcess.stdout.on('data', (data: any) => {
-                    console.log('#' + childId + ': ' + data.toString().trim());
+                    return {
+                        childId,
+                        fromState,
+                        endState,
+                        childArgs: [
+                            __filename,
+                            'logic-map-child',
+                            fromState,
+                            endState
+                        ]
+                    };
                 });
-                childProcess.stderr.on('data', (data: any) => {
-                    console.error('#' + childId + ': ' + data.toString().trim());
-                    process.exit();
-                });
-
-                childProcess.on('exit', function () {
-                    console.log('#'.repeat(10));
-                    console.log('child process exited (#' + childId + '): ' + childCommand);
-                    runningChilds = runningChilds.filter(i => i !== childId);
-                    console.log('still running: ' + runningChilds.join(', '));
-                    console.log('#'.repeat(10));
-                });
+            new Array(parallel).fill(0).forEach(async () => {
+                const batch = batches.pop() as Batch;
+                startBatch(batch, batches);
             });
             break;
         case 'logic-map-child':

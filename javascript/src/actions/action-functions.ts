@@ -2,10 +2,9 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { ActionFunction } from '../types';
-import { lastOfArray } from '../util';
 import { STATIC_RANDOM_HUMAN } from '../logic-generator/data-generator';
 
-export const doNothing: ActionFunction<any> = (input) => { };
+export const doNothing: ActionFunction<any> = (_input) => { };
 export const insertFirst: ActionFunction<any> = (input) => {
     input.previousResults.unshift(input.changeEvent.doc);
     if (input.keyDocumentMap) {
@@ -25,27 +24,21 @@ export const insertLast: ActionFunction<any> = (input) => {
     }
 };
 export const removeFirstItem: ActionFunction<any> = (input) => {
-    if (input.keyDocumentMap) {
-        const first = input.previousResults[0];
-        if (first) {
-            input.keyDocumentMap.delete(
-                first[input.queryParams.primaryKey]
-            );
-        }
+    const first = input.previousResults.shift();
+    if (input.keyDocumentMap && first) {
+        input.keyDocumentMap.delete(
+            first[input.queryParams.primaryKey]
+        );
     }
-    input.previousResults.shift();
 };
 
 export const removeLastItem: ActionFunction<any> = (input) => {
-    if (input.keyDocumentMap) {
-        const last = lastOfArray(input.previousResults);
-        if (last) {
-            input.keyDocumentMap.delete(
-                last[input.queryParams.primaryKey]
-            );
-        }
+    const last = input.previousResults.pop();
+    if (input.keyDocumentMap && last) {
+        input.keyDocumentMap.delete(
+            last[input.queryParams.primaryKey]
+        );
     }
-    input.previousResults.pop();
 };
 
 export const removeFirstInsertLast: ActionFunction<any> = (input) => {

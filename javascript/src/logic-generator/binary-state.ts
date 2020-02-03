@@ -1,5 +1,8 @@
+import * as fs from 'fs';
+
 import { StateSet, StateName } from '../types';
 import { orderedStateList } from '../states';
+import { VALID_STATE_SET_PATH } from './config';
 
 export const STATE_SET_LENGTH = orderedStateList.length;
 export const FIRST_STATE_SET: StateSet = new Array(STATE_SET_LENGTH).fill(0).map(() => '0').join('');
@@ -51,35 +54,28 @@ const OPERATION_INDEXES: number[] = orderedStateList
         return index;
     });
 
-const HAS_LIMIT_INDEX = orderedStateList.findIndex(s => s === 'hasLimit');
-const WAS_LIMIT_REACHED_INDEX = orderedStateList.findIndex(s => s === 'wasLimitReached');
+
+
 
 /**
  * some states can logically never be reached
  * so we do not have to calculate the best action for them
+ * 
+ * Basically we can anyway only validate states that
+ * can be reached with our query-procedure combination
  */
+let VALID_STATES_CACHE: Set<StateSet>;
 export function isStateSetReachable(stateSet: StateSet): boolean {
-    // operation can either be insert, update or delete
-    let operationTrues = 0;
-    OPERATION_INDEXES.forEach(i => {
-        const v = stateSet[i];
-        if (v === '1') {
-            operationTrues++;
-        }
-    });
-    if (operationTrues !== 1) {
-        return false;
+    if (!VALID_STATES_CACHE) {
+        const content = fs.readFileSync(
+            VALID_STATE_SET_PATH,
+            'utf-8'
+        );
+        const parsed: StateSet[] = JSON.parse(content);
+        VALID_STATES_CACHE = new Set();
+        parsed.forEach(s => VALID_STATES_CACHE.add(s));
     }
-
-    // if hasLimit is false, wasLimitReached is also
-    const hasLimit = stateSet[HAS_LIMIT_INDEX];
-    const wasLimitReached = stateSet[WAS_LIMIT_REACHED_INDEX];
-    if (hasLimit === '0' && wasLimitReached === '0') {
-        return false;
-    }
-
-
-    return true;
+    return VALID_STATES_CACHE.has(stateSet);
 }
 
 export function stateSetToObject(stateSet: StateSet): any {

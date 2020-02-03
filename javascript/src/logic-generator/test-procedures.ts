@@ -114,7 +114,7 @@ export async function getTestProcedures(): Promise<ChangeEvent<Human>[][]> {
     if (!CACHE) {
         const ret: ChangeEvent<Human>[][] = [];
         ret.push(insertChangeAndCleanup());
-        // ret.push(insertChangeAndCleanup(true));
+        ret.push(insertChangeAndCleanup(true));
         ret.push(insertFiveThenChangeAgeOfOne());
         CACHE = Promise.resolve(ret);
     }

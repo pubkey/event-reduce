@@ -74,7 +74,7 @@ describe('states.test.ts', () => {
             previous.age = 101;
             const current = clone(randomHuman);
             current.age = 102;
-            
+
             const input: StateResolveFunctionInput<Human> = {
                 changeEvent: {
                     operation: 'UPDATE',
