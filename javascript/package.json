@@ -13,7 +13,7 @@
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "find-valid-state-sets": "ts-node ./src/logic-generator/runner.node.ts find-valid-state-sets",
     "generate-logic-map": "ts-node ./src/logic-generator/runner.node.ts logic-map",
-    "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 11100101010100011 11100111111111001",
+    "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 01000011111010000 01000101001111011",
     "flag-non-relevant": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts flag-non-relevant"
   },
   "author": "pubkey",

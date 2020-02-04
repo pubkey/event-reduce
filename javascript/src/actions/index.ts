@@ -42,7 +42,7 @@ export const orderedActionList: ActionName[] = [
 
 
 export const actionFunctions: {
-    [k: string]: ActionFunction<any>
+    [k in ActionName]: ActionFunction<any>
 } = {
     doNothing,
     insertFirst,

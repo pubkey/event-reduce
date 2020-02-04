@@ -13,9 +13,9 @@ export const findAllQuery: MongoQuery = {
 };
 
 
-export const SELECTOR_VARIATIONS: any[] = [
+export const SELECTOR_VARIATIONS: MongoQuery[] = [
     // find all
-    findAllQuery as any,
+    findAllQuery,
     // find none
     {
         selector: {
@@ -26,6 +26,22 @@ export const SELECTOR_VARIATIONS: any[] = [
     {
         selector: {
             gender: 'm'
+        }
+    },
+    // find 10%
+    {
+        selector: {
+            age: {
+                $gt: 10
+            }
+        }
+    },
+    // find 90%
+    {
+        selector: {
+            age: {
+                $gt: 90
+            }
         }
     }
 ];
@@ -58,6 +74,10 @@ export const LIMIT_VARIATIONS: { limit: number | undefined }[] = [
     {
         limit: 1
     },
+    // limit two
+    {
+        limit: 2
+    },
     // limit few
     {
         limit: 5
@@ -76,11 +96,14 @@ export const SORT_VARIATION: { sort: string[] | string[][] }[] = [
     // sort by mutable age
     {
         sort: ['age']
+    },
+    // sort reverse
+    {
+        sort: ['-age']
     }
 ];
 
 let QUERY_VARIATIONS_CACHE: MongoQuery[];
-
 export function getQueryVariations(): MongoQuery[] {
     if (!QUERY_VARIATIONS_CACHE) {
         QUERY_VARIATIONS_CACHE = [];

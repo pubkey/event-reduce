@@ -172,6 +172,11 @@ export const doesMatchNow: StateResolveFunction<any> = (input) => {
     );
 };
 
+
+export const wasResultsEmpty: StateResolveFunction<any> = (input) => {
+    return input.previousResults.length === 0;
+};
+
 /**
  * the last state-function
  * always returns true.

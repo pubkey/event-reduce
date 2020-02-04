@@ -108,7 +108,6 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
     return ret;
 }
 
-
 let CACHE: Promise<ChangeEvent<Human>[][]>;
 export async function getTestProcedures(): Promise<ChangeEvent<Human>[][]> {
     if (!CACHE) {

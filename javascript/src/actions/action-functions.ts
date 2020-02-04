@@ -73,15 +73,8 @@ export const removeExisting: ActionFunction<any> = (input) => {
 };
 
 export const replaceExisting: ActionFunction<any> = (input) => {
-    const doc = input.changeEvent.doc;
-    if (input.keyDocumentMap) {
-        input.keyDocumentMap.set(
-            input.changeEvent.id,
-            doc
-        );
-    }
-
     // find index of document
+    const doc = input.changeEvent.doc;
     const primary = input.queryParams.primaryKey;
     const results = input.previousResults;
     for (let i = 0; i < results.length; i++) {
@@ -89,6 +82,12 @@ export const replaceExisting: ActionFunction<any> = (input) => {
         // replace
         if (item[primary] === input.changeEvent.id) {
             results.splice(i, 0, doc);
+            if (input.keyDocumentMap) {
+                input.keyDocumentMap.set(
+                    input.changeEvent.id,
+                    doc
+                );
+            }
             break;
         }
     }
@@ -97,6 +96,7 @@ export const replaceExisting: ActionFunction<any> = (input) => {
 /**
  * this function always returns wrong results
  * it must be later optimised out
+ * otherwise there is something broken
  */
 export const alwaysWrong: ActionFunction<any> = (input) => {
     input.previousResults.length = 0; // clear array

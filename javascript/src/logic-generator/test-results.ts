@@ -145,13 +145,16 @@ export async function testResults(
                 };
             }
 
-            // set this to true if you think there might be some bug
-            // on calculating the document map
-            const checkKeyDocumentMap = true;
+            /**
+             * set this to true if you think there might be some bug
+             * on calculating the document map in the action-functions
+             */
+            const checkKeyDocumentMap = false;
             if (checkKeyDocumentMap) {
                 if (query.results.length !== query.resultKeyDocumentMap.size) {
-                    console.log('-----------');
+                    console.log('----------- results:');
                     console.dir(query.results);
+                    console.log('map:');
                     console.dir(mapToObject(query.resultKeyDocumentMap));
                     throw new Error('key document map has wrong size ' + actionResult.action);
                 }

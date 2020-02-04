@@ -23,7 +23,7 @@ declare interface Batch {
     fromState: StateSet;
     endState: StateSet;
     childArgs: string[];
-};
+}
 
 const childProcesses: ChildProcessWithoutNullStreams[] = [];
 
@@ -45,17 +45,17 @@ function startBatch(batch: Batch, batches: Batch[]) {
     });
 
     childProcess.on('exit', function () {
-        console.log('#'.repeat(10));
+        console.log('#'.repeat(100));
         console.log('child process exited (#' + childId + '): ' + batch.fromState + ' ' + batch.endState);
         console.log('# missing batches: ' + batches.length);
-        console.log('#'.repeat(10));
+        console.log('#'.repeat(100));
 
         const nextBatch = batches.pop();
         if (nextBatch) {
             startBatch(nextBatch, batches);
         }
     });
-};
+}
 
 async function run() {
 
@@ -83,7 +83,7 @@ async function run() {
             // one process does not full-block the CPU (only about 33% of an i7)
             // so use a higher number then the amount of CPUs
             const parallel = os.cpus().length * 3;
-            const batchesAmount = parallel * 8;
+            const batchesAmount = parallel * 20;
 
             let lastBatch = binaryToDecimal(LAST_STATE_SET);
             const batchSize = Math.ceil(lastBatch / batchesAmount);

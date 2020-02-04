@@ -47,20 +47,10 @@ export function isStateOperation(state: StateName): boolean {
     return ['isDelete', 'isInsert', 'isUpdate'].includes(state);
 }
 
-const OPERATION_INDEXES: number[] = orderedStateList
-    .filter(state => isStateOperation(state))
-    .map(state => {
-        const index = orderedStateList.findIndex(s => s === state);
-        return index;
-    });
-
-
-
-
 /**
  * some states can logically never be reached
  * so we do not have to calculate the best action for them
- * 
+ *
  * Basically we can anyway only validate states that
  * can be reached with our query-procedure combination
  */

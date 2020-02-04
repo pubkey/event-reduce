@@ -27,6 +27,7 @@ export type StateName =
     'isDelete' |
     'isInsert' |
     'isUpdate' |
+    'wasResultsEmpty' |
     'previousUnknown' |
     'wasLimitReached' |
     'sortParamsChanged' |
