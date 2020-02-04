@@ -85,15 +85,14 @@ export async function testResults(
             const resultsFromExecute = await minimongoFind(collection, query.query);
 
 
-            /*
             if (showLogs && query.query.limit === 5 && query.query.sort) {
                 console.log('#'.repeat(200));
                 console.dir(query.query);
                 console.dir(changeEvent);
                 console.dir(query.results);
-                console.log('fromExec:');
+                console.log('resultsFromExecute:');
                 console.dir(resultsFromExecute);
-            }*/
+            }
 
             const actionResult = calculateActionFromMap(
                 stateSetToActionMap,
@@ -124,11 +123,12 @@ export async function testResults(
 
             query.results = calculatedResults;
 
-            /*
+
             if (showLogs && query.query.limit === 5 && query.query.sort) {
+                console.log('action: ' + actionResult.action);
                 console.log('after:');
                 console.dir(query.results);
-            }*/
+            }
 
             if (
                 // optimisation shortcut, this is faster because we know we have two arrays
@@ -138,6 +138,13 @@ export async function testResults(
                     calculatedResults
                 )
             ) {
+
+
+                if (showLogs && query.query.limit === 5 && query.query.sort) {
+                    console.log('::::::::::::::::::: results not equal');
+                }
+
+
                 return {
                     correct: false,
                     collection,

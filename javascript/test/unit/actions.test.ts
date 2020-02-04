@@ -15,20 +15,20 @@ describe('actions.test.ts', () => {
         );
     });
     it('all functions should not crash on whatever input', () => {
-        Object.entries(actionFunctions).forEach((entry) => {
-            const action: ActionName = entry[0] as ActionName;
-            const fn: ActionFunction<any> = entry[1];
-            if (action === 'runFullQueryAgain') {
-                return;
-            }
-            fn({
-                previousResults: [],
-                changeEvent: randomChangeEvent([]),
-                keyDocumentMap: new Map(),
-                queryParams: getQueryParamsByMongoQuery({
-                    selector: {}
-                })
+        Object.entries(actionFunctions)
+            //  except unkonwnAction and runFullQueryAgain
+            .filter(entry => (entry[0] as ActionName) !== 'unknownAction')
+            .filter(entry => (entry[0] as ActionName) !== 'runFullQueryAgain')
+            .forEach((entry) => {
+                const fn: ActionFunction<any> = entry[1];
+                fn({
+                    previousResults: [],
+                    changeEvent: randomChangeEvent([]),
+                    keyDocumentMap: new Map(),
+                    queryParams: getQueryParamsByMongoQuery({
+                        selector: {}
+                    })
+                });
             });
-        });
     });
 });

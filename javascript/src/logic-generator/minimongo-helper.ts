@@ -53,7 +53,8 @@ export async function minimongoFind<DocType>(
             query.selector,
             {
                 skip: query.skip ? query.skip : undefined,
-                limit: query.limit ? query.limit : undefined
+                limit: query.limit ? query.limit : undefined,
+                sort: query.sort ? query.sort : ['_id'] // by default it sorts by primary
             }
         ).fetch(resolve, reject)
     );

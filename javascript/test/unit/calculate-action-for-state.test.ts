@@ -13,18 +13,25 @@ import {
     orderedActionList
 } from '../../src/actions';
 import {
-    ActionName, StateSet, StateResolveFunctionInput, QueryParams
+    ActionName,
+    StateSet,
+    StateResolveFunctionInput,
+    ChangeEvent
 } from '../../src/types';
 import {
     getExampleStateResolveFunctionInput
 } from '../helper/input';
 import { Human } from '../../src/logic-generator/types';
-import { randomHumans } from '../../src/logic-generator/data-generator';
-import { getQueryParamsByMongoQuery, compileSort } from '../../src/logic-generator/minimongo-helper';
-import { clone } from 'async-test-util';
-import { getQueryVariations, findAllQuery, DEFAULT_EXAMPLE_QUERY } from '../../src/logic-generator/queries';
+import { getQueryParamsByMongoQuery } from '../../src/logic-generator/minimongo-helper';
+import {
+    getQueryVariations,
+    findAllQuery,
+    DEFAULT_EXAMPLE_QUERY
+} from '../../src/logic-generator/queries';
 import { insertFiveThenChangeAgeOfOne } from '../../src/logic-generator/test-procedures';
 import { lastOfArray } from '../../src/util';
+import { randomHuman } from '../../src/logic-generator/data-generator';
+import { clone } from 'async-test-util';
 describe('calculate-action-for-state.test.ts', () => {
     it('should not throw and return an action', async () => {
         const input = getExampleStateResolveFunctionInput();
@@ -39,7 +46,7 @@ describe('calculate-action-for-state.test.ts', () => {
     });
     it('should have the given action insertFirst', async () => {
         const input = getExampleStateResolveFunctionInput();
-        const stateSet = getStateSet(input); // 10001000100101011
+        const stateSet = getStateSet(input); // 1000100010010101
         const action: ActionName = await calculateActionForState(
             stateSet,
             [
@@ -48,29 +55,27 @@ describe('calculate-action-for-state.test.ts', () => {
         );
         assert.equal(action, 'insertFirst');
     });
-    it('should have action "doNothing" on impossible state', async () => {
+    it('should have action "unknownAction" on impossible state', async () => {
         const stateSet: StateSet = new Array(STATE_SET_LENGTH)
             .fill('1')
             .join(''); // '111111111...'
         const action: ActionName = await calculateActionForState(
             stateSet
         );
-        assert.equal(action, 'doNothing');
+        assert.equal(action, 'unknownAction');
     });
     it('should have "removeExistingAndInsertAtSortPosition"', async () => {
-        const query = {
-            selector: {},
-            limit: 5,
-            sort: ['age']
-
-        };
+        const query = Object.assign({},
+            findAllQuery, {
+            sort: ['age'],
+            limit: 5
+        });
         const events = insertFiveThenChangeAgeOfOne();
         const previousResults: Human[] = events
             .filter(ev => ev.operation === 'INSERT')
             .map(ev => ev.doc as Human)
             .slice(0, query.limit);
-
-        const updateChangeEvent = lastOfArray(events);
+        const updateChangeEvent = events.find(ev => ev.operation === 'UPDATE') as any;
         const input: StateResolveFunctionInput<Human> = {
             previousResults,
             changeEvent: updateChangeEvent,
@@ -79,10 +84,123 @@ describe('calculate-action-for-state.test.ts', () => {
         const stateSet = getStateSet(input);
         const action: ActionName = await calculateActionForState(
             stateSet,
-            [query]
+            [query],
+            [events]
         );
         assert.strictEqual(
             'removeExistingAndInsertAtSortPosition',
+            action
+        );
+    });
+    it('should have "removeExisting"', async () => {
+        const query = Object.assign({},
+            findAllQuery, {
+            sort: ['age'],
+            limit: 5
+        });
+        const events = insertFiveThenChangeAgeOfOne()
+            .filter(cE => cE.operation === 'INSERT');
+        const previousResults: Human[] = events
+            .filter(ev => ev.operation === 'INSERT')
+            .map(ev => ev.doc as Human)
+            .slice(0, query.limit);
+
+        const removeHuman = previousResults[1];
+        const changeEvent: ChangeEvent<Human> = {
+            operation: 'DELETE',
+            doc: null,
+            id: removeHuman._id,
+            previous: removeHuman
+        };
+        events.push(changeEvent);
+        const input: StateResolveFunctionInput<Human> = {
+            previousResults,
+            changeEvent,
+            queryParams: getQueryParamsByMongoQuery(query)
+        };
+        const stateSet = getStateSet(input);
+        const action: ActionName = await calculateActionForState(
+            stateSet,
+            [query],
+            [events]
+        );
+        assert.strictEqual(
+            'removeExisting',
+            action
+        );
+    });
+    it('should have "doNothing"', async () => {
+        const query = Object.assign({},
+            findAllQuery, {
+            sort: ['age'],
+            limit: 5
+        });
+        const events = insertFiveThenChangeAgeOfOne();
+        const previousResults: Human[] = events
+            .filter(ev => ev.operation === 'INSERT')
+            .map(ev => ev.doc as Human)
+            .slice(0, query.limit);
+
+        const insertHuman = randomHuman();
+        insertHuman.age = 10000; // very hight so it appears not in the results
+        const input: StateResolveFunctionInput<Human> = {
+            previousResults,
+            changeEvent: {
+                operation: 'INSERT',
+                doc: insertHuman,
+                id: insertHuman._id,
+                previous: null
+            },
+            queryParams: getQueryParamsByMongoQuery(query)
+        };
+        const stateSet = getStateSet(input);
+        const action: ActionName = await calculateActionForState(
+            stateSet,
+            [query],
+            [events]
+        );
+        assert.strictEqual(
+            'doNothing',
+            action
+        );
+    });
+    it('should have "replaceExisting"', async () => {
+        const query = Object.assign({},
+            findAllQuery, {
+            sort: ['age'],
+            limit: 5
+        });
+        const events = insertFiveThenChangeAgeOfOne()
+            .filter(cE => cE.operation === 'INSERT'); // remove update event
+
+        const previousResults: Human[] = events
+            .filter(ev => ev.operation === 'INSERT')
+            .map(ev => ev.doc as Human)
+            .slice(0, query.limit);
+
+        const lastHuman = lastOfArray(previousResults);
+        const updateHuman = clone(lastHuman);
+        updateHuman.name = 'foobar';
+        const addChangeEvent: ChangeEvent<Human> = {
+            operation: 'UPDATE',
+            doc: updateHuman,
+            id: updateHuman._id,
+            previous: lastHuman
+        };
+        events.push(addChangeEvent);
+        const input: StateResolveFunctionInput<Human> = {
+            previousResults,
+            changeEvent: addChangeEvent,
+            queryParams: getQueryParamsByMongoQuery(query)
+        };
+        const stateSet = getStateSet(input);
+        const action: ActionName = await calculateActionForState(
+            stateSet,
+            [query],
+            [events]
+        );
+        assert.strictEqual(
+            'replaceExisting',
             action
         );
     });

@@ -4,7 +4,9 @@ import {
     findValidStates
 } from '../../src/logic-generator/find-valid-states';
 import { getQueryVariations } from '../../src/logic-generator/queries';
-import { getTestProcedures, insertChangeAndCleanup } from '../../src/logic-generator/test-procedures';
+import {
+    insertChangeAndCleanup
+} from '../../src/logic-generator/test-procedures';
 import { MongoQuery } from '../../src/logic-generator/types';
 
 describe('find-valid-states.test.ts', () => {
@@ -20,7 +22,8 @@ describe('find-valid-states.test.ts', () => {
                 insertChangeAndCleanup()
             ]
         );
-        assert.ok(states.size > 10);
+
+        assert.ok(states.size > 5);
 
         // overwriting previous=UNKNOWN_VALUE should produce more states
         const statesUnknownPrevious = await findValidStates(

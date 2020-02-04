@@ -5,6 +5,7 @@ import { ActionFunction } from '../types';
 import { STATIC_RANDOM_HUMAN } from '../logic-generator/data-generator';
 
 export const doNothing: ActionFunction<any> = (_input) => { };
+
 export const insertFirst: ActionFunction<any> = (input) => {
     input.previousResults.unshift(input.changeEvent.doc);
     if (input.keyDocumentMap) {
@@ -81,7 +82,7 @@ export const replaceExisting: ActionFunction<any> = (input) => {
         const item = results[i];
         // replace
         if (item[primary] === input.changeEvent.id) {
-            results.splice(i, 0, doc);
+            results[i] = doc;
             if (input.keyDocumentMap) {
                 input.keyDocumentMap.set(
                     input.changeEvent.id,
@@ -133,4 +134,8 @@ export const removeExistingAndInsertAtSortPosition: ActionFunction<any> = (input
 
 export const runFullQueryAgain: ActionFunction<any> = (_input) => {
     throw new Error('Action runFullQueryAgain must be implemented by yourself');
+};
+
+export const unknownAction: ActionFunction<any> = (_input) => {
+    throw new Error('Action unknownAction should never be called');
 };

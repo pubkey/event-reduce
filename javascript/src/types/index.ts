@@ -19,7 +19,9 @@ export type ActionName =
     'alwaysWrong' | // this should be optimised out by later steps
     'insertAtSortPosition' |
     'removeExistingAndInsertAtSortPosition' |
-    'runFullQueryAgain';
+    'runFullQueryAgain' |
+    'unknownAction' // if a state was never reached, we do not know the correct action
+    ;
 export type StateName =
     'hasLimit' |
     'isFindOne' |
@@ -37,9 +39,7 @@ export type StateName =
     'isSortedAfterLast' |
     'isSortedBeforeFirst' |
     'wasMatching' |
-    'doesMatchNow' |
-    'alwaysTrue' // this should be optimised out by later steps
-    ;
+    'doesMatchNow';
 
 export interface QueryParams<DocType> {
     primaryKey: string;

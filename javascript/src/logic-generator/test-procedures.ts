@@ -96,7 +96,7 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
     });
     const prevDoc = humans[3];
     const changedDoc = clone(prevDoc);
-    changedDoc.age = changedDoc.age - 1;
+    changedDoc.age = 0;
 
     const updateEvent: ChangeEvent<Human> = {
         operation: 'UPDATE',
@@ -105,6 +105,16 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
         previous: prevDoc
     };
     ret.push(updateEvent);
+
+
+    const deleteDoc = clone(changedDoc);
+    const deleteEvent: ChangeEvent<Human> = {
+        operation: 'DELETE',
+        id: deleteDoc._id,
+        doc: null,
+        previous: deleteDoc
+    };
+    ret.push(deleteEvent);
     return ret;
 }
 

@@ -16,7 +16,8 @@ import {
     alwaysWrong,
     insertAtSortPosition,
     removeExistingAndInsertAtSortPosition,
-    runFullQueryAgain
+    runFullQueryAgain,
+    unknownAction
 } from './action-functions';
 
 /**
@@ -37,7 +38,8 @@ export const orderedActionList: ActionName[] = [
     'alwaysWrong',
     'insertAtSortPosition',
     'removeExistingAndInsertAtSortPosition',
-    'runFullQueryAgain'
+    'runFullQueryAgain',
+    'unknownAction'
 ];
 
 
@@ -56,5 +58,6 @@ export const actionFunctions: {
     alwaysWrong,
     insertAtSortPosition,
     removeExistingAndInsertAtSortPosition,
-    runFullQueryAgain
+    runFullQueryAgain,
+    unknownAction
 };

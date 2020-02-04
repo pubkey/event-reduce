@@ -176,13 +176,3 @@ export const doesMatchNow: StateResolveFunction<any> = (input) => {
 export const wasResultsEmpty: StateResolveFunction<any> = (input) => {
     return input.previousResults.length === 0;
 };
-
-/**
- * the last state-function
- * always returns true.
- * This should be optimised out by later steps
- * when we remove invalid states
- */
-export const alwaysTrue: StateResolveFunction<any> = (_input) => {
-    return true;
-};

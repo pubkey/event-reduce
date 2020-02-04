@@ -1,7 +1,7 @@
 import {
-    StateSetToActionMap,
     StateSet,
-    ActionName
+    ActionName,
+    ChangeEvent
 } from '../types';
 import {
     orderedActionList
@@ -13,7 +13,7 @@ import {
     getQueryVariations
 } from './queries';
 import { isStateSetReachable } from './binary-state';
-import { MongoQuery } from './types';
+import { MongoQuery, Human } from './types';
 import { getTestProcedures } from './test-procedures';
 
 /**
@@ -24,20 +24,21 @@ import { getTestProcedures } from './test-procedures';
 export async function calculateActionForState(
     stateSet: StateSet,
     queries: MongoQuery[] = getQueryVariations(),
+    procedures?: ChangeEvent<Human>[][],
     showLogs: boolean = false
 ): Promise<ActionName> {
     if (!isStateSetReachable(stateSet)) {
-        return 'doNothing';
+        return 'unknownAction';
     }
-    const prods = await getTestProcedures();
+    procedures = procedures ? procedures : await getTestProcedures();
     for (let i = 0; i < orderedActionList.length; i++) {
         const action: ActionName = orderedActionList[i];
         const stateSetToActionMap = new Map();
         stateSetToActionMap.set(stateSet, action);
 
         let broken = false;
-        for (let t = 0; t < prods.length; t++) {
-            const useChangeEvents = prods[t];
+        for (let t = 0; t < procedures.length; t++) {
+            const useChangeEvents = procedures[t];
             const valid = await testResults(
                 queries,
                 stateSetToActionMap,

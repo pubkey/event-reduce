@@ -22,8 +22,7 @@ import {
     isSortedBeforeFirst,
     isSortedAfterLast,
     wasMatching,
-    doesMatchNow,
-    alwaysTrue
+    doesMatchNow
 } from './state-resolver';
 
 /**
@@ -51,8 +50,7 @@ export const orderedStateList: StateName[] = [
     'isSortedBeforeFirst',
     'isSortedAfterLast',
     'wasMatching',
-    'doesMatchNow',
-    'alwaysTrue'
+    'doesMatchNow'
 ];
 
 export const stateResolveFunctions: {
@@ -74,8 +72,7 @@ export const stateResolveFunctions: {
     isSortedBeforeFirst,
     isSortedAfterLast,
     wasMatching,
-    doesMatchNow,
-    alwaysTrue
+    doesMatchNow
 };
 
 export function resolveState<DocType>(

@@ -11,8 +11,12 @@ import {
 import {
     orderedStateList, getStateSet
 } from '../../src/states';
-import { StateSet } from '../../src/types';
+import { StateSet, QueryParams, StateResolveFunctionInput } from '../../src/types';
 import { getExampleStateResolveFunctionInput } from '../helper/input';
+import { DEFAULT_EXAMPLE_QUERY, findAllQuery } from '../../src/logic-generator/queries';
+import { getQueryParamsByMongoQuery } from '../../src/logic-generator/minimongo-helper';
+import { Human } from '../../src/logic-generator/types';
+import { randomHuman } from '../../src/logic-generator/data-generator';
 
 describe('binary-state.test.ts', () => {
     describe('FIRST_STATE_SET', () => {
@@ -89,7 +93,18 @@ describe('binary-state.test.ts', () => {
             assert.strictEqual(reachable, false);
         });
         it('should be reachable state', () => {
-            const input = getExampleStateResolveFunctionInput();
+            const doc = randomHuman();
+            const input: StateResolveFunctionInput<Human>  = {
+                previousResults: [],
+                changeEvent: {
+                    operation: 'INSERT',
+                    doc: doc,
+                    id: doc._id,
+                    previous: null
+                },
+                queryParams: getQueryParamsByMongoQuery(findAllQuery)
+            };
+
             const stateSet = getStateSet(input);
             const reachable = isStateSetReachable(stateSet);
             assert.strictEqual(reachable, true);
