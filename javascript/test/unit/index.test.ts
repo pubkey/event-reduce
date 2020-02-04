@@ -1,6 +1,7 @@
 console.log('### starting unit-tests ###');
 import './minimongo.test';
 import './actions.test';
+import './bdd.test';
 import './states.test';
 import './binary-state.test';
 import './queries.test';

@@ -23,7 +23,10 @@ export function getNextStateSet(
 /**
  * @link https://stackoverflow.com/a/16155417
  */
-export function decimalToPaddedBinary(decimal: number) {
+export function decimalToPaddedBinary(
+    decimal: number,
+    padding: number = STATE_SET_LENGTH
+) {
     const binary = (decimal >>> 0).toString(2);
     const padded = binary.padStart(STATE_SET_LENGTH, '0');
     return padded;
