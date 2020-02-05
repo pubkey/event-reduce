@@ -11,7 +11,7 @@ import { orderedActionList } from '../actions';
 export async function readTruthTable(): Promise<StateSetToActionMap> {
     const files = fs.readdirSync(
         LOGIC_MAP_PATH
-    );
+    ).filter(fileName => fileName.endsWith('.txt'));
 
     const map: StateSetToActionMap = new Map();
 

@@ -2,6 +2,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
+import Faker from 'faker';
+
 import {
     spawn, ChildProcessWithoutNullStreams
 } from 'child_process';
@@ -17,6 +19,9 @@ import { generateLogicMap } from './generate-logic-map';
 import { LOGIC_MAP_PATH, VALID_STATE_SET_PATH } from './config';
 import { readTruthTable, flagNonRelevant } from './truth-table';
 import { findValidStates } from './find-valid-states';
+import { createBddFromTruthTable } from '../bdd';
+import { fuzzing } from './fuzzing';
+import { randomString, randomNumber } from 'async-test-util';
 
 declare interface Batch {
     childId: number;
@@ -149,6 +154,29 @@ async function run() {
             });
             console.log('got new truth table:');
             console.log('new map size: ' + truthTable.size);
+            break;
+        case 'create-bdd':
+            console.log('read table..');
+            const truthTable2 = await readTruthTable();
+            console.log('create bdd..');
+            const bdd = createBddFromTruthTable(truthTable2);
+            console.log('mimizing..');
+            bdd.minimize(true);
+            bdd.log();
+
+            console.log('node amount: ' + bdd.countNodes());
+            break;
+        case 'fuzzing-child':
+            Faker.seed(randomNumber(0, 10000000)); // set random seed
+            const stateMap = await readTruthTable();
+            while (true) {
+                console.log('-');
+                const res = await fuzzing(stateMap);
+                if (!res.correct) {
+                    console.log('fuzzing returned an error');
+                    console.log(JSON.stringify(res, null, 2));
+                }
+            }
             break;
         default:
             throw new Error('no use for command ' + command);

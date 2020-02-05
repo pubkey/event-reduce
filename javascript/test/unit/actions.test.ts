@@ -23,7 +23,7 @@ describe('actions.test.ts', () => {
                 const fn: ActionFunction<any> = entry[1];
                 fn({
                     previousResults: [],
-                    changeEvent: randomChangeEvent([]),
+                    changeEvent: randomChangeEvent([], 'INSERT'),
                     keyDocumentMap: new Map(),
                     queryParams: getQueryParamsByMongoQuery({
                         selector: {}

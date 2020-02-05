@@ -5,7 +5,7 @@ import {
     BooleanString,
     NonLeafNode
 } from './types';
-import { booleanStringToBoolean, lastChar } from './util';
+import { lastChar } from './util';
 import { InternalNode } from './internal-node';
 import { LeafNode } from './leaf-node';
 
@@ -13,8 +13,6 @@ export function createBddFromTruthTable(
     truthTable: TruthTable
 ): RootNode {
     const root = new RootNode();
-    const leafNodeByValue: Map<string, LeafNode> = new Map();
-
     for (const [stateSet, value] of truthTable) {
         let lastNode: NonLeafNode = root;
         for (let i = 0; i < (stateSet.length - 1); i++) {

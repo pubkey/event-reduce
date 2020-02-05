@@ -28,12 +28,16 @@ export function decimalToPaddedBinary(
     padding: number = STATE_SET_LENGTH
 ) {
     const binary = (decimal >>> 0).toString(2);
-    const padded = binary.padStart(STATE_SET_LENGTH, '0');
+    const padded = binary.padStart(padding, '0');
     return padded;
 }
 
 export function binaryToDecimal(binary: string): number {
     return parseInt(binary, 2);
+}
+
+export function maxBinaryWithLength(length: number): string {
+    return new Array(length).fill(0).map(() => '1').join('');
 }
 
 export function oppositeBinary(i: string): string {

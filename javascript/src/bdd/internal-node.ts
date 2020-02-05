@@ -8,12 +8,13 @@ import { nextNodeId } from './util';
 import { RootNode } from './root-node';
 
 export class InternalNode implements BddNode {
-    public type: string = 'InternalNode';
-    public id: string = nextNodeId();
+    readonly type: string = 'InternalNode';
+    readonly id: string = nextNodeId();
     public branches: Branches = {};
+    public deleted: boolean = false;
 
     constructor(
-        public level: number,
+        readonly level: number,
         public parent: NonLeafNode,
         private rootNode: RootNode
     ) {
@@ -43,21 +44,26 @@ export class InternalNode implements BddNode {
      * if both branches are equal,
      * we can remove this node from the bdd
      */
-    applyReductionRule() {
+    applyReductionRule(): boolean {
         if (this.hasEqualBranches()) {
             const keepBranch: NonRootNode | undefined = this.branches['0'];
+            if (!keepBranch) {
+                // has no branches
+                return false;
+            }
+
             delete this.branches['0']; // delete so it does not get removed
             this.removeDeep();
 
-            if (!keepBranch) {
-                return;
-            }
             keepBranch.parent = this.parent;
             if (this.parent.branches['0'] === this) {
                 this.parent.branches['0'] = keepBranch;
             } else {
                 this.parent.branches['1'] = keepBranch;
             }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -66,13 +72,18 @@ export class InternalNode implements BddNode {
      * if two branches of the same level are equal,
      * one can be removed
      */
-    applyEliminationRule() {
-        const othersOfSameLevel: InternalNode[] = this.rootNode
-            .getNodesOfLevel(this.level)
-            .filter(n => n !== this) as InternalNode[];
-        const found = othersOfSameLevel
-            .find(n => this.isEqualToOtherNode(n));
-
+    applyEliminationRule(
+        // can be provided for better performance
+        nodesOfSameLevel?: InternalNode[]
+    ): boolean {
+        if (!nodesOfSameLevel) {
+            nodesOfSameLevel = this.rootNode.getNodesOfLevel(this.level) as InternalNode[];
+        }
+        const found = nodesOfSameLevel
+            .find(n => (
+                n !== this &&
+                !n.deleted &&
+                this.isEqualToOtherNode(n)));
         if (found) {
             if (found.parent.branches['0'] === found) {
                 found.parent.branches['0'] = this;
@@ -82,12 +93,16 @@ export class InternalNode implements BddNode {
             }
             this.parent = found.parent;
             found.removeDeep();
+            return true;
+        } else {
+            return false;
         }
     }
 
 
 
     removeDeep() {
+        this.deleted = true;
         this.rootNode.removeNode(this);
         this.branches['0']?.removeDeep();
         this.branches['1']?.removeDeep();

@@ -14,7 +14,9 @@
     "find-valid-state-sets": "ts-node ./src/logic-generator/runner.node.ts find-valid-state-sets",
     "generate-logic-map": "ts-node ./src/logic-generator/runner.node.ts logic-map",
     "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 01000011111010000 01000101001111011",
-    "flag-non-relevant": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts flag-non-relevant"
+    "flag-non-relevant": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts flag-non-relevant",
+    "create-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts create-bdd",
+    "fuzzing-child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts fuzzing-child"
   },
   "author": "pubkey",
   "devDependencies": {
@@ -27,7 +29,7 @@
     "clone": "2.1.2",
     "deep-equal": "2.0.1",
     "faker": "4.1.0",
-    "minimongo": "6.4.1",
+    "minimongo": "6.4.2",
     "mocha": "7.0.1",
     "pouchdb-selector-core": "7.1.1",
     "rimraf": "3.0.1",

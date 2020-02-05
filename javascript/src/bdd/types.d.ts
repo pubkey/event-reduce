@@ -9,9 +9,10 @@ export interface Branches {
 }
 
 export interface BddNode {
-    id: string;
-    type: string;
-    level: number;
+    readonly id: string;
+    readonly type: string;
+    readonly level: number;
+    deleted: boolean;
     isRootNode(): boolean;
     isInternalNode(): boolean;
     isLeafNode(): boolean;

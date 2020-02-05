@@ -23,6 +23,7 @@ import {
 } from './minimongo-helper';
 import { MinimongoCollection } from 'minimongo';
 import { mapToObject } from '../util';
+import { STATIC_RANDOM_HUMAN } from './data-generator';
 
 export type UseQuery = {
     query: MongoQuery,
@@ -36,6 +37,9 @@ export interface TestResultsReturn {
     // list of all traversed states
     stateSets: Set<StateSet>;
     collection: MinimongoCollection<Human>;
+    events: ChangeEvent<Human>[];
+    errorQuery?: MongoQuery;
+    calculatedResults?: Human[];
 }
 
 /**
@@ -47,7 +51,9 @@ export async function testResults(
     queries: MongoQuery[],
     stateSetToActionMap: StateSetToActionMap,
     useChangeEvents: ChangeEvent<Human>[],
-    showLogs: boolean = false
+    showLogs: boolean = false,
+    surpressUnknownAction: boolean = false,
+    checkKeyDocumentMap: boolean = false
 ): Promise<TestResultsReturn> {
 
     const travsersedStates: Set<StateSet> = new Set();
@@ -71,9 +77,11 @@ export async function testResults(
     });
 
     useChangeEvents = useChangeEvents.slice();
+    const usedEvents: ChangeEvent<Human>[] = [];
     while (useChangeEvents.length > 0) {
         // make change to database
         const changeEvent = useChangeEvents.shift() as ChangeEvent<Human>;
+        usedEvents.push(changeEvent);
         await applyChangeEvent(
             collection,
             changeEvent
@@ -112,13 +120,25 @@ export async function testResults(
                     doc
                 ));
             } else {
-                calculatedResults = runAction(
-                    actionResult.action,
-                    query.queryParams,
-                    changeEvent,
-                    query.results,
-                    query.resultKeyDocumentMap
-                );
+                if (surpressUnknownAction && actionResult.action === 'unknownAction') {
+                    calculatedResults = [
+                        STATIC_RANDOM_HUMAN
+                    ];
+                    query.resultKeyDocumentMap.clear();
+                    query.resultKeyDocumentMap.set(
+                        STATIC_RANDOM_HUMAN._id,
+                        STATIC_RANDOM_HUMAN
+                    );
+                } else {
+                    calculatedResults = runAction(
+                        actionResult.action,
+                        query.queryParams,
+                        changeEvent,
+                        query.results,
+                        query.resultKeyDocumentMap
+                    );
+                }
+
             }
 
             query.results = calculatedResults;
@@ -148,7 +168,10 @@ export async function testResults(
                 return {
                     correct: false,
                     collection,
-                    stateSets: travsersedStates
+                    stateSets: travsersedStates,
+                    errorQuery: query.query,
+                    calculatedResults,
+                    events: usedEvents
                 };
             }
 
@@ -156,7 +179,6 @@ export async function testResults(
              * set this to true if you think there might be some bug
              * on calculating the document map in the action-functions
              */
-            const checkKeyDocumentMap = false;
             if (checkKeyDocumentMap) {
                 if (query.results.length !== query.resultKeyDocumentMap.size) {
                     console.log('----------- results:');
@@ -183,6 +205,7 @@ export async function testResults(
     return {
         correct: true,
         collection,
-        stateSets: travsersedStates
+        stateSets: travsersedStates,
+        events: usedEvents
     };
 }

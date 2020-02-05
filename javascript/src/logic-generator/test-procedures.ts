@@ -118,6 +118,103 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
     return ret;
 }
 
+// edge-cases we found by fuzzing
+export const PROCEDURES_FROM_FUZZING: ChangeEvent<Human>[][] = [
+    [
+        {
+            operation: 'INSERT',
+            id: 'cbc2669idd',
+            doc: {
+                _id: 'cbc2669idd',
+                name: 'makenzie',
+                gender: 'f',
+                age: 64
+            },
+            previous: null
+        },
+        {
+            operation: 'UPDATE',
+            id: 'cbc2669idd',
+            doc: {
+                _id: 'cbc2669idd',
+                name: 'lavon',
+                gender: 'f',
+                age: 64
+            },
+            previous: {
+                _id: 'cbc2669idd',
+                name: 'makenzie',
+                gender: 'f',
+                age: 64
+            }
+        },
+        {
+            operation: 'UPDATE',
+            id: 'cbc2669idd',
+            doc: {
+                _id: 'cbc2669idd',
+                name: 'lavon',
+                gender: 'm',
+                age: 64
+            },
+            previous: 'UNKNOWN'
+        }
+    ],
+    [
+        {
+            operation: 'INSERT',
+            id: 'z08qjgjn69',
+            doc: {
+                _id: 'z08qjgjn69',
+                name: 'jessy',
+                gender: 'f',
+                age: 97
+            },
+            previous: null
+        },
+        {
+            operation: 'UPDATE',
+            id: 'z08qjgjn69',
+            doc: {
+                _id: 'z08qjgjn69',
+                name: 'jessy',
+                gender: 'm',
+                age: 97
+            },
+            previous: {
+                _id: 'z08qjgjn69',
+                name: 'jessy',
+                gender: 'f',
+                age: 97
+            }
+        }
+    ],
+    [
+        {
+            operation: 'INSERT',
+            id: 'iq6qc0i283',
+            doc: {
+                _id: 'iq6qc0i283',
+                name: 'yoshiko',
+                gender: 'f',
+                age: 10
+            },
+            previous: null
+        },
+        {
+            operation: 'UPDATE',
+            id: 'iq6qc0i283',
+            doc: {
+                _id: 'iq6qc0i283',
+                name: 'yoshiko',
+                gender: 'f',
+                age: 88
+            },
+            previous: 'UNKNOWN'
+        }
+    ]
+];
+
 let CACHE: Promise<ChangeEvent<Human>[][]>;
 export async function getTestProcedures(): Promise<ChangeEvent<Human>[][]> {
     if (!CACHE) {

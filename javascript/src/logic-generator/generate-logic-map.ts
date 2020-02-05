@@ -13,7 +13,6 @@ import {
     StateSetToActionMap
 } from '../types';
 import { calculateActionForState } from './calculate-action-for-state';
-import { getReuseableChangeEvents } from './data-generator';
 
 export const KEY_VALUE_DELIMITER = ':';
 
@@ -24,9 +23,6 @@ export async function generateLogicMap(
     amountOfTestEvents: number,
     showState: boolean = true
 ) {
-    // run this here to not influence time measurement
-    await getReuseableChangeEvents(amountOfTestEvents);
-
     const startTime = new Date().getTime();
     let stateSet: StateSet = startStateSet;
     const totalAmount = binaryToDecimal(endStateSet) - binaryToDecimal(startStateSet);

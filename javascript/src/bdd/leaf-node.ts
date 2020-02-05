@@ -3,11 +3,12 @@ import { nextNodeId } from './util';
 import { RootNode } from './root-node';
 
 export class LeafNode implements BddNode {
-    public type: string = 'LeafNode';
-    public id: string = nextNodeId();
+    readonly type: string = 'LeafNode';
+    readonly id: string = nextNodeId();
+    public deleted: boolean = false;
 
     constructor(
-        public level: number,
+        readonly level: number,
         public value: string,
         public parent: NonLeafNode,
         private rootNode: RootNode
@@ -25,12 +26,8 @@ export class LeafNode implements BddNode {
         return true;
     }
 
-    removeSelf() {
-        this.rootNode.removeNode(this);
-    }
-
-
     removeDeep() {
+        this.deleted = true;
         this.rootNode.removeNode(this);
     }
 

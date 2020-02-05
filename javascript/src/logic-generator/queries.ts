@@ -1,6 +1,8 @@
 import {
     MongoQuery
 } from './types';
+import { randomBoolean, randomNumber } from 'async-test-util';
+import { randomOfArray } from '../util';
 
 export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {
     selector: {},
@@ -103,6 +105,28 @@ export const SORT_VARIATION: { sort: string[] | string[][] }[] = [
     }
 ];
 
+// edge-cases we found by fuzzing
+export const QUERIES_FROM_FUZZING: MongoQuery[] = [
+    {
+        selector: {
+            gender: 'm'
+        },
+        limit: 22,
+        sort: [
+            '_id'
+        ]
+    },
+    {
+        selector: {
+            gender: 'm'
+        },
+        limit: 21,
+        sort: [
+            '-age'
+        ]
+    }
+];
+
 let QUERY_VARIATIONS_CACHE: MongoQuery[];
 export function getQueryVariations(): MongoQuery[] {
     if (!QUERY_VARIATIONS_CACHE) {
@@ -123,6 +147,24 @@ export function getQueryVariations(): MongoQuery[] {
                 });
             });
         });
+        QUERIES_FROM_FUZZING.forEach(query => {
+            QUERY_VARIATIONS_CACHE.push(query);
+        });
     }
     return QUERY_VARIATIONS_CACHE;
+}
+
+
+
+export function randomQuery(): MongoQuery {
+    const selector = randomOfArray(SELECTOR_VARIATIONS);
+    const skip = randomBoolean() ? randomNumber(1, 30) : undefined;
+    const limit = randomBoolean() ? randomNumber(1, 30) : undefined;
+    const sort = randomOfArray(SORT_VARIATION);
+    return {
+        selector: selector.selector,
+        skip,
+        limit,
+        sort: sort.sort
+    };
 }

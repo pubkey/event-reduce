@@ -3,7 +3,6 @@ import {
   Human
 } from './types';
 import {
-  WriteOperation,
   ChangeEvent
 } from '../../src/types';
 import {
@@ -13,6 +12,7 @@ import {
 } from './minimongo-helper';
 import { findAllQuery } from './queries';
 import { UNKNOWN_VALUE } from './config';
+import { randomOfArray } from '../util';
 
 /**
  * use a seed to ensure each time we generate the same data
@@ -29,6 +29,7 @@ export function randomHuman(): Human {
 }
 
 export const STATIC_RANDOM_HUMAN: Human = randomHuman();
+STATIC_RANDOM_HUMAN._id = 'static_random_human';
 
 export function randomHumans(amount = 0): Human[] {
   return new Array(amount).fill(0).map(() => randomHuman());
@@ -50,17 +51,26 @@ export function randomChangeHuman(input: Human): Human {
   return cloned;
 }
 
-export function randomOperation(): WriteOperation {
-  return Faker.random.arrayElement([
-    'INSERT',
-    'INSERT', // we get insert more often so that the database fill up after time
-    'UPDATE',
-    'DELETE'
-  ]);
-}
+export function randomChangeEvent(
+  allDocs: Human[],
+  favor: 'INSERT' | 'DELETE'
+): ChangeEvent<Human> {
 
-export function randomChangeEvent(allDocs: Human[]): ChangeEvent<Human> {
-  const operation = allDocs.length === 0 ? 'INSERT' : randomOperation();
+  const ops = [
+    'INSERT',
+    // do many update events
+    'UPDATE',
+    'UPDATE',
+    'UPDATE',
+    'UPDATE',
+    'UPDATE',
+    'DELETE',
+    favor
+  ];
+
+  const randomOp = randomOfArray(ops);
+
+  const operation = allDocs.length === 0 ? 'INSERT' : randomOp;
   let ret;
   switch (operation) {
     case 'INSERT':
@@ -101,32 +111,35 @@ export function randomChangeEvent(allDocs: Human[]): ChangeEvent<Human> {
   return ret;
 }
 
+export async function getRandomChangeEvents(
+  amount: number = 100
+): Promise<ChangeEvent<Human>[]> {
+  const ret: ChangeEvent<Human>[] = [];
+  const half = Math.ceil(amount / 2);
+  const collection = getMinimongoCollection();
+  let allDocs: Human[] = [];
 
+  // in the first half, we do more inserts
+  while (ret.length < half) {
+    const changeEvent = randomChangeEvent(allDocs, 'INSERT');
+    ret.push(changeEvent);
+    await applyChangeEvent(
+      collection,
+      changeEvent
+    );
+    allDocs = await minimongoFind(collection, findAllQuery);
+  }
 
-/**
- * returns a list of changeEvents
- * that can be reused
- * These events can only be applied to an empty collection
- */
-let resuseableChangeEventsList: ChangeEvent<Human>[];
-export async function getReuseableChangeEvents(amount: number = 100): Promise<ChangeEvent<Human>[]> {
-  if (resuseableChangeEventsList && resuseableChangeEventsList.length === 0) {
-    throw new Error('you run this twice in parallel');
+  // in the second half, we do more deletes
+  while (ret.length < amount) {
+    const changeEvent = randomChangeEvent(allDocs, 'DELETE');
+    ret.push(changeEvent);
+    await applyChangeEvent(
+      collection,
+      changeEvent
+    );
+    allDocs = await minimongoFind(collection, findAllQuery);
   }
-  if (!resuseableChangeEventsList || resuseableChangeEventsList.length < amount) {
-    resuseableChangeEventsList = [];
-    const collection = getMinimongoCollection();
-    let allDocs: Human[] = [];
-    while (amount > 0) {
-      amount--;
-      const changeEvent = randomChangeEvent(allDocs);
-      resuseableChangeEventsList.push(changeEvent);
-      await applyChangeEvent(
-        collection,
-        changeEvent
-      );
-      allDocs = await minimongoFind(collection, findAllQuery);
-    }
-  }
-  return resuseableChangeEventsList.slice();
+
+  return ret;
 }

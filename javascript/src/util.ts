@@ -9,6 +9,13 @@ export function lastOfArray<T>(ar: T[]): T {
 }
 
 /**
+ * @link https://stackoverflow.com/a/5915122
+ */
+export function randomOfArray<T>(items: T[]): T {
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+/**
  * if the previous doc-data is unknown,
  * try to get it from previous results
  * @mutate the changeEvent of input

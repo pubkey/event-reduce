@@ -15,7 +15,7 @@ export function getExampleStateResolveFunctionInput(): StateResolveFunctionInput
     const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery(DEFAULT_EXAMPLE_QUERY);
     return {
         previousResults: [],
-        changeEvent: randomChangeEvent([]),
+        changeEvent: randomChangeEvent([], 'INSERT'),
         queryParams
     };
 
