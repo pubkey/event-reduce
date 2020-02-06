@@ -12,7 +12,7 @@ describe('queries-state.test.ts', () => {
             SKIP_VARIATIONS.length *
             LIMIT_VARIATIONS.length *
             SORT_VARIATION.length;
-        assert.strictEqual(queries.length, amount);
+        assert.ok(queries.length > amount);
     });
     it('should have no duplicates', () => {
         const queries = getQueryVariations();

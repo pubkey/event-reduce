@@ -41,6 +41,18 @@ export function tryToFillPreviousDoc<DocType>(
     }
 }
 
+/**
+ * normalizes sort-field
+ * in: '-age'
+ * out: 'age'
+ */
+export function normalizeSortField(field: string): string {
+    if (field.startsWith('-')) {
+        return field.substr(1);
+    } else {
+        return field;
+    }
+}
 
 export function getSortFieldsOfQuery(query: MongoQuery): string[] {
     if (!query.sort) {
@@ -49,9 +61,9 @@ export function getSortFieldsOfQuery(query: MongoQuery): string[] {
     }
     return query.sort.map(maybeArray => {
         if (Array.isArray(maybeArray)) {
-            return maybeArray[0];
+            return maybeArray[0].map(field => normalizeSortField(field));
         } else {
-            return maybeArray;
+            return normalizeSortField(maybeArray);
         }
     });
 }

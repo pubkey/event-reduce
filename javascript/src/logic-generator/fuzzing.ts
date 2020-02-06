@@ -2,13 +2,13 @@ import { StateSetToActionMap } from '../types';
 import { randomQuery } from './queries';
 import { MongoQuery } from './types';
 import { getRandomChangeEvents } from './data-generator';
-import { testResults } from './test-results';
+import { testResults, TestResultsReturn } from './test-results';
 
 export async function fuzzing(
     stateToActionMap: StateSetToActionMap,
     queriesAmount: number = 30,
     eventsAmount: number = 100
-) {
+): Promise<TestResultsReturn> {
     const queries: MongoQuery[] = new Array(queriesAmount)
         .fill(0)
         .map(() => randomQuery());

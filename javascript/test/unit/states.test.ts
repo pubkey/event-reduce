@@ -12,7 +12,7 @@ import {
     getQueryParamsByMongoQuery
 } from '../../src/logic-generator/minimongo-helper';
 import { clone } from 'async-test-util';
-import { wasSortedAfterLast, wasInResult, wasSortedBeforeFirst } from '../../src/states/state-resolver';
+import { wasSortedAfterLast, wasInResult, wasSortedBeforeFirst, sortParamsChanged } from '../../src/states/state-resolver';
 
 describe('states.test.ts', () => {
     describe('basic', () => {
@@ -167,6 +167,86 @@ describe('states.test.ts', () => {
 
             const ok = wasInResult(input);
             assert.strictEqual(ok, false);
+        });
+    });
+    describe('.sortParamsChanged()', () => {
+        it('should be true on normal sort of age', () => {
+            const previous = randomHuman();
+            const current = clone(randomHuman);
+            current.age = 102;
+            const input: StateResolveFunctionInput<Human> = {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: current,
+                    previous,
+                    id: previous._id
+                },
+                previousResults: [],
+                queryParams: getQueryParamsByMongoQuery({
+                    selector: {},
+                    sort: ['age']
+                })
+            };
+            const ok = sortParamsChanged(input);
+            assert.strictEqual(ok, true);
+        });
+        it('should be false on normal sort of age', () => {
+            const previous = randomHuman();
+            const current = clone(randomHuman);
+            const input: StateResolveFunctionInput<Human> = {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: current,
+                    previous,
+                    id: previous._id
+                },
+                previousResults: [],
+                queryParams: getQueryParamsByMongoQuery({
+                    selector: {},
+                    sort: ['age']
+                })
+            };
+            const ok = sortParamsChanged(input);
+            assert.strictEqual(ok, true);
+        });
+        it('should be true on negative sort of age', () => {
+            const previous = randomHuman();
+            const current = clone(randomHuman);
+            current.age = 102;
+            const input: StateResolveFunctionInput<Human> = {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: current,
+                    previous,
+                    id: previous._id
+                },
+                previousResults: [],
+                queryParams: getQueryParamsByMongoQuery({
+                    selector: {},
+                    sort: ['-age']
+                })
+            };
+            const ok = sortParamsChanged(input);
+            assert.strictEqual(ok, true);
+        });
+        it('should be false on negative sort of age', () => {
+            const previous = randomHuman();
+            const current = clone(randomHuman);
+            const input: StateResolveFunctionInput<Human> = {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: current,
+                    previous,
+                    id: previous._id
+                },
+                previousResults: [],
+                queryParams: getQueryParamsByMongoQuery({
+                    selector: {},
+                    sort: ['-age']
+                })
+            };
+            const ok = sortParamsChanged(input);
+            assert.strictEqual(ok, true);
         });
     });
 });
