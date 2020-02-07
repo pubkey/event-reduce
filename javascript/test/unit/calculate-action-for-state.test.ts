@@ -21,14 +21,22 @@ import {
 import {
     getExampleStateResolveFunctionInput
 } from '../helper/input';
-import { Human } from '../../src/logic-generator/types';
-import { getQueryParamsByMongoQuery } from '../../src/logic-generator/minimongo-helper';
+import { Human, MongoQuery } from '../../src/logic-generator/types';
+import {
+    getQueryParamsByMongoQuery,
+    getMinimongoCollection,
+    applyChangeEvent,
+    minimongoFind
+} from '../../src/logic-generator/minimongo-helper';
 import {
     getQueryVariations,
     findAllQuery,
     DEFAULT_EXAMPLE_QUERY
 } from '../../src/logic-generator/queries';
-import { insertFiveThenChangeAgeOfOne } from '../../src/logic-generator/test-procedures';
+import {
+    insertFiveThenChangeAgeOfOne,
+    insertFiveSorted
+} from '../../src/logic-generator/test-procedures';
 import { lastOfArray } from '../../src/util';
 import { randomHuman } from '../../src/logic-generator/data-generator';
 import { clone } from 'async-test-util';
@@ -203,5 +211,48 @@ describe('calculate-action-for-state.test.ts', () => {
             'replaceExisting',
             action
         );
+    });
+    it('should have "removeLastItem"', async () => {
+        const col = getMinimongoCollection();
+        const query: MongoQuery = {
+            selector: {},
+            skip: 3,
+            limit: 3,
+            sort: ['age']
+        };
+        const events = insertFiveSorted();
+        await Promise.all(
+            events.map(cE => applyChangeEvent(
+                col, cE
+            ))
+        );
+        const previousResults = await minimongoFind(
+            col,
+            query
+        );
+        const deleteMe: Human = clone(lastOfArray(events).doc);
+        const deleteEvent: ChangeEvent<Human> = {
+            operation: 'DELETE',
+            doc: null,
+            id: deleteMe._id,
+            previous: deleteMe
+        };
+
+        const input: StateResolveFunctionInput<Human> = {
+            previousResults,
+            changeEvent: deleteEvent,
+            queryParams: getQueryParamsByMongoQuery(query)
+        };
+        const stateSet = getStateSet(input);
+        const action: ActionName = await calculateActionForState(
+            stateSet,
+            [query],
+            [events.concat([deleteEvent])]
+        );
+        assert.strictEqual(
+            'removeLastItem',
+            action
+        );
+        process.exit();
     });
 });

@@ -17,14 +17,24 @@ export async function findValidStates(
     if (!prods) {
         prods = await getTestProcedures();
     }
-    const sets: Set<StateSet>[] = [];
+    const sets: Set<StateSet> = new Set();
+
+    // a Map that always is correct but also tracks its requests
+    const trackingMap = new Map();
+    trackingMap.get = (stateSet: StateSet) => {
+        sets.add(stateSet);
+        return 'runFullQueryAgain';
+    };
+
     for (const prod of prods) {
         const valid = await testResults(
             queries,
-            new Map(),
+            trackingMap,
             prod
         );
-        sets.push(valid.stateSets);
+        if (!valid.correct) {
+            throw new Error('this should never happen');
+        }
     }
-    return mergeSets(sets);
+    return sets;
 }

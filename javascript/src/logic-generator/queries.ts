@@ -115,8 +115,7 @@ export const QUERIES_FROM_FUZZING: MongoQuery[] = [
         sort: [
             '_id'
         ]
-    },
-    {
+    }, {
         selector: {
             gender: 'm'
         },
@@ -124,6 +123,11 @@ export const QUERIES_FROM_FUZZING: MongoQuery[] = [
         sort: [
             '-age'
         ]
+    }, {
+        selector: {},
+        skip: 3,
+        limit: 3,
+        sort: ['age']
     }
 ];
 

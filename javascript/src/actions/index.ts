@@ -8,7 +8,7 @@ import {
     insertFirst,
     insertLast,
     removeFirstItem,
-    removeLastItem, // TODO we need a test-case to provocate that (something with skip where hiddens are removed)
+    removeLastItem,
     removeFirstInsertLast,
     removeLastInsertFirst,
     removeExisting,

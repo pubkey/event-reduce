@@ -118,6 +118,79 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
     return ret;
 }
 
+export function insertFiveSorted(): ChangeEvent<Human>[] {
+    return [
+        {
+            operation: 'INSERT',
+            id: '1',
+            doc: {
+                _id: '1',
+                name: 'jessy1',
+                gender: 'f',
+                age: 1
+            },
+            previous: null
+        },
+        {
+            operation: 'INSERT',
+            id: '2',
+            doc: {
+                _id: '2',
+                name: 'jessy2',
+                gender: 'f',
+                age: 2
+            },
+            previous: null
+        },
+        {
+            operation: 'INSERT',
+            id: '3',
+            doc: {
+                _id: '3',
+                name: 'jessy3',
+                gender: 'f',
+                age: 3
+            },
+            previous: null
+        },
+        {
+            operation: 'INSERT',
+            id: '4',
+            doc: {
+                _id: '4',
+                name: 'jessy4',
+                gender: 'f',
+                age: 4
+            },
+            previous: null
+        }, {
+            operation: 'INSERT',
+            id: '5',
+            doc: {
+                _id: '5',
+                name: 'jessy5',
+                gender: 'f',
+                age: 5
+            },
+            previous: null
+        }
+    ];
+}
+export function insertFiveSortedThenRemoveSorted(): ChangeEvent<Human>[] {
+    const inserts = insertFiveSorted();
+    const ret: ChangeEvent<Human>[] = inserts.slice();
+    inserts.forEach(cE => {
+        const doc = clone(cE.doc);
+        /*ret.push({
+            operation: 'DELETE',
+            doc: null,
+            id: doc._id,
+            previous: doc
+        });*/
+    });
+    return ret;
+}
+
 // edge-cases we found by fuzzing
 export const PROCEDURES_FROM_FUZZING: ChangeEvent<Human>[][] = [
     [
@@ -222,6 +295,7 @@ export async function getTestProcedures(): Promise<ChangeEvent<Human>[][]> {
         ret.push(insertChangeAndCleanup());
         ret.push(insertChangeAndCleanup(true));
         ret.push(insertFiveThenChangeAgeOfOne());
+        ret.push(insertFiveSortedThenRemoveSorted());
         CACHE = Promise.resolve(ret);
     }
     return CACHE;
