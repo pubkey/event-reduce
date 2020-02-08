@@ -1,27 +1,32 @@
 import * as assert from 'assert';
 
-import { fuzzing } from '../../src/logic-generator/fuzzing';
-import { StateSetToActionMap } from '../../src/types';
+import { fuzzing } from '../../src/truth-table-generator/fuzzing';
+import { orderedActionList } from '../../src/actions';
+import { StateActionIdMap } from '../../src/truth-table-generator/types';
 
 describe('fuzzing.test.ts', () => {
+
+    const indexOfRunAgain = orderedActionList.indexOf('runFullQueryAgain');
+    const indexOfDoNothing = orderedActionList.indexOf('doNothing');
+
     it('should have no error on runFullQueryAgain', async () => {
-        const map: StateSetToActionMap = new Map();
-        map.get = () => 'runFullQueryAgain';
+        const map: StateActionIdMap = new Map();
+        map.get = () => indexOfRunAgain;
         const result = await fuzzing(
             map,
             10,
             10
         );
-        assert.ok(result.correct);
+        assert.strictEqual(result.ok, true);
     });
     it('should have never be correct on doNothing', async () => {
-        const map: StateSetToActionMap = new Map();
-        map.get = () => 'doNothing';
+        const map: StateActionIdMap = new Map();
+        map.get = () => indexOfDoNothing;
         const result = await fuzzing(
             map,
             10,
             10
         );
-        assert.strictEqual(result.correct, false);
+        assert.strictEqual(result.ok, false);
     });
 });

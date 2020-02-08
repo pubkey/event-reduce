@@ -3,7 +3,6 @@ import { testResults } from './test-results';
 import { getQueryVariations } from './queries';
 import { getTestProcedures } from './test-procedures';
 import { MongoQuery, Human } from './types';
-import { mergeSets } from '../util';
 
 /**
  * returns a list of all state-sets

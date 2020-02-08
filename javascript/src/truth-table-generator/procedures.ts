@@ -1,6 +1,6 @@
 import Faker from 'faker';
 import { ChangeEvent } from '../types';
-import { Human } from './types';
+import { Human, Procedure } from './types';
 import { randomHumans, randomChangeHuman } from './data-generator';
 import { UNKNOWN_VALUE } from './config';
 import { compileSort } from './minimongo-helper';
@@ -13,7 +13,7 @@ export function insertChangeAndCleanup(
     const ret: ChangeEvent<Human>[] = [];
 
     let docs: Human[] = [];
-    randomHumans(20).forEach(h => {
+    randomHumans(5).forEach(h => {
         const insertEvent: ChangeEvent<Human> = {
             operation: 'INSERT',
             doc: h,
@@ -191,161 +191,15 @@ export function insertFiveSortedThenRemoveSorted(): ChangeEvent<Human>[] {
     return ret;
 }
 
-// edge-cases we found by fuzzing
-export const PROCEDURES_FROM_FUZZING: ChangeEvent<Human>[][] = [
-    [
-        {
-            operation: 'INSERT',
-            id: 'cbc2669idd',
-            doc: {
-                _id: 'cbc2669idd',
-                name: 'makenzie',
-                gender: 'f',
-                age: 64
-            },
-            previous: null
-        },
-        {
-            operation: 'UPDATE',
-            id: 'cbc2669idd',
-            doc: {
-                _id: 'cbc2669idd',
-                name: 'lavon',
-                gender: 'f',
-                age: 64
-            },
-            previous: {
-                _id: 'cbc2669idd',
-                name: 'makenzie',
-                gender: 'f',
-                age: 64
-            }
-        },
-        {
-            operation: 'UPDATE',
-            id: 'cbc2669idd',
-            doc: {
-                _id: 'cbc2669idd',
-                name: 'lavon',
-                gender: 'm',
-                age: 64
-            },
-            previous: 'UNKNOWN'
-        }
-    ],
-    [
-        {
-            operation: 'INSERT',
-            id: 'z08qjgjn69',
-            doc: {
-                _id: 'z08qjgjn69',
-                name: 'jessy',
-                gender: 'f',
-                age: 97
-            },
-            previous: null
-        },
-        {
-            operation: 'UPDATE',
-            id: 'z08qjgjn69',
-            doc: {
-                _id: 'z08qjgjn69',
-                name: 'jessy',
-                gender: 'm',
-                age: 97
-            },
-            previous: {
-                _id: 'z08qjgjn69',
-                name: 'jessy',
-                gender: 'f',
-                age: 97
-            }
-        }
-    ],
-    [
-        {
-            operation: 'INSERT',
-            id: 'iq6qc0i283',
-            doc: {
-                _id: 'iq6qc0i283',
-                name: 'yoshiko',
-                gender: 'f',
-                age: 10
-            },
-            previous: null
-        },
-        {
-            operation: 'UPDATE',
-            id: 'iq6qc0i283',
-            doc: {
-                _id: 'iq6qc0i283',
-                name: 'yoshiko',
-                gender: 'f',
-                age: 88
-            },
-            previous: 'UNKNOWN'
-        }
-    ],
-    [
-        {
-            operation: 'INSERT',
-            id: '5mixfwp9lp',
-            doc: {
-                _id: '5mixfwp9lp',
-                name: 'ashleigh',
-                gender: 'm',
-                age: 30
-            },
-            previous: null
-        },
-        {
-            operation: 'DELETE',
-            id: '5mixfwp9lp',
-            doc: null,
-            previous: 'UNKNOWN'
-        },
-        {
-            operation: 'INSERT',
-            id: '48yqpg2nrd',
-            doc: {
-                _id: '48yqpg2nrd',
-                name: 'yessenia',
-                gender: 'f',
-                age: 8
-            },
-            previous: null
-        },
-        {
-            operation: 'UPDATE',
-            id: '48yqpg2nrd',
-            doc: {
-                _id: '48yqpg2nrd',
-                name: 'yessenia',
-                gender: 'm',
-                age: 8
-            },
-            previous: {
-                _id: '48yqpg2nrd',
-                name: 'yessenia',
-                gender: 'f',
-                age: 8
-            }
-        }
-    ]
-];
-
-let CACHE: Promise<ChangeEvent<Human>[][]>;
-export async function getTestProcedures(): Promise<ChangeEvent<Human>[][]> {
+let CACHE: ChangeEvent<Human>[][];
+export function getTestProcedures(): Procedure[] {
     if (!CACHE) {
         const ret: ChangeEvent<Human>[][] = [];
         ret.push(insertChangeAndCleanup());
         ret.push(insertChangeAndCleanup(true));
         ret.push(insertFiveThenChangeAgeOfOne());
         ret.push(insertFiveSortedThenRemoveSorted());
-        PROCEDURES_FROM_FUZZING.forEach(proc => {
-            ret.push(proc);
-        });
-        CACHE = Promise.resolve(ret);
+        CACHE = ret;
     }
     return CACHE;
 }

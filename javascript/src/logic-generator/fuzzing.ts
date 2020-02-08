@@ -15,6 +15,7 @@ export async function fuzzing(
     // console.dir(queries);
     const events = await getRandomChangeEvents(eventsAmount);
 
+
     const result = await testResults(
         queries,
         stateToActionMap,
@@ -22,6 +23,5 @@ export async function fuzzing(
         false,
         true
     );
-
     return result;
 }

@@ -9,3 +9,8 @@ BEFORE:
 
 462
 487
+493
+
+# truth table:
+
+230 states

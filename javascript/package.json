@@ -16,7 +16,10 @@
     "generate-logic-map:child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts logic-map-child 01000011111010000 01000101001111011",
     "flag-non-relevant": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts flag-non-relevant",
     "create-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts create-bdd",
-    "fuzzing-child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts fuzzing-child"
+    "fuzzing-child": "ts-node /home/dnl/workspace/event-reduce/javascript/src/logic-generator/runner.node.ts fuzzing-child",
+    "generate-truth-table": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts generate-truth-table",
+    "test-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts fuzzing",
+    "itterative-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts itterative-fuzzing"
   },
   "author": "pubkey",
   "devDependencies": {

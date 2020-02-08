@@ -42,6 +42,16 @@ export interface TestResultsReturn {
     calculatedResults?: Human[];
 }
 
+// to play array
+export function shouldQueryBeLogged(query: MongoQuery): boolean {
+    return true;
+    if (query.limit === 3 && query.sort) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /**
  * runs many changes over the database
  * and checks after each change if the calculated results
@@ -93,7 +103,7 @@ export async function testResults(
             const resultsFromExecute = await minimongoFind(collection, query.query);
 
 
-            if (showLogs && query.query.limit === 5 && query.query.sort) {
+            if (showLogs && shouldQueryBeLogged(query.query)) {
                 console.log('#'.repeat(200));
                 console.dir(query.query);
                 console.dir(changeEvent);
@@ -144,7 +154,7 @@ export async function testResults(
             query.results = calculatedResults;
 
 
-            if (showLogs && query.query.limit === 5 && query.query.sort) {
+            if (showLogs && shouldQueryBeLogged(query.query)) {
                 console.log('action: ' + actionResult.action);
                 console.log('after:');
                 console.dir(query.results);
@@ -160,7 +170,7 @@ export async function testResults(
             ) {
 
 
-                if (showLogs && query.query.limit === 5 && query.query.sort) {
+                if (showLogs && shouldQueryBeLogged(query.query)) {
                     console.log('::::::::::::::::::: results not equal');
                 }
 

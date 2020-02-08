@@ -3,6 +3,7 @@ import {
 } from './types';
 import { MongoQuery } from './logic-generator/types';
 import { UNKNOWN_VALUE } from './logic-generator/config';
+import * as fs from 'fs';
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];
@@ -103,4 +104,20 @@ export function mergeSets<T>(sets: Set<T>[]): Set<T> {
         ret = new Set([...ret, ...set]);
     });
     return ret;
+}
+
+export function readJsonFile(path: string): any {
+    const content = fs.readFileSync(path, 'utf-8');
+    return JSON.parse(content);
+}
+
+export function writeJsonFile(
+    path: string,
+    data: any
+) {
+    fs.writeFileSync(
+        path,
+        JSON.stringify(data, null, 2),
+        { encoding: 'utf8', flag: 'w' }
+    );
 }

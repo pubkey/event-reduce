@@ -35,7 +35,8 @@ import {
 } from '../../src/logic-generator/queries';
 import {
     insertFiveThenChangeAgeOfOne,
-    insertFiveSorted
+    insertFiveSorted,
+    insertFiveSortedThenRemoveSorted
 } from '../../src/logic-generator/test-procedures';
 import { lastOfArray } from '../../src/util';
 import { randomHuman } from '../../src/logic-generator/data-generator';
@@ -212,7 +213,7 @@ describe('calculate-action-for-state.test.ts', () => {
             action
         );
     });
-    it('should have "removeLastItem"', async () => {
+    it('should have "removeFirstItem"', async () => {
         const col = getMinimongoCollection();
         const query: MongoQuery = {
             selector: {},
@@ -220,9 +221,10 @@ describe('calculate-action-for-state.test.ts', () => {
             limit: 3,
             sort: ['age']
         };
-        const events = insertFiveSorted();
+        const events = insertFiveSortedThenRemoveSorted();
+        const inserts = events.filter(cE => cE.operation === 'INSERT');
         await Promise.all(
-            events.map(cE => applyChangeEvent(
+            inserts.map(cE => applyChangeEvent(
                 col, cE
             ))
         );
@@ -230,29 +232,23 @@ describe('calculate-action-for-state.test.ts', () => {
             col,
             query
         );
-        const deleteMe: Human = clone(lastOfArray(events).doc);
-        const deleteEvent: ChangeEvent<Human> = {
-            operation: 'DELETE',
-            doc: null,
-            id: deleteMe._id,
-            previous: deleteMe
-        };
 
+        const deleteEvent: ChangeEvent<Human> = events[5];
         const input: StateResolveFunctionInput<Human> = {
             previousResults,
             changeEvent: deleteEvent,
             queryParams: getQueryParamsByMongoQuery(query)
         };
         const stateSet = getStateSet(input);
+        const useEvents = inserts.concat([deleteEvent]);
         const action: ActionName = await calculateActionForState(
             stateSet,
             [query],
-            [events.concat([deleteEvent])]
+            [useEvents]
         );
         assert.strictEqual(
-            'removeLastItem',
+            'removeFirstItem',
             action
         );
-        process.exit();
     });
 });

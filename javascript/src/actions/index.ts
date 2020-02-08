@@ -30,7 +30,7 @@ export const orderedActionList: ActionName[] = [
     'insertFirst',
     'insertLast',
     'removeFirstItem',
-    'removeLastItem',
+    'removeLastItem', // TODO could this ever be useful?
     'removeFirstInsertLast',
     'removeLastInsertFirst',
     'removeExisting',
