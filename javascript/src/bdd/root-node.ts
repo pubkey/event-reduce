@@ -1,7 +1,8 @@
-import { Branches, BddNode, NonRootNode } from './types';
+import { Branches, BddNode, NonRootNode, BooleanString } from './types';
 import { nextNodeId } from './util';
 import { lastOfArray } from '../util';
 import { InternalNode } from './internal-node';
+import { LeafNode } from './leaf-node';
 
 export class RootNode implements BddNode {
     readonly type: string = 'RootNode';
@@ -63,6 +64,11 @@ export class RootNode implements BddNode {
                     );
                 }
                 for (const node of nodes) {
+                    if (logState) {
+                        console.log(
+                            'minimize() node #' + node.id
+                        );
+                    }
                     if (!node.deleted && node.isInternalNode()) {
                         const useNode = node as InternalNode;
                         const reductionDone = useNode.applyReductionRule();
@@ -86,6 +92,36 @@ export class RootNode implements BddNode {
                 }
             }
         }
+    }
+
+    /**
+     * strips all leaf-nodes
+     * with the given value
+     */
+    removeIrrelevantLeafNode(leafNodeValue: any) {
+        const lastLevel = lastOfArray(this.getLevels());
+        const leafNodes = this.getNodesOfLevel(lastLevel).reverse() as LeafNode[];
+        for (const leafNode of leafNodes) {
+            if (leafNode.value === leafNodeValue) {
+                const parent = leafNode.parent;
+
+                console.log(JSON.stringify(parent, null, 2));
+                let keepBinKey: BooleanString = '1';
+                if (parent.branches['1'] === leafNode) {
+                    keepBinKey = '0';
+                }
+                const keep = parent.branches[keepBinKey];
+                parent.branches['0'] = keep;
+                parent.branches['1'] = keep;
+                leafNode.removeDeep();
+
+                console.log(JSON.stringify(parent, null, 2));
+                // process.exit();
+            }
+        }
+
+
+        // console.log(JSON.stringify(this.getNodesOfLevel(lastLevel - 1), null, 2));
     }
 
     countNodes() {
@@ -121,5 +157,24 @@ export class RootNode implements BddNode {
                 '1': this.branches['1'] ? this.branches['1'].toJSON(withId) : undefined
             }
         };
+    }
+
+    branchToString(v: BooleanString) {
+        if (this.branches[v]) {
+            return (this.branches[v] as NonRootNode).toString();
+        } else {
+            return '';
+        }
+    }
+
+    // a strange string-representation
+    // to make an equal check between nodes
+    toString(): string {
+        return '' +
+            '<' +
+            this.type + ':' + this.level +
+            '|0:' + this.branchToString('0') +
+            '|1:' + this.branchToString('1') +
+            '>';
     }
 }

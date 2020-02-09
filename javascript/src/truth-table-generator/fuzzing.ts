@@ -1,6 +1,7 @@
 import {
     QueryParams,
-    ActionFunctionInput
+    ActionFunctionInput,
+    ChangeEvent
 } from '../types';
 import { randomQuery } from './queries';
 import {
@@ -49,7 +50,10 @@ export async function fuzzing(
     });
     const collection = getMinimongoCollection();
 
+    const usedChangeEvents: ChangeEvent<Human>[] = [];
     for (const changeEvent of procedure) {
+        usedChangeEvents.push(changeEvent);
+
         // get previous results
         const resultsBefore: Map<MongoQuery, Human[]> = new Map();
         await Promise.all(
@@ -81,7 +85,7 @@ export async function fuzzing(
                 return {
                     ok: false,
                     query,
-                    procedure
+                    procedure: usedChangeEvents
                 };
             } else {
                 const currentActionId = table.get(state) as number;
@@ -94,7 +98,7 @@ export async function fuzzing(
                     return {
                         ok: false,
                         query,
-                        procedure
+                        procedure: usedChangeEvents
                     };
                 }
             }

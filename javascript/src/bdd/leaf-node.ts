@@ -40,4 +40,15 @@ export class LeafNode implements BddNode {
             value: this.value
         };
     }
+
+
+    // a strange string-representation
+    // to make an equal check between nodes
+    toString(): string {
+        return '' +
+            '<' +
+            this.type + ':' + this.level +
+            '|v:' + this.value +
+            '>';
+    }
 }

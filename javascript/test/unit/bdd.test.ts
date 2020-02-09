@@ -6,7 +6,7 @@ import {
     TruthTable,
     createBddFromTruthTable
 } from '../../src/bdd';
-import { InternalNode } from '../../src/bdd/internal-node';
+import { InternalNode, findSimilarInternalNode } from '../../src/bdd/internal-node';
 import {
     decimalToPaddedBinary, maxBinaryWithLength, binaryToDecimal
 } from '../../src/logic-generator/binary-state';
@@ -78,6 +78,49 @@ describe('bdd.test.ts', () => {
             assert.ok(equal);
         });
     });
+    describe('findSimilarInternalNode()', () => {
+        it('should be equal to equal node of other bdd', () => {
+            const table = allEqualTable();
+            const bdd = createBddFromTruthTable(table);
+            const nodes = bdd.getNodesOfLevel(1);
+            const first: InternalNode = nodes.values().next().value;
+
+            const bdd2 = createBddFromTruthTable(table);
+            const nodes2 = bdd2.getNodesOfLevel(1);
+            const first2: InternalNode = nodes2.values().next().value;
+
+            const found = findSimilarInternalNode(
+                first,
+                [first2]
+            );
+            assert.ok(found);
+        });
+        it('should not find itself', () => {
+            const table = allEqualTable();
+            const bdd = createBddFromTruthTable(table);
+            const nodes = bdd.getNodesOfLevel(1);
+            const first: InternalNode = nodes.values().next().value;
+
+            const found = findSimilarInternalNode(
+                first,
+                [first]
+            );
+            assert.strictEqual(found, null);
+        });
+
+        it('should be not be equal to root node', () => {
+            const table = allEqualTable();
+            const bdd = createBddFromTruthTable(table);
+            const nodes = bdd.getNodesOfLevel(1);
+            const first: InternalNode = nodes.values().next().value;
+
+            const found = findSimilarInternalNode(
+                first,
+                [bdd as any]
+            );
+            assert.strictEqual(found, null);
+        });
+    });
 
     describe('applyReductionRule()', () => {
         it('should remove itself', () => {
@@ -93,11 +136,14 @@ describe('bdd.test.ts', () => {
     });
     describe('applyEliminationRule()', () => {
         it('should remove the found one', () => {
+            console.log('###########################');
             const table = allEqualTable();
             const bdd = createBddFromTruthTable(table);
             const nodes = bdd.getNodesOfLevel(1);
             const first: InternalNode = nodes[0] as InternalNode;
             first.applyEliminationRule();
+
+            bdd.log();
 
             assert.strictEqual(
                 (bdd.branches['0'] as InternalNode).id,

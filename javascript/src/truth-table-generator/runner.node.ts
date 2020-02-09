@@ -1,10 +1,4 @@
-import * as path from 'path';
 import * as fs from 'fs';
-import * as os from 'os';
-
-import Faker from 'faker';
-
-import { StateSet } from '../types';
 
 import {
     OUTPUT_FOLDER_PATH,
@@ -13,11 +7,17 @@ import {
 import { getQueryVariations } from './queries';
 import { getTestProcedures } from './procedures';
 import { generateTruthTable } from '.';
-import { mapToObject, objectToMap, readJsonFile, writeJsonFile, lastOfArray } from '../util';
+import {
+    mapToObject,
+    objectToMap, readJsonFile,
+    writeJsonFile, lastOfArray
+} from '../util';
 import { fuzzing } from './fuzzing';
 import { StateActionIdMap } from './types';
 import { orderedActionList } from '../actions';
-
+import { createBddFromTruthTable, TruthTable } from '../bdd';
+import { fillTruthTable } from '../bdd/fill-truth-table';
+import { ActionName } from '../types';
 
 async function run() {
 
@@ -79,8 +79,10 @@ async function run() {
                 while (true) {
 
                     let fuzzingFoundError = false;
+                    let fuzzingCount = 0;
                     while (!fuzzingFoundError) {
-                        console.log('run fuzzing()');
+                        fuzzingCount++;
+                        console.log('run fuzzing() #' + fuzzingCount);
 
 
                         //                    const indexOfRunAgain = orderedActionList.indexOf('runFullQueryAgain');
@@ -90,13 +92,16 @@ async function run() {
                         const result = await fuzzing(
                             truthTable,
                             20, // queries
-                            20 // events
+                            40 // events
                         );
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
                             fuzzingFoundError = true;
                             console.log(JSON.stringify(result.query));
-                            console.log(JSON.stringify(lastOfArray(result.procedure)));
+                            console.log(
+                                result.procedure.length + ' ' +
+                                JSON.stringify(lastOfArray(result.procedure))
+                            );
                             queries.push(result.query);
                             procedures.push(result.procedure);
                         }
@@ -117,6 +122,45 @@ async function run() {
                         tableObject
                     );
                 }
+            })();
+            break;
+
+        case 'create-bdd':
+            (async function createBdd() {
+                const unknownValue: ActionName = 'unknownAction';
+                console.log('read table..');
+                const truthTable: TruthTable = objectToMap(
+                    readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
+                );
+                console.log('table size: ' + truthTable.size);
+
+                // replace actionId with actionName
+                for (const [key, value] of truthTable.entries()) {
+                    const actionName = orderedActionList[value];
+                    truthTable.set(key, actionName);
+                }
+
+                // fill missing rows with unknown
+                fillTruthTable(
+                    truthTable,
+                    truthTable.keys().next().value.length,
+                    unknownValue
+                );
+
+                console.log('create bdd..');
+                const bdd = createBddFromTruthTable(truthTable);
+                bdd.minimize(false);
+                bdd.removeIrrelevantLeafNode(unknownValue);
+
+                process.exit();
+
+                console.log('mimizing..');
+                bdd.minimize(true);
+                bdd.removeIrrelevantLeafNode(unknownValue);
+                bdd.minimize(true);
+                bdd.log();
+
+                console.log('nodes after minify: ' + bdd.countNodes());
             })();
             break;
 

@@ -5,14 +5,15 @@ import {
 } from './types';
 import {
     getMinimongoCollection,
-    minimongoFind, applyChangeEvent
-} from '../logic-generator/minimongo-helper';
+    minimongoFind,
+    applyChangeEvent,
+    getQueryParamsByMongoQuery
+} from './minimongo-helper';
 import {
     QueryParams, ActionName,
     ActionFunctionInput,
     StateSet
 } from '../types';
-import { getQueryParamsByMongoQuery } from './minimongo-helper';
 import { runAction } from '../';
 import { orderedActionList } from '../actions';
 import { getStateSet } from '../states';

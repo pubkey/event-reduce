@@ -2,7 +2,8 @@ import {
     Branches,
     BddNode,
     NonLeafNode,
-    NonRootNode
+    NonRootNode,
+    BooleanString
 } from './types';
 import { nextNodeId } from './util';
 import { RootNode } from './root-node';
@@ -35,8 +36,13 @@ export class InternalNode implements BddNode {
         return JSON.stringify(this.branches['0']) ===
             JSON.stringify(this.branches['1']);
     }
-    isEqualToOtherNode(otherNode: InternalNode): boolean {
-        return JSON.stringify(this) === JSON.stringify(otherNode);
+    isEqualToOtherNode(
+        otherNode: InternalNode,
+        // optimisation shortcut, is faster if own string already known
+        ownString: string = this.toString()
+    ): boolean {
+        const ret = ownString === otherNode.toString();
+        return ret;
     }
 
     /**
@@ -79,11 +85,10 @@ export class InternalNode implements BddNode {
         if (!nodesOfSameLevel) {
             nodesOfSameLevel = this.rootNode.getNodesOfLevel(this.level) as InternalNode[];
         }
-        const found = nodesOfSameLevel
-            .find(n => (
-                n !== this &&
-                !n.deleted &&
-                this.isEqualToOtherNode(n)));
+        const found = findSimilarInternalNode(
+            this,
+            nodesOfSameLevel
+        );
         if (found) {
             if (found.parent.branches['0'] === found) {
                 found.parent.branches['0'] = this;
@@ -120,4 +125,49 @@ export class InternalNode implements BddNode {
             }
         };
     }
+
+    branchToString(v: BooleanString) {
+        if (this.branches[v]) {
+            return (this.branches[v] as NonRootNode).toString();
+        } else {
+            return '';
+        }
+    }
+
+    // a strange string-representation
+    // to make an equal check between nodes
+    toString(): string {
+        return '' +
+            '<' +
+            this.type + ':' + this.level +
+            '|0:' + this.branchToString('0') +
+            '|1:' + this.branchToString('1') +
+            '>';
+    }
+}
+
+
+/**
+ * find an simliar node in a list of nodes
+ * which is not exactly the same node
+ * @hotpath
+ */
+export function findSimilarInternalNode(
+    own: InternalNode,
+    others: InternalNode[]
+): InternalNode | null {
+    const ownString = own.toString();
+    for (let i = 0; i < others.length; i++) {
+        const other = others[i];
+        if (
+            own !== other &&
+            own.isEqualToOtherNode(
+                other,
+                ownString
+            )
+        ) {
+            return other;
+        }
+    }
+    return null;
 }
