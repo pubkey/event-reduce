@@ -1,49 +1,23 @@
-import {
-    Branches,
-    BddNode,
-    NonLeafNode,
-    NonRootNode,
-    BooleanString
-} from './types';
-import { nextNodeId } from './util';
+import { Branches } from './branches';
+import { Parents } from './parents';
 import { RootNode } from './root-node';
+import { AbstractNode } from './abstract-node';
+import { NonLeafNode, NonRootNode } from '.';
 
-export class InternalNode implements BddNode {
-    readonly type: string = 'InternalNode';
-    readonly id: string = nextNodeId();
-    public branches: Branches = {};
-    public deleted: boolean = false;
+export class InternalNode extends AbstractNode {
+    public branches: Branches = new Branches(this);
+    public parents = new Parents(this);
 
     constructor(
-        readonly level: number,
-        public parent: NonLeafNode,
-        private rootNode: RootNode
+        level: number,
+        rootNode: RootNode,
+        parent: NonLeafNode
     ) {
-        this.rootNode.addNode(this);
+        super(level, rootNode, 'InternalNode');
+        this.parents.add(parent);
     }
 
-    isRootNode(): boolean {
-        return false;
-    }
-    isInternalNode(): boolean {
-        return true;
-    }
-    isLeafNode(): boolean {
-        return false;
-    }
 
-    public hasEqualBranches() {
-        return JSON.stringify(this.branches['0']) ===
-            JSON.stringify(this.branches['1']);
-    }
-    isEqualToOtherNode(
-        otherNode: InternalNode,
-        // optimisation shortcut, is faster if own string already known
-        ownString: string = this.toString()
-    ): boolean {
-        const ret = ownString === otherNode.toString();
-        return ret;
-    }
 
     /**
      * by the reduction-rule of bdd,
@@ -51,53 +25,82 @@ export class InternalNode implements BddNode {
      * we can remove this node from the bdd
      */
     applyReductionRule(): boolean {
-        if (this.hasEqualBranches()) {
-            const keepBranch: NonRootNode | undefined = this.branches['0'];
-            if (!keepBranch) {
-                // has no branches
-                return false;
-            }
+        this.ensureNotDeleted('applyReductionRule');
 
-            delete this.branches['0']; // delete so it does not get removed
-            this.removeDeep();
+        console.log('applyReductionRule() ' + this.id);
+        if (this.branches.hasEqualBranches()) {
+            const keepBranch: NonRootNode = this.branches.getBranch('0');
 
-            keepBranch.parent = this.parent;
-            if (this.parent.branches['0'] === this) {
-                this.parent.branches['0'] = keepBranch;
-            } else {
-                this.parent.branches['1'] = keepBranch;
-            }
+            // move own parents to keepBranch
+            const ownParents = this.parents.getAll();
+            ownParents.forEach(parent => {
+                console.log('ownParent: ' + parent.id);
+                const branchKey = parent.branches.getKeyOfNode(this);
+                parent.branches.setBranch(branchKey, keepBranch);
+
+                // remove parents from own list
+                // this will auto-remove the connection to the other '1'-branch
+                this.parents.remove(parent);
+            });
+
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * by the elimination-rule of bdd,
      * if two branches of the same level are equal,
      * one can be removed
+     *
+     * See page 21 at:
+     * @link https://people.eecs.berkeley.edu/~sseshia/219c/lectures/BinaryDecisionDiagrams.pdf
      */
     applyEliminationRule(
         // can be provided for better performance
         nodesOfSameLevel?: InternalNode[]
     ): boolean {
+        this.ensureNotDeleted('applyEliminationRule');
         if (!nodesOfSameLevel) {
             nodesOfSameLevel = this.rootNode.getNodesOfLevel(this.level) as InternalNode[];
         }
-        const found = findSimilarInternalNode(
+
+        const other = findSimilarInternalNode(
             this,
             nodesOfSameLevel
         );
-        if (found) {
-            if (found.parent.branches['0'] === found) {
-                found.parent.branches['0'] = this;
-            }
-            if (found.parent.branches['1'] === found) {
-                found.parent.branches['1'] = this;
-            }
-            this.parent = found.parent;
-            found.removeDeep();
+        if (other) {
+            // this.rootNode.log();
+            console.log('applyEliminationRule() ' + this.id + ' other: ' + other.id);
+            console.dir(this.toJSON(true));
+            console.dir(other.toJSON(true));
+
+            // keep 'other', remove 'this'
+
+            // move own parents to other
+            const ownParents = this.parents.getAll();
+            const parentsWithStrictEqualBranches: NonLeafNode[] = [];
+            ownParents.forEach(parent => {
+                console.log('ownParent: ' + parent.id);
+                const branchKey = parent.branches.getKeyOfNode(this);
+                parent.branches.setBranch(branchKey, other);
+
+                if (parent.branches.areBranchesStrictEqual()) {
+                    parentsWithStrictEqualBranches.push(parent);
+                }
+
+                // remove parents from own list
+                // this will auto-remove the connection to the other '1'-branch
+                this.parents.remove(parent);
+            });
+
+            // parents that now have equal branches, must be removed again
+            parentsWithStrictEqualBranches.forEach(node => {
+                if (node.isInternalNode()) {
+                    (node as InternalNode).applyReductionRule();
+                }
+            });
+
             return true;
         } else {
             return false;
@@ -105,47 +108,7 @@ export class InternalNode implements BddNode {
     }
 
 
-
-    removeDeep() {
-        this.deleted = true;
-        this.rootNode.removeNode(this);
-        this.branches['0']?.removeDeep();
-        this.branches['1']?.removeDeep();
-    }
-
-    toJSON(withId: boolean = false): any {
-        return {
-            id: withId ? this.id : undefined,
-            parent: withId ? this.parent.id : undefined,
-            type: this.type,
-            level: this.level,
-            branches: {
-                '0': this.branches['0'] ? this.branches['0'].toJSON(withId) : undefined,
-                '1': this.branches['1'] ? this.branches['1'].toJSON(withId) : undefined
-            }
-        };
-    }
-
-    branchToString(v: BooleanString) {
-        if (this.branches[v]) {
-            return (this.branches[v] as NonRootNode).toString();
-        } else {
-            return '';
-        }
-    }
-
-    // a strange string-representation
-    // to make an equal check between nodes
-    toString(): string {
-        return '' +
-            '<' +
-            this.type + ':' + this.level +
-            '|0:' + this.branchToString('0') +
-            '|1:' + this.branchToString('1') +
-            '>';
-    }
 }
-
 
 /**
  * find an simliar node in a list of nodes
@@ -161,6 +124,7 @@ export function findSimilarInternalNode(
         const other = others[i];
         if (
             own !== other &&
+            !other.deleted &&
             own.isEqualToOtherNode(
                 other,
                 ownString

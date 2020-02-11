@@ -8,35 +8,13 @@ export function booleanStringToBoolean(str: BooleanString): boolean {
     }
 }
 
-export function oppositeBoolean(input: BooleanString): BooleanString {
-    if (input === '1') {
-        return '0';
-    } else {
-        return '1';
-    }
-}
-
 export function lastChar(str: string): string {
     return str.slice(-1);
 }
 
-/**
- * @link https://stackoverflow.com/a/1349426
- */
-function makeid(length: number = 6): string {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-}
-
-const nodeIdPrefix = makeid(4);
 let lastIdGen = 0;
 export function nextNodeId(): string {
-    const ret = 'node_' + nodeIdPrefix + '_' + lastIdGen;
+    const ret = 'node_' + lastIdGen;
     lastIdGen++;
     return ret;
 }

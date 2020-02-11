@@ -4,15 +4,24 @@ import {
 } from 'async-test-util';
 import {
     TruthTable,
-    createBddFromTruthTable
+    createBddFromTruthTable,
+    NonRootNode
 } from '../../src/bdd';
-import { InternalNode, findSimilarInternalNode } from '../../src/bdd/internal-node';
 import {
-    decimalToPaddedBinary, maxBinaryWithLength, binaryToDecimal
+    InternalNode, findSimilarInternalNode
+} from '../../src/bdd/internal-node';
+import {
+    decimalToPaddedBinary,
+    maxBinaryWithLength,
+    binaryToDecimal
 } from '../../src/logic-generator/binary-state';
 import { LeafNode } from '../../src/bdd/leaf-node';
+import { AbstractNode } from '../../src/bdd/abstract-node';
+import { RootNode } from '../../src/bdd/root-node';
+import { ensureCorrectBdd, getNodesRecursive } from '../../src/bdd/ensure-correct-bdd';
 
 describe('bdd.test.ts', () => {
+    const UNKNOWN = 'unknown';
     function exampleTruthTable(
         stateLength: number = 3
     ): TruthTable {
@@ -51,14 +60,34 @@ describe('bdd.test.ts', () => {
         });
         return table;
     }
+    function randomUnknownTable(
+        stateLength: number = 3
+    ): TruthTable {
+        const table = exampleTruthTable(stateLength);
+        for (const [key, value] of table.entries()) {
+            if (randomBoolean()) {
+                table.set(key, UNKNOWN);
+            }
+        }
+        return table;
+    }
     describe('createBddFromTruthTable()', () => {
         it('should create a bdd', () => {
             const bdd = createBddFromTruthTable(
                 exampleTruthTable()
             );
             assert.ok(bdd);
+            ensureCorrectBdd(bdd);
+        });
+        it('should create a big bdd', () => {
+            const bdd = createBddFromTruthTable(
+                exampleTruthTable(5)
+            );
+            assert.ok(bdd);
+            ensureCorrectBdd(bdd);
         });
     });
+
     describe('equalBranches()', () => {
         it('should be false', () => {
             const bdd = createBddFromTruthTable(
@@ -66,7 +95,7 @@ describe('bdd.test.ts', () => {
             );
             const nodes = bdd.getNodesOfLevel(1);
             const first: InternalNode = nodes.values().next().value;
-            const equal = first.hasEqualBranches();
+            const equal = first.branches.hasEqualBranches();
             assert.strictEqual(equal, false);
         });
         it('should be true', () => {
@@ -74,10 +103,11 @@ describe('bdd.test.ts', () => {
             const bdd = createBddFromTruthTable(table);
             const nodes = bdd.getNodesOfLevel(1);
             const first: InternalNode = nodes.values().next().value;
-            const equal = first.hasEqualBranches();
+            const equal = first.branches.hasEqualBranches();
             assert.ok(equal);
         });
     });
+
     describe('findSimilarInternalNode()', () => {
         it('should be equal to equal node of other bdd', () => {
             const table = allEqualTable();
@@ -121,43 +151,68 @@ describe('bdd.test.ts', () => {
             assert.strictEqual(found, null);
         });
     });
-
     describe('applyReductionRule()', () => {
         it('should remove itself', () => {
             const table = allEqualTable();
             const bdd = createBddFromTruthTable(table);
-            const nodes = bdd.getNodesOfLevel(2);
-            const first: InternalNode = nodes.values().next().value;
+            const nodes: NonRootNode[] = bdd.getNodesOfLevel(2);
+            const first: InternalNode = nodes[0] as InternalNode;
+            ensureCorrectBdd(bdd);
             first.applyReductionRule();
+            ensureCorrectBdd(bdd);
             assert.ok(
-                (bdd as any).branches['0'].branches['0'].isLeafNode()
+                (bdd as any).branches.getBranch('0').branches.getBranch('0').isLeafNode()
+            );
+            const second: InternalNode = nodes[1] as InternalNode;
+            second.applyReductionRule();
+            assert.ok(
+                (bdd as any).branches.getBranch('0').branches.getBranch('1').isLeafNode()
+            );
+            ensureCorrectBdd(bdd);
+        });
+        it('should work on deeper bdd itself', () => {
+            const table = allEqualTable(4);
+            const bdd = createBddFromTruthTable(table);
+            const nodes: NonRootNode[] = bdd.getNodesOfLevel(2);
+            const first: InternalNode = nodes[0] as InternalNode;
+            ensureCorrectBdd(bdd);
+            first.applyReductionRule();
+            ensureCorrectBdd(bdd);
+            assert.ok(
+                (bdd as any)
+                    .branches.getBranch('0')
+                    .branches.getBranch('0')
+                    .branches.getBranch('0').isLeafNode()
             );
         });
     });
     describe('applyEliminationRule()', () => {
         it('should remove the found one', () => {
-            console.log('###########################');
             const table = allEqualTable();
             const bdd = createBddFromTruthTable(table);
-            const nodes = bdd.getNodesOfLevel(1);
+            let nodes: NonRootNode[] = bdd.getNodesOfLevel(1);
             const first: InternalNode = nodes[0] as InternalNode;
             first.applyEliminationRule();
-
-            bdd.log();
-
+            ensureCorrectBdd(bdd);
             assert.strictEqual(
-                (bdd.branches['0'] as InternalNode).id,
-                (bdd.branches['1'] as InternalNode).id,
+                bdd.branches.getBranch('0').id,
+                bdd.branches.getBranch('1').id
             );
+
+            nodes = bdd.getNodesOfLevel(1);
+            const second: InternalNode = nodes[0] as InternalNode;
+            second.applyEliminationRule();
+            ensureCorrectBdd(bdd);
         });
     });
     describe('minimize()', () => {
         it('should return a minimized version', () => {
             const table = allEqualTable();
             const bdd = createBddFromTruthTable(table);
-            bdd.minimize();
-            assert.ok((bdd as any).branches['0'].isLeafNode());
-            assert.ok((bdd as any).branches['1'].isLeafNode());
+            bdd.minimize(true);
+            assert.ok((bdd as any).branches.getBranch('0').isLeafNode());
+            assert.ok((bdd as any).branches.getBranch('1').isLeafNode());
+            ensureCorrectBdd(bdd);
         });
         it('should not crash on random table', () => {
             const table = exampleTruthTable();
@@ -166,35 +221,75 @@ describe('bdd.test.ts', () => {
             table.set('010', 'a');
             const bdd = createBddFromTruthTable(table);
             bdd.minimize();
-            assert.ok((bdd as any).branches['0'].branches['0'].isLeafNode());
+            assert.ok((bdd as any).branches.getBranch('0').branches.getBranch('0').isLeafNode());
+            ensureCorrectBdd(bdd);
         });
-        it('random table should not have to equal branches', () => {
-            const depth = 9;
+        it('random table should not have two equal branches', () => {
+            console.log('.'.repeat(100));
+            console.log('.'.repeat(100));
+            console.log('.'.repeat(100));
+            console.log('.'.repeat(100));
+            const depth = 6;
             const table = randomTable(depth);
             const bdd = createBddFromTruthTable(table);
             bdd.minimize();
-            // bdd.log();
+            ensureCorrectBdd(bdd);
+            bdd.log();
             const leafNodes: LeafNode[] = bdd.getNodesOfLevel(depth) as LeafNode[];
             leafNodes.forEach(leaf => {
-                const parent: InternalNode = leaf.parent as InternalNode;
-                // console.log('nnnn: ');
-                // console.log(JSON.stringify(parent.toJSON(true), null, 2));
-                assert.notStrictEqual(
-                    (parent.branches['0'] as LeafNode).value,
-                    (parent.branches['1'] as LeafNode).value
-                );
+                const parents = leaf.parents.getAll();
+                // console.log('leaf: ' + leaf.id);
+                parents.forEach(parent => {
+                    //   console.log('nnnn: ' + parent.id);
+                    // console.log(parent.toJSON(true));
+                    // console.log(JSON.stringify(parent.toJSON(true), null, 2));
+                    assert.notStrictEqual(
+                        (parent.branches.getBranch('0') as LeafNode).value,
+                        (parent.branches.getBranch('1') as LeafNode).value
+                    );
+                });
             });
         });
+    });/*
+describe('countNodes()', () => {
+    it('should be smaller after minimize', () => {
+        const table = allEqualTable();
+        const bdd = createBddFromTruthTable(table);
+        const before = bdd.countNodes();
+        bdd.minimize();
+        const after = bdd.countNodes();
+        assert.ok(before > after);
     });
-    describe('countNodes()', () => {
-        it('should be smaller after minimize', () => {
-            const table = allEqualTable();
-            const bdd = createBddFromTruthTable(table);
-            const before = bdd.countNodes();
-            bdd.minimize();
-            const after = bdd.countNodes();
-            assert.ok(before > after);
+});
+describe('.removeIrrelevantLeafNodes()', () => {
+    it('should remove an irrelevant nodes', () => {
+        const table = exampleTruthTable(5);
+        table.set('00001', UNKNOWN);
+        table.set('00000', UNKNOWN);
+        table.set('00101', UNKNOWN);
+        const bdd = createBddFromTruthTable(table);
+        bdd.removeIrrelevantLeafNodes(UNKNOWN);
+        bdd.getLeafNodes().forEach(node => {
+            assert.notStrictEqual(
+                UNKNOWN,
+                node.value
+            );
         });
+        const jsonString = JSON.stringify(bdd.toJSON(true));
+        assert.ok(!jsonString.includes(UNKNOWN));
     });
-
+    it('should work on a big table', () => {
+        const table = randomUnknownTable(6);
+        const bdd = createBddFromTruthTable(table);
+        bdd.removeIrrelevantLeafNodes(UNKNOWN);
+        bdd.getLeafNodes().forEach(node => {
+            assert.notStrictEqual(
+                UNKNOWN,
+                node.value
+            );
+        });
+        const jsonString = JSON.stringify(bdd.toJSON(true));
+        assert.ok(!jsonString.includes(UNKNOWN));
+    });
+});*/
 });

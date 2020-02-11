@@ -1,54 +1,18 @@
-import { BddNode, NonLeafNode } from './types';
-import { nextNodeId } from './util';
+import { Parents } from './parents';
+import { AbstractNode } from './abstract-node';
 import { RootNode } from './root-node';
+import { NonLeafNode } from '.';
 
-export class LeafNode implements BddNode {
-    readonly type: string = 'LeafNode';
-    readonly id: string = nextNodeId();
-    public deleted: boolean = false;
+export class LeafNode extends AbstractNode {
+    public parents = new Parents(this);
 
     constructor(
-        readonly level: number,
+        level: number,
+        rootNode: RootNode,
         public value: string,
-        public parent: NonLeafNode,
-        private rootNode: RootNode
+        parent: NonLeafNode
     ) {
-        this.rootNode.addNode(this);
-    }
-
-    isRootNode(): boolean {
-        return false;
-    }
-    isInternalNode(): boolean {
-        return false;
-    }
-    isLeafNode(): boolean {
-        return true;
-    }
-
-    removeDeep() {
-        this.deleted = true;
-        this.rootNode.removeNode(this);
-    }
-
-    toJSON(withId: boolean = false): any {
-        return {
-            id: withId ? this.id : undefined,
-            parent: withId ? this.parent.id : undefined,
-            type: this.type,
-            level: this.level,
-            value: this.value
-        };
-    }
-
-
-    // a strange string-representation
-    // to make an equal check between nodes
-    toString(): string {
-        return '' +
-            '<' +
-            this.type + ':' + this.level +
-            '|v:' + this.value +
-            '>';
+        super(level, rootNode, 'LeafNode');
+        this.parents.add(parent);
     }
 }

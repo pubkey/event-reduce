@@ -18,6 +18,7 @@ import { orderedActionList } from '../actions';
 import { createBddFromTruthTable, TruthTable } from '../bdd';
 import { fillTruthTable } from '../bdd/fill-truth-table';
 import { ActionName } from '../types';
+import { optimizeBruteForce } from '../bdd/optimize-brute-force';
 
 async function run() {
 
@@ -91,8 +92,8 @@ async function run() {
 
                         const result = await fuzzing(
                             truthTable,
-                            20, // queries
-                            40 // events
+                            40, // queries
+                            20 // events
                         );
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
@@ -149,18 +150,40 @@ async function run() {
 
                 console.log('create bdd..');
                 const bdd = createBddFromTruthTable(truthTable);
-                bdd.minimize(false);
-                bdd.removeIrrelevantLeafNode(unknownValue);
-
-                process.exit();
-
                 console.log('mimizing..');
-                bdd.minimize(true);
-                bdd.removeIrrelevantLeafNode(unknownValue);
-                bdd.minimize(true);
-                bdd.log();
+                console.log('remove unkown states..');
+                bdd.removeIrrelevantLeafNodes(unknownValue);
 
+                bdd.log();
                 console.log('nodes after minify: ' + bdd.countNodes());
+            })();
+            break;
+        case 'optimize-bdd':
+            (async function optimizeBdd() {
+                const unknownValue: ActionName = 'unknownAction';
+                console.log('read table..');
+                const truthTable: TruthTable = objectToMap(
+                    readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
+                );
+                console.log('table size: ' + truthTable.size);
+
+                // replace actionId with actionName
+                for (const [key, value] of truthTable.entries()) {
+                    const actionName = orderedActionList[value];
+                    truthTable.set(key, actionName);
+                }
+
+                // fill missing rows with unknown
+                fillTruthTable(
+                    truthTable,
+                    truthTable.keys().next().value.length,
+                    unknownValue
+                );
+
+                optimizeBruteForce({
+                    truthTable,
+                    itterations: 10000
+                });
             })();
             break;
 

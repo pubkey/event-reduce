@@ -30,7 +30,9 @@
         "node_modules",
         "**/node_modules/*",
         "dist",
-        "src/logic-generator/logic-map-output"
+        "src/logic-generator/logic-map-output",
+        "**.txt",
+        "**.json"
     ],
     "compileOnSave": false
 }

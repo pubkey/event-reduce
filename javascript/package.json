@@ -20,7 +20,8 @@
     "generate-truth-table": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts generate-truth-table",
     "test-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts fuzzing",
     "itterative-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts itterative-fuzzing",
-    "create-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts create-bdd"
+    "create-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts create-bdd",
+    "optimize-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts optimize-bdd"
   },
   "author": "pubkey",
   "devDependencies": {
