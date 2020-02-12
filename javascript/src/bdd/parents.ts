@@ -33,6 +33,10 @@ export class Parents {
         this.parents.add(node);
     }
 
+    public has(node: NonLeafNode){
+        return this.parents.has(node);
+    }
+
     toString() {
         const ret: string[] = [];
         for (const parent of this.parents) {

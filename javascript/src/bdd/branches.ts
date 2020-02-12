@@ -40,10 +40,28 @@ export class Branches {
         return this.branches[which];
     }
 
+    public getBothBranches(): NonRootNode[] {
+        return [
+            this.getBranch('0'),
+            this.getBranch('1')
+        ];
+    }
+
     public hasBranchAsNode(node: AbstractNode): boolean {
         if (
             this.getBranch('0') === node ||
             this.getBranch('1') === node
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public hasNodeIdAsBranch(id: string): boolean {
+        if (
+            this.getBranch('0').id === id ||
+            this.getBranch('1').id === id
         ) {
             return true;
         } else {

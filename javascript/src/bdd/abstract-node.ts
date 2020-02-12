@@ -34,10 +34,10 @@ export class AbstractNode {
 
     // deletes the whole node
     public remove() {
-        this.ensureNotDeleted();
+        this.ensureNotDeleted('remove');
 
-        console.log('AbstractNode().remove() node: ' + this.id);
-        console.log(this.toJSON(true));
+        // console.log('AbstractNode().remove() node: ' + this.id);
+        // console.log(this.toJSON(true));
 
         if (this.isInternalNode()) {
             const useNode: InternalNode = this as any;
@@ -48,8 +48,12 @@ export class AbstractNode {
 
         if (this['branches']) {
             const useNode: NonLeafNode = this as any;
-            useNode.branches.getBranch('0').parents.remove(useNode);
-            useNode.branches.getBranch('1').parents.remove(useNode);
+            if (useNode.branches.areBranchesStrictEqual()) {
+                useNode.branches.getBranch('0').parents.remove(useNode);
+            } else {
+                useNode.branches.getBranch('0').parents.remove(useNode);
+                useNode.branches.getBranch('1').parents.remove(useNode);
+            }
         }
 
         this.deleted = true;
@@ -112,7 +116,7 @@ export class AbstractNode {
         return this.type === 'LeafNode';
     }
 
-    ensureNotDeleted(op: string = '') {
+    ensureNotDeleted(op: string = 'unknown') {
         if (this.deleted) {
             throw new Error('forbidden operation ' + op + ' on deleted node ' + this.id);
         }

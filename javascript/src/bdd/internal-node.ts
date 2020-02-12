@@ -25,22 +25,30 @@ export class InternalNode extends AbstractNode {
      * we can remove this node from the bdd
      */
     applyReductionRule(): boolean {
-        this.ensureNotDeleted('applyReductionRule');
 
-        console.log('applyReductionRule() ' + this.id);
+        // console.log('applyReductionRule() ' + this.id);
+
         if (this.branches.hasEqualBranches()) {
+            this.ensureNotDeleted('applyReductionRule');
             const keepBranch: NonRootNode = this.branches.getBranch('0');
 
             // move own parents to keepBranch
             const ownParents = this.parents.getAll();
             ownParents.forEach(parent => {
-                console.log('ownParent: ' + parent.id);
+                // console.log('ownParent: ' + parent.id);
                 const branchKey = parent.branches.getKeyOfNode(this);
                 parent.branches.setBranch(branchKey, keepBranch);
 
                 // remove parents from own list
                 // this will auto-remove the connection to the other '1'-branch
                 this.parents.remove(parent);
+
+                // if parent has now two equal branches,
+                // we have to apply the reduction again
+                // to ensure we end in a valid state
+                if (parent.branches.areBranchesStrictEqual() && parent.isInternalNode()) {
+                    (parent as InternalNode).applyReductionRule();
+                }
             });
 
             return true;
@@ -70,10 +78,7 @@ export class InternalNode extends AbstractNode {
             nodesOfSameLevel
         );
         if (other) {
-            // this.rootNode.log();
-            console.log('applyEliminationRule() ' + this.id + ' other: ' + other.id);
-            console.dir(this.toJSON(true));
-            console.dir(other.toJSON(true));
+            // console.log('applyEliminationRule() remove:' + this.id + '; other: ' + other.id);
 
             // keep 'other', remove 'this'
 
@@ -81,14 +86,14 @@ export class InternalNode extends AbstractNode {
             const ownParents = this.parents.getAll();
             const parentsWithStrictEqualBranches: NonLeafNode[] = [];
             ownParents.forEach(parent => {
-                console.log('ownParent: ' + parent.id);
+                // console.log('ownParent: ' + parent.id);
                 const branchKey = parent.branches.getKeyOfNode(this);
+                // console.log('branchKey: ' + branchKey);
                 parent.branches.setBranch(branchKey, other);
 
                 if (parent.branches.areBranchesStrictEqual()) {
                     parentsWithStrictEqualBranches.push(parent);
                 }
-
                 // remove parents from own list
                 // this will auto-remove the connection to the other '1'-branch
                 this.parents.remove(parent);
@@ -97,6 +102,7 @@ export class InternalNode extends AbstractNode {
             // parents that now have equal branches, must be removed again
             parentsWithStrictEqualBranches.forEach(node => {
                 if (node.isInternalNode()) {
+                    // console.log('trigger applyReductionRule from applyEliminationRule');
                     (node as InternalNode).applyReductionRule();
                 }
             });

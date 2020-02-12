@@ -32,6 +32,7 @@ export interface OptimizeBruteForceInput {
     onBetterBdd?: OptmisiationCallback;
     // a function that returns the 'better' bdd
     compareResults?: (a: RootNode, b: RootNode) => RootNode;
+    afterBddCreation?: (bdd: RootNode) => void;
 }
 
 /**
@@ -43,16 +44,19 @@ export function optimizeBruteForce({
     truthTable,
     itterations = Infinity,
     onBetterBdd = () => null,
-    compareResults = defaultCompareResults
+    compareResults = defaultCompareResults,
+    afterBddCreation = () => null
 }: OptimizeBruteForceInput): OptimisationResult {
 
     const initialBdd = createBddFromTruthTable(truthTable);
+    afterBddCreation(initialBdd);
     initialBdd.minimize();
     let currentBestResult: OptimisationResult = {
         truthTable,
         bdd: initialBdd
     };
 
+    initialBdd.log();
     console.log('initial nodes amount: ' + initialBdd.countNodes());
 
     let t = 0;
@@ -62,6 +66,7 @@ export function optimizeBruteForce({
         console.log('optimizeBruteForce() itterate once');
         const shuffledOrdering = shuffleBooleanOrdering(truthTable);
         const nextBdd = createBddFromTruthTable(shuffledOrdering.newTable);
+        afterBddCreation(nextBdd);
         nextBdd.minimize();
         console.log('got new bdd with nodes amount of ' + nextBdd.countNodes());
         //        nextBdd.log();

@@ -209,7 +209,7 @@ describe('bdd.test.ts', () => {
         it('should return a minimized version', () => {
             const table = allEqualTable();
             const bdd = createBddFromTruthTable(table);
-            bdd.minimize(true);
+            bdd.minimize(false);
             assert.ok((bdd as any).branches.getBranch('0').isLeafNode());
             assert.ok((bdd as any).branches.getBranch('1').isLeafNode());
             ensureCorrectBdd(bdd);
@@ -224,17 +224,20 @@ describe('bdd.test.ts', () => {
             assert.ok((bdd as any).branches.getBranch('0').branches.getBranch('0').isLeafNode());
             ensureCorrectBdd(bdd);
         });
-        it('random table should not have two equal branches', () => {
-            console.log('.'.repeat(100));
-            console.log('.'.repeat(100));
-            console.log('.'.repeat(100));
-            console.log('.'.repeat(100));
-            const depth = 6;
+        it('should not crash on a really big table', () => {
+            const depth = 12;
             const table = randomTable(depth);
             const bdd = createBddFromTruthTable(table);
             bdd.minimize();
             ensureCorrectBdd(bdd);
-            bdd.log();
+        });
+        it('random table should not have two equal branches', () => {
+            const depth = 9;
+            const table = randomTable(depth);
+            const bdd = createBddFromTruthTable(table);
+            bdd.minimize();
+            ensureCorrectBdd(bdd);
+            //            bdd.log();
             const leafNodes: LeafNode[] = bdd.getNodesOfLevel(depth) as LeafNode[];
             leafNodes.forEach(leaf => {
                 const parents = leaf.parents.getAll();
@@ -250,46 +253,46 @@ describe('bdd.test.ts', () => {
                 });
             });
         });
-    });/*
-describe('countNodes()', () => {
-    it('should be smaller after minimize', () => {
-        const table = allEqualTable();
-        const bdd = createBddFromTruthTable(table);
-        const before = bdd.countNodes();
-        bdd.minimize();
-        const after = bdd.countNodes();
-        assert.ok(before > after);
     });
-});
-describe('.removeIrrelevantLeafNodes()', () => {
-    it('should remove an irrelevant nodes', () => {
-        const table = exampleTruthTable(5);
-        table.set('00001', UNKNOWN);
-        table.set('00000', UNKNOWN);
-        table.set('00101', UNKNOWN);
-        const bdd = createBddFromTruthTable(table);
-        bdd.removeIrrelevantLeafNodes(UNKNOWN);
-        bdd.getLeafNodes().forEach(node => {
-            assert.notStrictEqual(
-                UNKNOWN,
-                node.value
-            );
+    describe('countNodes()', () => {
+        it('should be smaller after minimize', () => {
+            const table = allEqualTable();
+            const bdd = createBddFromTruthTable(table);
+            const before = bdd.countNodes();
+            bdd.minimize();
+            const after = bdd.countNodes();
+            assert.ok(before > after);
         });
-        const jsonString = JSON.stringify(bdd.toJSON(true));
-        assert.ok(!jsonString.includes(UNKNOWN));
     });
-    it('should work on a big table', () => {
-        const table = randomUnknownTable(6);
-        const bdd = createBddFromTruthTable(table);
-        bdd.removeIrrelevantLeafNodes(UNKNOWN);
-        bdd.getLeafNodes().forEach(node => {
-            assert.notStrictEqual(
-                UNKNOWN,
-                node.value
-            );
+    describe('.removeIrrelevantLeafNodes()', () => {
+        it('should remove an irrelevant nodes', () => {
+            const table = exampleTruthTable(5);
+            table.set('00001', UNKNOWN);
+            table.set('00000', UNKNOWN);
+            table.set('00101', UNKNOWN);
+            const bdd = createBddFromTruthTable(table);
+            bdd.removeIrrelevantLeafNodes(UNKNOWN);
+            bdd.getLeafNodes().forEach(node => {
+                assert.notStrictEqual(
+                    UNKNOWN,
+                    node.value
+                );
+            });
+            const jsonString = JSON.stringify(bdd.toJSON(true));
+            assert.ok(!jsonString.includes(UNKNOWN));
         });
-        const jsonString = JSON.stringify(bdd.toJSON(true));
-        assert.ok(!jsonString.includes(UNKNOWN));
+        it('should work on a big table', () => {
+            const table = randomUnknownTable(6);
+            const bdd = createBddFromTruthTable(table);
+            bdd.removeIrrelevantLeafNodes(UNKNOWN);
+            bdd.getLeafNodes().forEach(node => {
+                assert.notStrictEqual(
+                    UNKNOWN,
+                    node.value
+                );
+            });
+            const jsonString = JSON.stringify(bdd.toJSON(true));
+            assert.ok(!jsonString.includes(UNKNOWN));
+        });
     });
-});*/
 });

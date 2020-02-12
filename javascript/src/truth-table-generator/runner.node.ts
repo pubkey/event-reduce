@@ -19,6 +19,7 @@ import { createBddFromTruthTable, TruthTable } from '../bdd';
 import { fillTruthTable } from '../bdd/fill-truth-table';
 import { ActionName } from '../types';
 import { optimizeBruteForce } from '../bdd/optimize-brute-force';
+import { RootNode } from '../bdd/root-node';
 
 async function run() {
 
@@ -182,7 +183,10 @@ async function run() {
 
                 optimizeBruteForce({
                     truthTable,
-                    itterations: 10000
+                    itterations: 10000,
+                    afterBddCreation: (bdd: RootNode) => {
+                        bdd.removeIrrelevantLeafNodes(unknownValue);
+                    }
                 });
             })();
             break;

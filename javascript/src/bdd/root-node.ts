@@ -3,6 +3,8 @@ import { Branches } from './branches';
 import { NonRootNode } from './types';
 import { lastOfArray } from '../util';
 import { InternalNode } from './internal-node';
+import { LeafNode } from './leaf-node';
+import { ensureCorrectBdd } from './ensure-correct-bdd';
 
 export class RootNode extends AbstractNode {
     public branches: Branches = new Branches(this);
@@ -67,14 +69,14 @@ export class RootNode extends AbstractNode {
      * applies the reduction rules to the whole bdd
      */
     minimize(logState: boolean = false) {
-        console.log('minimize(): START ###############');
+        // console.log('minimize(): START ###############');
         let done = false;
         while (!done) {
             if (logState) {
                 console.log('minimize() itterate once');
             }
             let successCount = 0;
-            let lastLevel = lastOfArray(this.getLevels()) - 1;
+            let lastLevel = lastOfArray(this.getLevels());
             while (lastLevel > 0) {
                 const nodes: InternalNode[] = this.getNodesOfLevel(lastLevel) as InternalNode[];
                 if (logState) {
@@ -82,7 +84,7 @@ export class RootNode extends AbstractNode {
                         'minimize() run for level ' + lastLevel +
                         ' with ' + nodes.length + ' nodes'
                     );
-                    console.dir(nodes);
+                    // console.dir(nodes);
                 }
 
                 let nodeCount = 0;
@@ -90,7 +92,7 @@ export class RootNode extends AbstractNode {
                     nodeCount++;
 
                     // do not run that often because it is expensive
-                    if (logState) {
+                    if (logState && nodeCount % 4000 === 0) {
                         console.log(
                             'minimize() node #' + node.id
                         );
@@ -120,6 +122,35 @@ export class RootNode extends AbstractNode {
                         successCount + ' minimisations'
                     );
                 }
+            }
+        }
+    }
+
+    public getLeafNodes(): LeafNode[] {
+        const lastLevel = lastOfArray(this.getLevels());
+        const leafNodes = this.getNodesOfLevel(lastLevel).reverse() as LeafNode[];
+        return leafNodes;
+    }
+
+    /**
+     * strips all leaf-nodes
+     * with the given value
+     */
+    removeIrrelevantLeafNodes(leafNodeValue: any) {
+        let done = false;
+        while (!done) {
+            let countRemoved = 0;
+            const leafNodes = this.getLeafNodes();
+            for (const leafNode of leafNodes) {
+                const removed = leafNode.removeIfValueEquals(leafNodeValue);
+                if (removed) {
+                    countRemoved++;
+                }
+            }
+            this.minimize();
+
+            if (countRemoved === 0) {
+                done = true;
             }
         }
     }
