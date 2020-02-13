@@ -1,10 +1,11 @@
 import { AbstractNode } from './abstract-node';
 import { Branches } from './branches';
-import { NonRootNode } from './types';
+import { NonRootNode, ResolverFunctions, NonLeafNode } from './types';
 import { lastOfArray } from '../util';
 import { InternalNode } from './internal-node';
 import { LeafNode } from './leaf-node';
 import { ensureCorrectBdd } from './ensure-correct-bdd';
+import { booleanToBooleanString } from './util';
 
 export class RootNode extends AbstractNode {
     public branches: Branches = new Branches(this);
@@ -97,6 +98,13 @@ export class RootNode extends AbstractNode {
                             'minimize() node #' + node.id
                         );
                     }
+                    if (node.isLeafNode()) {
+                        // console.log('have leaf node ' + node.id);
+                        const reductionDone = node.asLeafNode().applyEliminationRule();
+                        if (reductionDone) {
+                            successCount++;
+                        }
+                    }
                     if (!node.deleted && node.isInternalNode()) {
                         const useNode = node as InternalNode;
                         const reductionDone = useNode.applyReductionRule();
@@ -152,6 +160,23 @@ export class RootNode extends AbstractNode {
             if (countRemoved === 0) {
                 done = true;
             }
+        }
+    }
+
+    resolve(
+        fns: ResolverFunctions,
+        i: any
+    ): string {
+        let currentNode: AbstractNode = this;
+        let currentLevel: number = 0;
+        while (true) {
+            const booleanResult = fns[currentLevel](i);
+            const branchKey = booleanToBooleanString(booleanResult);
+            currentNode = (currentNode as NonLeafNode).branches.getBranch(branchKey);
+            if (currentNode.isLeafNode()) {
+                return currentNode.asLeafNode().value;
+            }
+            currentLevel++;
         }
     }
 

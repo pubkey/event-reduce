@@ -8,6 +8,7 @@ export function createBddFromTruthTable(
     truthTable: TruthTable
 ): RootNode {
     const root = new RootNode();
+
     for (const [stateSet, value] of truthTable) {
         let lastNode: NonLeafNode = root;
 

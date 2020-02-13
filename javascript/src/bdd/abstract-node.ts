@@ -3,6 +3,8 @@ import { NonRootNode, NonLeafNode } from './types';
 import { Branches } from './branches';
 import { RootNode } from './root-node';
 import { InternalNode } from './internal-node';
+import { LeafNode } from './leaf-node';
+import { findSimilarNode } from './find-similar-node';
 
 export class AbstractNode {
     readonly id: string = nextNodeId();
@@ -116,6 +118,25 @@ export class AbstractNode {
         return this.type === 'LeafNode';
     }
 
+    asRootNode(): RootNode {
+        if (!this.isRootNode()) {
+            throw new Error('ouch');
+        }
+        return this as any;
+    }
+    asInternalNode(): InternalNode {
+        if (!this.isInternalNode()) {
+            throw new Error('ouch');
+        }
+        return this as any;
+    }
+    asLeafNode(): LeafNode {
+        if (!this.isLeafNode()) {
+            throw new Error('ouch');
+        }
+        return this as any;
+    }
+
     ensureNotDeleted(op: string = 'unknown') {
         if (this.deleted) {
             throw new Error('forbidden operation ' + op + ' on deleted node ' + this.id);
@@ -124,5 +145,62 @@ export class AbstractNode {
 
     public log() {
         console.log(JSON.stringify(this.toJSON(true), null, 2));
+    }
+
+    /**
+ * by the elimination-rule of bdd,
+ * if two branches of the same level are equal,
+ * one can be removed
+ *
+ * See page 21 at:
+ * @link https://people.eecs.berkeley.edu/~sseshia/219c/lectures/BinaryDecisionDiagrams.pdf
+ */
+    applyEliminationRule<T extends AbstractNode>(
+        // can be provided for better performance
+        nodesOfSameLevel?: T[]
+    ): boolean {
+        this.ensureNotDeleted('applyEliminationRule');
+        if (!nodesOfSameLevel) {
+            nodesOfSameLevel = this.rootNode.getNodesOfLevel(this.level) as any[];
+        }
+
+        const other = findSimilarNode(
+            this,
+            nodesOfSameLevel as any[]
+        );
+        if (other) {
+            // console.log('applyEliminationRule() remove:' + this.id + '; other: ' + other.id);
+
+            // keep 'other', remove 'this'
+
+            // move own parents to other
+            const ownParents = (this as any).parents.getAll();
+            const parentsWithStrictEqualBranches: NonLeafNode[] = [];
+            ownParents.forEach(parent => {
+                // console.log('ownParent: ' + parent.id);
+                const branchKey = parent.branches.getKeyOfNode(this);
+                // console.log('branchKey: ' + branchKey);
+                parent.branches.setBranch(branchKey, other);
+
+                if (parent.branches.areBranchesStrictEqual()) {
+                    parentsWithStrictEqualBranches.push(parent);
+                }
+                // remove parents from own list
+                // this will auto-remove the connection to the other '1'-branch
+                (this as any).parents.remove(parent);
+            });
+
+            // parents that now have equal branches, must be removed again
+            parentsWithStrictEqualBranches.forEach(node => {
+                if (node.isInternalNode()) {
+                    // console.log('trigger applyReductionRule from applyEliminationRule');
+                    (node as InternalNode).applyReductionRule();
+                }
+            });
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }

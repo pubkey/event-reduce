@@ -5,10 +5,11 @@ import {
 import {
     TruthTable,
     createBddFromTruthTable,
-    NonRootNode
+    NonRootNode,
+    ResolverFunctions
 } from '../../src/bdd';
 import {
-    InternalNode, findSimilarInternalNode
+    InternalNode
 } from '../../src/bdd/internal-node';
 import {
     decimalToPaddedBinary,
@@ -16,9 +17,9 @@ import {
     binaryToDecimal
 } from '../../src/logic-generator/binary-state';
 import { LeafNode } from '../../src/bdd/leaf-node';
-import { AbstractNode } from '../../src/bdd/abstract-node';
-import { RootNode } from '../../src/bdd/root-node';
-import { ensureCorrectBdd, getNodesRecursive } from '../../src/bdd/ensure-correct-bdd';
+import { ensureCorrectBdd } from '../../src/bdd/ensure-correct-bdd';
+import { booleanStringToBoolean } from '../../src/bdd/util';
+import { findSimilarNode } from '../../src/bdd/find-similar-node';
 
 describe('bdd.test.ts', () => {
     const UNKNOWN = 'unknown';
@@ -71,6 +72,17 @@ describe('bdd.test.ts', () => {
         }
         return table;
     }
+
+
+    function getResolverFunctions(size: number): ResolverFunctions {
+        const resolvers: ResolverFunctions = {};
+        new Array(size).fill(0).forEach((_x, index) => {
+            const fn = (state: string) => booleanStringToBoolean((state as any)[index]);
+            resolvers[index] = fn;
+        });
+        return resolvers;
+    }
+
     describe('createBddFromTruthTable()', () => {
         it('should create a bdd', () => {
             const bdd = createBddFromTruthTable(
@@ -108,7 +120,7 @@ describe('bdd.test.ts', () => {
         });
     });
 
-    describe('findSimilarInternalNode()', () => {
+    describe('findSimilarNode()', () => {
         it('should be equal to equal node of other bdd', () => {
             const table = allEqualTable();
             const bdd = createBddFromTruthTable(table);
@@ -119,7 +131,7 @@ describe('bdd.test.ts', () => {
             const nodes2 = bdd2.getNodesOfLevel(1);
             const first2: InternalNode = nodes2.values().next().value;
 
-            const found = findSimilarInternalNode(
+            const found = findSimilarNode(
                 first,
                 [first2]
             );
@@ -131,7 +143,7 @@ describe('bdd.test.ts', () => {
             const nodes = bdd.getNodesOfLevel(1);
             const first: InternalNode = nodes.values().next().value;
 
-            const found = findSimilarInternalNode(
+            const found = findSimilarNode(
                 first,
                 [first]
             );
@@ -144,7 +156,7 @@ describe('bdd.test.ts', () => {
             const nodes = bdd.getNodesOfLevel(1);
             const first: InternalNode = nodes.values().next().value;
 
-            const found = findSimilarInternalNode(
+            const found = findSimilarNode(
                 first,
                 [bdd as any]
             );
@@ -237,15 +249,10 @@ describe('bdd.test.ts', () => {
             const bdd = createBddFromTruthTable(table);
             bdd.minimize();
             ensureCorrectBdd(bdd);
-            //            bdd.log();
             const leafNodes: LeafNode[] = bdd.getNodesOfLevel(depth) as LeafNode[];
             leafNodes.forEach(leaf => {
                 const parents = leaf.parents.getAll();
-                // console.log('leaf: ' + leaf.id);
                 parents.forEach(parent => {
-                    //   console.log('nnnn: ' + parent.id);
-                    // console.log(parent.toJSON(true));
-                    // console.log(JSON.stringify(parent.toJSON(true), null, 2));
                     assert.notStrictEqual(
                         (parent.branches.getBranch('0') as LeafNode).value,
                         (parent.branches.getBranch('1') as LeafNode).value
@@ -293,6 +300,31 @@ describe('bdd.test.ts', () => {
             });
             const jsonString = JSON.stringify(bdd.toJSON(true));
             assert.ok(!jsonString.includes(UNKNOWN));
+        });
+    });
+    describe('.resolve()', () => {
+        it('should have the same values as the truth table', () => {
+            const size = 8;
+            const table = exampleTruthTable(size);
+            const bdd = createBddFromTruthTable(table);
+            const resolvers: ResolverFunctions = getResolverFunctions(size);
+
+            for (const [key, value] of table.entries()) {
+                const bddValue = bdd.resolve(resolvers, key);
+                assert.strictEqual(value, bddValue);
+            }
+        });
+        it('should have the same values after minimize', () => {
+            const size = 8;
+            const table = exampleTruthTable(size);
+            const bdd = createBddFromTruthTable(table);
+            const resolvers: ResolverFunctions = getResolverFunctions(size);
+
+            bdd.minimize();
+            for (const [key, value] of table.entries()) {
+                const bddValue = bdd.resolve(resolvers, key);
+                assert.strictEqual(value, bddValue);
+            }
         });
     });
 });

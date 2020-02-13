@@ -8,6 +8,14 @@ export function booleanStringToBoolean(str: BooleanString): boolean {
     }
 }
 
+export function booleanToBooleanString(b: boolean): BooleanString {
+    if (b) {
+        return '1';
+    } else {
+        return '0';
+    }
+}
+
 export function oppositeBoolean(input: BooleanString): BooleanString {
     if (input === '1') {
         return '0';
