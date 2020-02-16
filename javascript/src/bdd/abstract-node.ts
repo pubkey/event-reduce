@@ -1,5 +1,5 @@
 import { nextNodeId } from './util';
-import { NonRootNode, NonLeafNode } from './types';
+import { NonRootNode, NonLeafNode, NodeType } from './types';
 import { Branches } from './branches';
 import { RootNode } from './root-node';
 import { InternalNode } from './internal-node';
@@ -9,13 +9,13 @@ import { findSimilarNode } from './find-similar-node';
 export class AbstractNode {
     readonly id: string = nextNodeId();
     public deleted: boolean = false;
-    public type: string;
+    public type: NodeType;
     public rootNode: RootNode;
 
     constructor(
         readonly level: number,
         rootNode: RootNode | null,
-        type: string
+        type: NodeType
     ) {
         this.type = type;
 
@@ -73,8 +73,8 @@ export class AbstractNode {
         if (withId && this['parents']) {
             ret.parents = this['parents'].toString();
         }
-        if (this['value']) {
-            ret.value = this['value'];
+        if (this.isLeafNode()) {
+            ret.value = this.asLeafNode().value;
         }
         if (this['branches'] && !this['branches'].deleted) {
             const branches: Branches = this['branches'];
@@ -100,8 +100,8 @@ export class AbstractNode {
             ret += '|0:' + branches.getBranch('0');
             ret += '|1:' + branches.getBranch('1');
         }
-        if (this['value']) {
-            ret += '|v:' + this['value'];
+        if (this.isLeafNode()) {
+            ret += '|v:' + this.asLeafNode().value;
         }
         ret += '>';
         return ret;

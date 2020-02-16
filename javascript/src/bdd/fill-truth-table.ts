@@ -3,15 +3,16 @@ import {
     maxBinaryWithLength,
     getNextStateSet
 } from './util';
+import { TruthTable } from './types';
 
 /**
  * fills each missing row of a table
  * with the given value
  */
 export function fillTruthTable(
-    truthTable: Map<string, string>,
+    truthTable: TruthTable,
     inputLength: number,
-    value: string
+    value: number
 ) {
     const endInput = maxBinaryWithLength(inputLength);
     let currentInput = minBinaryWithLength(inputLength);

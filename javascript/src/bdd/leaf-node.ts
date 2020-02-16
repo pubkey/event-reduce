@@ -11,14 +11,14 @@ export class LeafNode extends AbstractNode {
     constructor(
         level: number,
         rootNode: RootNode,
-        public value: string,
+        public value: number,
         parent: NonLeafNode
     ) {
         super(level, rootNode, 'LeafNode');
         this.parents.add(parent);
     }
 
-    removeIfValueEquals(value: any): boolean {
+    removeIfValueEquals(value: number): boolean {
         this.ensureNotDeleted();
         // console.log('removeIfValueEquals()');
 

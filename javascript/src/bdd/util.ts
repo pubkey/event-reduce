@@ -98,3 +98,15 @@ export function shuffleArray<T>(a: T[]): T[] {
     }
     return a;
 }
+
+/**
+ * @link https://stackoverflow.com/a/6259536
+ */
+export function splitStringToChunks(str: string, chunkSize: number): string[] {
+    const chunks: string[] = [];
+
+    for (let i = 0, charsLength = str.length; i < charsLength; i += chunkSize) {
+        chunks.push(str.substring(i, i + chunkSize));
+    }
+    return chunks;
+}

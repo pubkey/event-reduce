@@ -1,12 +1,15 @@
 import * as assert from 'assert';
 import {
-    randomString, randomBoolean
+    randomString,
+    randomBoolean,
+    randomNumber
 } from 'async-test-util';
 import {
     TruthTable,
     createBddFromTruthTable,
     NonRootNode,
-    ResolverFunctions
+    ResolverFunctions,
+    SimpleBddInternalNode
 } from '../../src/bdd';
 import {
     InternalNode
@@ -20,12 +23,18 @@ import { LeafNode } from '../../src/bdd/leaf-node';
 import { ensureCorrectBdd } from '../../src/bdd/ensure-correct-bdd';
 import { booleanStringToBoolean } from '../../src/bdd/util';
 import { findSimilarNode } from '../../src/bdd/find-similar-node';
+import { bddToMinimalString } from '../../src/bdd/minimal-string/bdd-to-minimal-string';
+import {
+    minimalStringToSimpleBdd
+} from '../../src/bdd/minimal-string/minimal-string-to-simple-bdd';
+import { resolveWithMinimalBdd } from '../../src/bdd/minimal-string/resolve-with-minimal-bdd';
 
 describe('bdd.test.ts', () => {
-    const UNKNOWN = 'unknown';
+    const UNKNOWN = 20;
     function exampleTruthTable(
         stateLength: number = 3
     ): TruthTable {
+        let lastId = 0;
         const ret: TruthTable = new Map();
         const maxBin = maxBinaryWithLength(stateLength);
         const maxDecimal = binaryToDecimal(maxBin);
@@ -35,7 +44,7 @@ describe('bdd.test.ts', () => {
         while (start <= end) {
             ret.set(
                 decimalToPaddedBinary(start, stateLength),
-                'val_' + randomString(2)
+                lastId++
             );
             start++;
         }
@@ -46,7 +55,7 @@ describe('bdd.test.ts', () => {
     ): TruthTable {
         const table = exampleTruthTable(stateLength);
         const keys = Array.from(table.keys());
-        keys.forEach(k => table.set(k, 'a'));
+        keys.forEach(k => table.set(k, 1));
         return table;
     }
     function randomTable(
@@ -55,8 +64,8 @@ describe('bdd.test.ts', () => {
         const table = exampleTruthTable(stateLength);
         const keys = Array.from(table.keys());
         keys.forEach(k => {
-            // 'b' is more often then 'a'
-            const val = (randomBoolean() && randomBoolean()) ? 'a' : 'b';
+            // '2' is more often then '1'
+            const val = (randomBoolean() && randomBoolean()) ? 1 : 2;
             table.set(k, val);
         });
         return table;
@@ -228,16 +237,16 @@ describe('bdd.test.ts', () => {
         });
         it('should not crash on random table', () => {
             const table = exampleTruthTable();
-            table.set('000', 'a');
-            table.set('001', 'a');
-            table.set('010', 'a');
+            table.set('000', 1);
+            table.set('001', 1);
+            table.set('010', 1);
             const bdd = createBddFromTruthTable(table);
             bdd.minimize();
             assert.ok((bdd as any).branches.getBranch('0').branches.getBranch('0').isLeafNode());
             ensureCorrectBdd(bdd);
         });
         it('should not crash on a really big table', () => {
-            const depth = 12;
+            const depth = 11;
             const table = randomTable(depth);
             const bdd = createBddFromTruthTable(table);
             bdd.minimize();
@@ -272,7 +281,7 @@ describe('bdd.test.ts', () => {
         });
     });
     describe('.removeIrrelevantLeafNodes()', () => {
-        it('should remove an irrelevant nodes', () => {
+        it('should remove all irrelevant nodes', () => {
             const table = exampleTruthTable(5);
             table.set('00001', UNKNOWN);
             table.set('00000', UNKNOWN);
@@ -285,8 +294,6 @@ describe('bdd.test.ts', () => {
                     node.value
                 );
             });
-            const jsonString = JSON.stringify(bdd.toJSON(true));
-            assert.ok(!jsonString.includes(UNKNOWN));
         });
         it('should work on a big table', () => {
             const table = randomUnknownTable(6);
@@ -298,8 +305,6 @@ describe('bdd.test.ts', () => {
                     node.value
                 );
             });
-            const jsonString = JSON.stringify(bdd.toJSON(true));
-            assert.ok(!jsonString.includes(UNKNOWN));
         });
     });
     describe('.resolve()', () => {
@@ -325,6 +330,73 @@ describe('bdd.test.ts', () => {
                 const bddValue = bdd.resolve(resolvers, key);
                 assert.strictEqual(value, bddValue);
             }
+        });
+    });
+    describe('minimal representation', () => {
+        describe('.bddToMinimalString()', () => {
+            it('should create a string', () => {
+                const table = exampleTruthTable();
+                const bdd = createBddFromTruthTable(table);
+                const str = bddToMinimalString(bdd);
+                assert.ok(str.length > 4);
+                assert.ok(str.length < 300);
+            });
+            it('should create the same each time', () => {
+                const table = exampleTruthTable();
+                const bdd = createBddFromTruthTable(table);
+                const str = bddToMinimalString(bdd);
+                const str2 = bddToMinimalString(bdd);
+                assert.strictEqual(str, str2);
+            });
+        });
+        describe('.minimalStringToSimpleBdd()', () => {
+            it('parse the string', () => {
+                const table = exampleTruthTable(4);
+                const bdd = createBddFromTruthTable(table);
+                const str = bddToMinimalString(bdd);
+                const minimalBdd = minimalStringToSimpleBdd(str);
+                assert.strictEqual(
+                    minimalBdd[0][0][0][0], 0
+                );
+                assert.strictEqual(
+                    minimalBdd[0][0][0][1], 1
+                );
+                assert.strictEqual(
+                    (minimalBdd[0][0][0] as SimpleBddInternalNode).l, 3
+                );
+            });
+        });
+        describe('.resolveWithMinimalBdd()', () => {
+            it('should resolve a value', () => {
+                const size = 4;
+                const table = exampleTruthTable(size);
+                const bdd = createBddFromTruthTable(table);
+                const str = bddToMinimalString(bdd);
+                const minimalBdd = minimalStringToSimpleBdd(str);
+                const resolvers: ResolverFunctions = getResolverFunctions(size);
+                const result = resolveWithMinimalBdd(
+                    minimalBdd,
+                    resolvers,
+                    {}
+                );
+                assert.strictEqual(typeof result, 'number');
+            });
+            it('should have the same values as the truth table', () => {
+                const size = 5;
+                const table = exampleTruthTable(size);
+                const bdd = createBddFromTruthTable(table);
+                const str = bddToMinimalString(bdd);
+                const minimalBdd = minimalStringToSimpleBdd(str);
+                const resolvers: ResolverFunctions = getResolverFunctions(size);
+                for (const [key, value] of table.entries()) {
+                    const bddValue = resolveWithMinimalBdd(
+                        minimalBdd,
+                        resolvers,
+                        key
+                    );
+                    assert.strictEqual(value, bddValue);
+                }
+            });
         });
     });
 });

@@ -144,7 +144,7 @@ export class RootNode extends AbstractNode {
      * strips all leaf-nodes
      * with the given value
      */
-    removeIrrelevantLeafNodes(leafNodeValue: any) {
+    removeIrrelevantLeafNodes(leafNodeValue: number) {
         let done = false;
         while (!done) {
             let countRemoved = 0;
@@ -166,7 +166,7 @@ export class RootNode extends AbstractNode {
     resolve(
         fns: ResolverFunctions,
         i: any
-    ): string {
+    ): number {
         let currentNode: AbstractNode = this;
         let currentLevel: number = 0;
         while (true) {
