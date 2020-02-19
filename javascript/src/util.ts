@@ -1,9 +1,10 @@
 import {
-    StateResolveFunctionInput
+    StateResolveFunctionInput, UNKNOWN
 } from './types';
-import { MongoQuery } from './logic-generator/types';
-import { UNKNOWN_VALUE } from './logic-generator/config';
 import * as fs from 'fs';
+import { MongoQuery } from './truth-table-generator/types';
+
+export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];

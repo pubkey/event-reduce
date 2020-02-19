@@ -5,27 +5,22 @@ import {
     QueryParams,
     StateSetToActionMap,
     StateSet,
-    ActionFunction
+    ActionFunction,
+    StateResolveFunctionInput
 } from './types';
 import { getStateSet } from './states';
-import { actionFunctions } from './actions';
+import { actionFunctions, orderedActionList } from './actions';
+import { ResolverFunctions } from 'binary-decision-diagram';
+import { stateResolvers, resolveInput, simpleBdd } from './bdd/bdd.generated';
 
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,
-    queryParams: QueryParams<DocType>,
-    changeEvent: ChangeEvent<DocType>,
-    previousResults: DocType[],
-    keyDocumentMap?: ResultKeyDocumentMap<DocType>
+    input: StateResolveFunctionInput<DocType>
 ): {
     action: ActionName,
     stateSet: StateSet
 } {
-    const stateSet: StateSet = getStateSet({
-        queryParams,
-        changeEvent,
-        previousResults,
-        keyDocumentMap
-    });
+    const stateSet: StateSet = getStateSet(input);
     const actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return {
@@ -38,6 +33,22 @@ export function calculateActionFromMap<DocType>(
             stateSet
         };
     }
+}
+
+export function calculateActionName<DocType>(
+    input: StateResolveFunctionInput<DocType>
+): ActionName {
+    const resolvedActionId = resolveInput(
+        input
+    );
+    return orderedActionList[resolvedActionId];
+}
+
+export function calculateActionFunction<DocType>(
+    input: StateResolveFunctionInput<DocType>
+): ActionFunction<DocType> {
+    const actionName = calculateActionName(input);
+    return actionFunctions[actionName];
 }
 
 /**

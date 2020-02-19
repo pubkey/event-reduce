@@ -2,14 +2,14 @@ import * as assert from 'assert';
 
 import {
     randomHuman
-} from '../../src/logic-generator/data-generator';
+} from '../../src/truth-table-generator/data-generator';
 
 import {
     getMinimongoCollection,
     minimongoUpsert,
     minimongoFind
-} from '../../src/logic-generator/minimongo-helper';
-import { MongoQuery } from '../../src/logic-generator/types';
+} from '../../src/truth-table-generator/minimongo-helper';
+import { MongoQuery } from '../../src/truth-table-generator/types';
 import { clone } from 'async-test-util';
 
 /**

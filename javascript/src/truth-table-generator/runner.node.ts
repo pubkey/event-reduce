@@ -6,7 +6,7 @@ import {
 } from './config';
 import { getQueryVariations } from './queries';
 import { getTestProcedures } from './procedures';
-import { generateTruthTable } from '.';
+import { generateTruthTable } from './';
 import {
     mapToObject,
     objectToMap, readJsonFile,
@@ -14,12 +14,18 @@ import {
 } from '../util';
 import { fuzzing } from './fuzzing';
 import { StateActionIdMap } from './types';
-import { orderedActionList } from '../actions';
-import { createBddFromTruthTable, TruthTable } from '../bdd';
-import { fillTruthTable } from '../bdd/fill-truth-table';
-import { ActionName } from '../types';
-import { optimizeBruteForce } from '../bdd/optimize-brute-force';
-import { RootNode } from '../bdd/root-node';
+import {
+    createBddFromTruthTable,
+    TruthTable,
+    bddToMinimalString,
+    fillTruthTable,
+    optimizeBruteForce,
+    OptimisationResult,
+    RootNode
+} from 'binary-decision-diagram';
+import { writeBddTemplate } from '../bdd/write-bdd-template';
+
+const unknownValueActionId: number = 42;
 
 async function run() {
 
@@ -34,7 +40,7 @@ async function run() {
 
     switch (command) {
         case 'generate-truth-table':
-            (async function gennerate() {
+            (async function generate() {
                 const queries = getQueryVariations();
                 const procedures = getTestProcedures();
                 const table = await generateTruthTable({
@@ -129,31 +135,24 @@ async function run() {
 
         case 'create-bdd':
             (async function createBdd() {
-                const unknownValue: ActionName = 'unknownAction';
                 console.log('read table..');
                 const truthTable: TruthTable = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
                 );
                 console.log('table size: ' + truthTable.size);
 
-                // replace actionId with actionName
-                for (const [key, value] of truthTable.entries()) {
-                    const actionName = orderedActionList[value];
-                    truthTable.set(key, actionName);
-                }
-
                 // fill missing rows with unknown
                 fillTruthTable(
                     truthTable,
                     truthTable.keys().next().value.length,
-                    unknownValue
+                    unknownValueActionId
                 );
 
                 console.log('create bdd..');
                 const bdd = createBddFromTruthTable(truthTable);
                 console.log('mimizing..');
                 console.log('remove unkown states..');
-                bdd.removeIrrelevantLeafNodes(unknownValue);
+                bdd.removeIrrelevantLeafNodes(unknownValueActionId);
 
                 bdd.log();
                 console.log('nodes after minify: ' + bdd.countNodes());
@@ -161,31 +160,35 @@ async function run() {
             break;
         case 'optimize-bdd':
             (async function optimizeBdd() {
-                const unknownValue: ActionName = 'unknownAction';
                 console.log('read table..');
                 const truthTable: TruthTable = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
                 );
                 console.log('table size: ' + truthTable.size);
 
-                // replace actionId with actionName
-                for (const [key, value] of truthTable.entries()) {
-                    const actionName = orderedActionList[value];
-                    truthTable.set(key, actionName);
-                }
-
                 // fill missing rows with unknown
                 fillTruthTable(
                     truthTable,
                     truthTable.keys().next().value.length,
-                    unknownValue
+                    unknownValueActionId
                 );
 
                 optimizeBruteForce({
                     truthTable,
-                    itterations: 10000,
+                    itterations: 10000000,
                     afterBddCreation: (bdd: RootNode) => {
-                        bdd.removeIrrelevantLeafNodes(unknownValue);
+                        bdd.removeIrrelevantLeafNodes(unknownValueActionId);
+                    },
+                    onBetterBdd: (res: OptimisationResult) => {
+                        const bddMinimalString = bddToMinimalString(res.bdd);
+                        console.log('new string: ' + bddMinimalString);
+                        console.log('value mapping:');
+                        console.dir(res.mapping);
+
+                        writeBddTemplate(
+                            bddMinimalString,
+                            res.mapping as any
+                        );
                     }
                 });
             })();

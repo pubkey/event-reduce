@@ -4,8 +4,8 @@ import {
     actionFunctions
 } from '../../src/actions';
 import { ActionFunction, ActionName } from '../../src/types';
-import { randomChangeEvent } from '../../src/logic-generator/data-generator';
-import { getQueryParamsByMongoQuery } from '../../src/logic-generator/minimongo-helper';
+import { randomChangeEvent } from '../../src/truth-table-generator/data-generator';
+import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
 
 describe('actions.test.ts', () => {
     it('should have the correct amount of actions', () => {

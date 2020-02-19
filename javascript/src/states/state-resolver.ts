@@ -1,7 +1,6 @@
 import objectPath from 'object-path';
 import { StateResolveFunction } from '../types';
-import { lastOfArray } from '../util';
-import { UNKNOWN_VALUE } from '../logic-generator/config';
+import { lastOfArray, UNKNOWN_VALUE } from '../util';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
@@ -167,9 +166,10 @@ export const doesMatchNow: StateResolveFunction<any> = (input) => {
     if (!doc) {
         return false;
     }
-    return input.queryParams.queryMatcher(
+    const ret = input.queryParams.queryMatcher(
         doc
     );
+    return ret;
 };
 
 

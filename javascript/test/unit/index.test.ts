@@ -1,11 +1,11 @@
 console.log('### starting unit-tests ###');
 import './minimongo.test';
 import './actions.test';
-import './bdd.test';
 import './states.test';
 import './binary-state.test';
 import './queries.test';
-import './truth-table.test';
-import './test-results.test';
-import './find-valid-states.test';
 import './fuzzing.test';
+
+
+// should be last
+import './generated-stuff.test';

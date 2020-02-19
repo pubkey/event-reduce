@@ -2,7 +2,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { ActionFunction } from '../types';
-import { STATIC_RANDOM_HUMAN } from '../logic-generator/data-generator';
+import { STATIC_RANDOM_HUMAN } from '../truth-table-generator/data-generator';
 
 export const doNothing: ActionFunction<any> = (_input) => { };
 

@@ -2,17 +2,14 @@ import {
     StateResolveFunctionInput,
     QueryParams
 } from '../../src/types';
-import {
-    Human
-} from '../../src/logic-generator/types';
-import {
-    randomChangeEvent
-} from '../../src/logic-generator/data-generator';
-import { getQueryParamsByMongoQuery } from '../../src/logic-generator/minimongo-helper';
-import { DEFAULT_EXAMPLE_QUERY } from '../../src/logic-generator/queries';
+import { Human } from '../../src/truth-table-generator/types';
+import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
+import { randomChangeEvent } from '../../src/truth-table-generator/data-generator';
 
 export function getExampleStateResolveFunctionInput(): StateResolveFunctionInput<Human> {
-    const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery(DEFAULT_EXAMPLE_QUERY);
+    const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery({
+        selector: {}
+    });
     return {
         previousResults: [],
         changeEvent: randomChangeEvent([], 'INSERT'),

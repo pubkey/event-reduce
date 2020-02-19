@@ -6,13 +6,16 @@ import {
 } from '../../src/states';
 import { getExampleStateResolveFunctionInput } from '../helper/input';
 import { StateResolveFunctionInput } from '../../src/types';
-import { Human } from '../../src/logic-generator/types';
-import { randomHuman } from '../../src/logic-generator/data-generator';
-import {
-    getQueryParamsByMongoQuery
-} from '../../src/logic-generator/minimongo-helper';
 import { clone } from 'async-test-util';
-import { wasSortedAfterLast, wasInResult, wasSortedBeforeFirst, sortParamsChanged } from '../../src/states/state-resolver';
+import {
+    wasSortedAfterLast,
+    wasInResult,
+    wasSortedBeforeFirst,
+    sortParamsChanged
+} from '../../src/states/state-resolver';
+import { randomHuman } from '../../src/truth-table-generator/data-generator';
+import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
+import { Human } from '../../src/truth-table-generator/types';
 
 describe('states.test.ts', () => {
     describe('basic', () => {
@@ -36,7 +39,6 @@ describe('states.test.ts', () => {
     });
     describe('.wasSortedAfterLast()', () => {
         it('should be true', () => {
-
             const inResult = randomHuman();
             inResult.age = 100;
 
