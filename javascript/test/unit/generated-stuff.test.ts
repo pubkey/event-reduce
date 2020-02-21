@@ -221,9 +221,6 @@ describe('generated-stuff.test.ts', () => {
                             console.log('actions:');
                             console.dir(useQuery.actions);
 
-
-                            console.dir(collection);
-
                             throw new Error('not equal');
                         }
                     }

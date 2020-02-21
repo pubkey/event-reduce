@@ -84,6 +84,9 @@ async function run() {
                 );
                 const queries = getQueryVariations();
                 const procedures = getTestProcedures();
+                let totalAmountOfHandled = 0;
+                let totalAmountOfOptimized = 0;
+
                 while (true) {
 
                     let fuzzingFoundError = false;
@@ -102,6 +105,12 @@ async function run() {
                             40, // queries
                             20 // events
                         );
+                        totalAmountOfHandled = totalAmountOfHandled + result.amountOfHandled;
+                        totalAmountOfOptimized = totalAmountOfOptimized + result.amountOfOptimized;
+
+                        const percentage = (totalAmountOfOptimized / totalAmountOfHandled) * 100;
+                        console.log('optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled + ' which is ' + percentage + '%');
+
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
                             fuzzingFoundError = true;
@@ -173,13 +182,18 @@ async function run() {
                     unknownValueActionId
                 );
 
+                let currentBest: RootNode;
                 optimizeBruteForce({
                     truthTable,
                     itterations: 10000000,
                     afterBddCreation: (bdd: RootNode) => {
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
+                        if (currentBest) {
+                            console.log('current best bdd has ' + currentBest.countNodes() + ' nodes');
+                        }
                     },
                     onBetterBdd: (res: OptimisationResult) => {
+                        currentBest = res.bdd;
                         const bddMinimalString = bddToMinimalString(res.bdd);
                         console.log('new string: ' + bddMinimalString);
 
@@ -187,7 +201,7 @@ async function run() {
                             bddMinimalString
                         );
                     },
-                    log: true
+                    log: false
                 });
             })();
             break;

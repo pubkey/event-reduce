@@ -1,7 +1,8 @@
 import {
     QueryParams,
     ActionFunctionInput,
-    ChangeEvent
+    ChangeEvent,
+    ActionName
 } from '../types';
 import { randomQuery } from './queries';
 import {
@@ -34,8 +35,13 @@ export async function fuzzing(
 ): Promise<{
     ok: boolean,
     query: MongoQuery,
-    procedure: Procedure
+    procedure: Procedure,
+    amountOfHandled: number,
+    amountOfOptimized: number
 }> {
+    let amountOfHandled = 0;
+    let amountOfOptimized = 0;
+
     const queries: MongoQuery[] = new Array(queriesAmount)
         .fill(0)
         .map(() => randomQuery());
@@ -85,20 +91,29 @@ export async function fuzzing(
                 return {
                     ok: false,
                     query,
-                    procedure: usedChangeEvents
+                    procedure: usedChangeEvents,
+                    amountOfHandled,
+                    amountOfOptimized
                 };
             } else {
                 const currentActionId = table.get(state) as number;
+                const action: ActionName = orderedActionList[currentActionId];
+                amountOfHandled++;
+                if (action !== 'runFullQueryAgain') {
+                    amountOfOptimized++;
+                }
                 const ok = doesActionWork(
                     input,
                     after,
-                    orderedActionList[currentActionId]
+                    action
                 );
                 if (!ok) {
                     return {
                         ok: false,
                         query,
-                        procedure: usedChangeEvents
+                        procedure: usedChangeEvents,
+                        amountOfHandled,
+                        amountOfOptimized
                     };
                 }
             }
@@ -108,6 +123,8 @@ export async function fuzzing(
     return {
         ok: true,
         query: queries[0],
-        procedure
+        procedure,
+        amountOfHandled,
+        amountOfOptimized
     };
 }
