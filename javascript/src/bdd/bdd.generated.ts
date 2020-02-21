@@ -25,46 +25,25 @@ import {
     doesMatchNow
 } from '../states/state-resolver';
 
-export const minimalBddString = '11a2b0c3d)e*f/g.h-i+j4k(lja7mjk7njl5obj5pjm5qkj5rnj4sqj4tpk4upj4vjk4wkh4xij4ysj3zqj3{vj3|kj3}xk3~jk3rj2¡tj2¢ej2£uj2¤kj2¥e¢1¦gj1§dj1¨zy1©£¡1ªh{1«g|1¬hj1­cj1®|w1¯k¤1°k}1±k~1²¥h0³s0´jo0µj¨0¶¬ª0·¦«0¸§k0¹©®0º¯i0»¯°0¼¯±0½³¸/¾´­/¿µ·/À¹¶/Áh¬/Â¼»/Ãk¸.Äk².Åº½.Æj¾.Çf¾.È¼¿.ÉÂÀ.ÊjÁ.ËÅÃ,ÌËÈ+ÍÃÉ+ÎÄ¼+ÏÇÆ+Ðcj+ÑÌÍ*ÒÎ¼*ÓÏÊ*ÔÐj*ÕÑÓ)ÖÒÔ)ÕÖ';
+export const minimalBddString = '11a2b0c3d)e*f/g.h-i+j4k(lkj4mjk4nik4oae6pje6qjc6rhj6slk6tjm6ujh6vkm6wjk6xbh,yws,zlj,{wk,|ch,}jr,~gh,tv,¡kn,¢bx0£u}0¤o{0¥kz0¦p{0§im0¨c|0©pw0ªq}0«d~0¬wj0­u0®fj0¯iw0°ij0±i¡0²­£3³j©3´j¦3µ¥k3¶§°3·±°3¸©³1¹¢ª1ºk²1»©´1¼ky1½kµ1¾¯°1¿°·1À¸¼7Á»º7Âj½7Ã«~7Äjk7Åk¾7Æk¶7Çk¿7ÈÀÁ-ÉÃÂ-Ê¨j-ËdÄ-ÌkÅ-ÍkÆ-Î©j-Ï«j-Ðk¬-Ñdj-Òkj-ÓkÇ-ÔËÑ(ÕÈ¤(ÖÉÏ(×Ìk(ØÓk(ÙÔÑ/ÚÕÎ/Û¹ª/ÜÖÏ/Ý×Ð/ÞÍÒ/ßØÒ/àÝÞ*áÚÜ5âÛÊ5ãàß5äáâ2åã®2æäÙ.çåk.çæ8';
 export const stateResolvers: ResolverFunctions<StateResolveFunctionInput<any>> = {
-    15: isInsert,
-    16: isUpdate,
-    14: isDelete,
-    5: hasLimit,
-    2: isFindOne,
-    9: hasSkip,
-    4: wasResultsEmpty,
-    10: previousUnknown,
-    3: wasLimitReached,
-    13: sortParamsChanged,
-    1: wasInResult,
-    12: wasSortedBeforeFirst,
-    11: wasSortedAfterLast,
-    7: isSortedBeforeFirst,
-    0: isSortedAfterLast,
-    8: wasMatching,
-    6: doesMatchNow,
-} as any;
-export const valueMapping: {
-    [k: number]: number;
-} = {
-    "0": 14,
-    "1": 10,
-    "2": 4,
-    "3": 8,
-    "4": 6,
-    "5": 3,
-    "6": 16,
-    "7": 13,
-    "8": 15,
-    "9": 5,
-    "10": 7,
-    "11": 12,
-    "12": 11,
-    "13": 9,
-    "14": 2,
-    "15": 0,
-    "16": 1
+    0: isInsert,
+    1: isUpdate,
+    2: isDelete,
+    3: hasLimit,
+    4: isFindOne,
+    5: hasSkip,
+    6: wasResultsEmpty,
+    7: previousUnknown,
+    8: wasLimitReached,
+    9: sortParamsChanged,
+    10: wasInResult,
+    11: wasSortedBeforeFirst,
+    12: wasSortedAfterLast,
+    13: isSortedBeforeFirst,
+    14: isSortedAfterLast,
+    15: wasMatching,
+    16: doesMatchNow,
 } as any;
 
 export const simpleBdd: SimpleBdd = minimalStringToSimpleBdd(minimalBddString);

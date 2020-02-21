@@ -182,14 +182,12 @@ async function run() {
                     onBetterBdd: (res: OptimisationResult) => {
                         const bddMinimalString = bddToMinimalString(res.bdd);
                         console.log('new string: ' + bddMinimalString);
-                        console.log('value mapping:');
-                        console.dir(res.mapping);
 
                         writeBddTemplate(
-                            bddMinimalString,
-                            res.mapping as any
+                            bddMinimalString
                         );
-                    }
+                    },
+                    log: true
                 });
             })();
             break;

@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-    BooleanFunctionReorderMapping
+    BooleanFunctionReorderMapping,
+    BooleanFunctionReorderMappingReverse
 } from 'binary-decision-diagram';
 import { orderedStateList, stateResolveFunctions } from '../states';
 import { orderedActionList } from '../actions';
@@ -16,28 +17,19 @@ export const BDD_TEMPLATE_GOAL = path.join(
 );
 
 export function writeBddTemplate(
-    minimalBddString: string,
-    mapping: BooleanFunctionReorderMapping
+    minimalBddString: string
 ) {
     let templateString: string = fs.readFileSync(BDD_TEMPLATE_LOCATION, 'utf-8');
 
     let stateResolvers = '\n';
-
-    const reversedMapping = {};
-    Object.entries(mapping).forEach(([key, value]) => {
-        reversedMapping[value] = key;
-    });
-
     orderedStateList.forEach((stateName, index) => {
-        const newIndex = reversedMapping[index];
-        stateResolvers += '    ' + newIndex + ': ' + stateName + ',\n';
+        stateResolvers += '    ' + index + ': ' + stateName + ',\n';
     });
     stateResolvers = '{' + stateResolvers + '}';
 
     const replaceVariables = {
         minimalBddString: '\'' + minimalBddString + '\'',
-        stateResolvers,
-        valueMapping: JSON.stringify(mapping, null, 4)
+        stateResolvers
     };
 
     Object.entries(replaceVariables).forEach(([key, content]) => {

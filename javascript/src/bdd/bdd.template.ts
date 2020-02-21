@@ -27,9 +27,6 @@ import {
 
 export const minimalBddString = '${minimalBddString}';
 export const stateResolvers: ResolverFunctions<StateResolveFunctionInput<any>> = '${stateResolvers}' as any;
-export const valueMapping: {
-    [k: number]: number;
-} = '${valueMapping}' as any;
 
 export const simpleBdd: SimpleBdd = minimalStringToSimpleBdd(minimalBddString);
 export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveWithSimpleBdd(

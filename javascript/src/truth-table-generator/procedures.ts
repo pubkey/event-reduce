@@ -191,6 +191,131 @@ export function insertFiveSortedThenRemoveSorted(): ChangeEvent<Human>[] {
     return ret;
 }
 
+export function oneThatWasCrashing(): ChangeEvent<Human>[] {
+    return [
+        {
+            operation: 'INSERT',
+            doc: { _id: '7u3de00tms', name: 'maye', gender: 'f', age: 78 },
+            previous: null,
+            id: '7u3de00tms'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '7u3de00tms', name: 'maye', gender: 'f', age: 78 },
+            previous: { _id: '7u3de00tms', name: 'maye', gender: 'f', age: 78 },
+            id: '7u3de00tms'
+        },
+        {
+            operation: 'INSERT',
+            doc: { _id: '3184gyi5e4', name: 'joel', gender: 'f', age: 91 },
+            previous: null,
+            id: '3184gyi5e4'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '7u3de00tms', name: 'toby', gender: 'f', age: 78 },
+            previous: { _id: '7u3de00tms', name: 'maye', gender: 'f', age: 78 },
+            id: '7u3de00tms'
+        },
+        {
+            operation: 'INSERT',
+            doc: { _id: '4im72wg9ev', name: 'sadie', gender: 'f', age: 72 },
+            previous: null,
+            id: '4im72wg9ev'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '3184gyi5e4', name: 'john', gender: 'f', age: 91 },
+            previous: { _id: '3184gyi5e4', name: 'joel', gender: 'f', age: 91 },
+            id: '3184gyi5e4'
+        },
+        {
+            operation: 'INSERT',
+            doc: { _id: '0swab77ah3', name: 'salma', gender: 'm', age: 35 },
+            previous: null,
+            id: '0swab77ah3'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '0swab77ah3', name: 'salma', gender: 'm', age: 48 },
+            previous: { _id: '0swab77ah3', name: 'salma', gender: 'm', age: 35 },
+            id: '0swab77ah3'
+        },
+        {
+            operation: 'INSERT',
+            doc: { _id: '12ypzlmfgd', name: 'josie', gender: 'm', age: 35 },
+            previous: null,
+            id: '12ypzlmfgd'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '4im72wg9ev', name: 'kitty', gender: 'f', age: 72 },
+            previous: { _id: '4im72wg9ev', name: 'sadie', gender: 'f', age: 72 },
+            id: '4im72wg9ev'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '4im72wg9ev', name: 'kitty', gender: 'f', age: 1035 },
+            previous: { _id: '4im72wg9ev', name: 'kitty', gender: 'f', age: 72 },
+            id: '4im72wg9ev'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '0swab77ah3', name: 'sage', gender: 'm', age: 1017 },
+            previous: { _id: '0swab77ah3', name: 'salma', gender: 'm', age: 48 },
+            id: '0swab77ah3'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '12ypzlmfgd', name: 'josie', gender: 'm', age: 1083 },
+            previous: { _id: '12ypzlmfgd', name: 'josie', gender: 'm', age: 35 },
+            id: '12ypzlmfgd'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '3184gyi5e4', name: 'rosella', gender: 'f', age: 1080 },
+            previous: { _id: '3184gyi5e4', name: 'john', gender: 'f', age: 91 },
+            id: '3184gyi5e4'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '7u3de00tms', name: 'toby', gender: 'f', age: 1100 },
+            previous: { _id: '7u3de00tms', name: 'toby', gender: 'f', age: 78 },
+            id: '7u3de00tms'
+        },
+        {
+            operation: 'DELETE',
+            doc: null,
+            previous: { _id: '7u3de00tms', name: 'toby', gender: 'f', age: 1100 },
+            id: '7u3de00tms'
+        },
+        {
+            operation: 'DELETE',
+            doc: null,
+            previous: { _id: '3184gyi5e4', name: 'rosella', gender: 'f', age: 1080 },
+            id: '3184gyi5e4'
+        },
+        {
+            operation: 'DELETE',
+            doc: null,
+            previous: { _id: '0swab77ah3', name: 'sage', gender: 'm', age: 1017 },
+            id: '0swab77ah3'
+        },
+        {
+            operation: 'DELETE',
+            doc: null,
+            previous: { _id: '12ypzlmfgd', name: 'josie', gender: 'm', age: 1083 },
+            id: '12ypzlmfgd'
+        },
+        {
+            operation: 'DELETE',
+            doc: null,
+            previous: { _id: '4im72wg9ev', name: 'kitty', gender: 'f', age: 1035 },
+            id: '4im72wg9ev'
+        }
+    ];
+}
+
 let CACHE: ChangeEvent<Human>[][];
 export function getTestProcedures(): Procedure[] {
     if (!CACHE) {
@@ -199,6 +324,7 @@ export function getTestProcedures(): Procedure[] {
         ret.push(insertChangeAndCleanup(true));
         ret.push(insertFiveThenChangeAgeOfOne());
         ret.push(insertFiveSortedThenRemoveSorted());
+        ret.push(oneThatWasCrashing());
         CACHE = ret;
     }
     return CACHE;

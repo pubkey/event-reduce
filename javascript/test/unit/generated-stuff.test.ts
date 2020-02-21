@@ -2,7 +2,9 @@ import * as assert from 'assert';
 import {
     ResolverFunctions,
     booleanStringToBoolean,
-    resolveWithSimpleBdd
+    resolveWithSimpleBdd,
+    fillTruthTable,
+    createBddFromTruthTable
 } from 'binary-decision-diagram';
 import {
     FIRST_STATE_SET,
@@ -12,7 +14,7 @@ import {
     LAST_STATE_SET
 } from '../../src/truth-table-generator/binary-state';
 import {
-    orderedStateList
+    orderedStateList, stateResolveFunctions
 } from '../../src/states';
 import {
     objectToMap,
@@ -20,18 +22,19 @@ import {
 } from '../../src/util';
 import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
 import { StateActionIdMap, Human, MongoQuery } from '../../src/truth-table-generator/types';
-import { simpleBdd, valueMapping } from '../../src/bdd/bdd.generated';
+import { simpleBdd } from '../../src/bdd/bdd.generated';
 import { StateResolveFunctionInput, QueryParams } from '../../src/types';
 import { getQueryParamsByMongoQuery, getMinimongoCollection, applyChangeEvent, minimongoFind } from '../../src/truth-table-generator/minimongo-helper';
 import { randomHuman } from '../../src/truth-table-generator/data-generator';
 import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index';
 import { getQueryVariations } from '../../src/truth-table-generator/queries';
-import { getTestProcedures, insertChangeAndCleanup } from '../../src/truth-table-generator/procedures';
+import { getTestProcedures, insertChangeAndCleanup, oneThatWasCrashing } from '../../src/truth-table-generator/procedures';
 import deepEqual = require('deep-equal');
-import { orderedActionList } from '../../src/actions';
+import { orderedActionList, actionFunctions } from '../../src/actions';
 
 
 describe('generated-stuff.test.ts', () => {
+    const unknownValueActionId: number = 42;
     const truthTable: StateActionIdMap = objectToMap(
         readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
     );
@@ -41,21 +44,18 @@ describe('generated-stuff.test.ts', () => {
         truthTableWithActionName.set(key, actionName);
     }
 
-    function getResolverFunctions(mapping: any): ResolverFunctions {
-        const size = Object.keys(mapping).length;
+    function getResolverFunctions(): ResolverFunctions {
+        const size = orderedStateList.length;
         const resolvers: ResolverFunctions = {};
         new Array(size).fill(0).forEach((_x, index) => {
-            const useIndex = mapping[index + ''];
-            const fn = (state: string) => booleanStringToBoolean((state as any)[useIndex]);
+            const fn = (state: string) => booleanStringToBoolean((state as any)[index]);
             resolvers[index] = fn;
         });
         return resolvers;
     }
     describe('bdd', () => {
         it('the bdd should have the same values as the truth table', () => {
-            const resolvers = getResolverFunctions(
-                valueMapping
-            );
+            const resolvers = getResolverFunctions();
             for (const [key, value] of truthTable.entries()) {
                 const bddValue = resolveWithSimpleBdd(
                     simpleBdd,
@@ -85,12 +85,32 @@ describe('generated-stuff.test.ts', () => {
             const action = calculateActionName(input);
             assert.strictEqual('insertFirst', action);
         });
-        it('should calculate the same action by input from bdd and map', async () => {
+        it('should calculate the same action by input from bdds and map', async () => {
             const query = {
                 selector: { gender: 'm' },
                 sort: ['age']
             };
-            const procedure = insertChangeAndCleanup();
+            const procedure = oneThatWasCrashing();
+
+            fillTruthTable(
+                truthTable,
+                truthTable.keys().next().value.length,
+                unknownValueActionId
+            );
+            const bdd = createBddFromTruthTable(truthTable);
+            bdd.removeIrrelevantLeafNodes(unknownValueActionId);
+            bdd.minimize();
+
+            const sortedResolvers = {};
+            orderedStateList.forEach((stateName, index) => {
+                const fn = stateResolveFunctions[stateName];
+                sortedResolvers[index] = (i: any) => {
+                    const ret = fn(i);
+                    // console.log('resolve: ' + index + ' returned ' + ret);
+                    return ret;
+                };
+            });
+
             const collection = getMinimongoCollection();
             for (const changeEvent of procedure) {
                 const resultsBefore: Human[] = await minimongoFind(collection, query);
@@ -104,26 +124,23 @@ describe('generated-stuff.test.ts', () => {
                 const input: StateResolveFunctionInput<Human> = {
                     previousResults: resultsBefore,
                     queryParams: getQueryParamsByMongoQuery(query),
-                    // keyDocumentMap,
+                    keyDocumentMap,
                     changeEvent
                 };
-                const actionFromBdd = calculateActionName(input);
+
                 const resultFromMap = calculateActionFromMap(
                     truthTableWithActionName,
                     input
                 );
-                console.dir(resultFromMap);
+                const actionFromBdd = orderedActionList[bdd.resolve(sortedResolvers, input)];
+                const actionFromSmallBdd = calculateActionName(input);
+                assert.strictEqual(actionFromSmallBdd, resultFromMap.action);
                 assert.strictEqual(actionFromBdd, resultFromMap.action);
             }
-
-            process.exit();
         });
         it('should calculate the correct action for each of the example events', async () => {
-            const queries: MongoQuery[] = [{
-                selector: { gender: 'm' },
-                sort: ['age']
-            }];
-            //            queries = getQueryVariations();
+            // do not use all queries and procedures as it takes too long
+            const queries = getQueryVariations().slice(10, 40);
             const procedures = getTestProcedures();
 
             const useQueries: {
@@ -143,7 +160,6 @@ describe('generated-stuff.test.ts', () => {
             });
 
             for (const procedure of procedures) {
-                console.log('procedure:');
 
                 // clear queries
                 useQueries.forEach(useQuery => {
@@ -153,19 +169,10 @@ describe('generated-stuff.test.ts', () => {
 
                 const collection = getMinimongoCollection();
                 for (const changeEvent of procedure) {
-                    console.log('###'.repeat(30));
-
-
-                    console.log('results before apply:');
-                    const resultBeforeApply = await minimongoFind(collection, queries[0]);
-                    console.dir(resultBeforeApply);
-
                     await applyChangeEvent(
                         collection,
                         changeEvent
                     );
-                    await new Promise(res => setTimeout(res, 30));
-
                     for (const useQuery of useQueries) {
                         const resultBefore = useQuery.previousResults.slice();
 
@@ -176,20 +183,6 @@ describe('generated-stuff.test.ts', () => {
                             queryParams: useQuery.queryParams,
                             keyDocumentMap: useQuery.keyDocumentMap
                         });
-
-                        const actionFromMap = calculateActionFromMap(
-                            truthTable as any,
-                            {
-                                previousResults: useQuery.previousResults,
-                                changeEvent,
-                                queryParams: useQuery.queryParams,
-                                keyDocumentMap: useQuery.keyDocumentMap
-                            }
-                        );
-                        console.log(':actionFromMap: ');
-                        console.dir(actionFromMap);
-
-
                         useQuery.actions.push(action);
                         if (action === 'runFullQueryAgain') {
                             useQuery.previousResults = execResults.slice();

@@ -79,7 +79,6 @@ export async function incrementTruthTableActions(
         resultsBefore.set(query, []);
     });
 
-
     const collection = getMinimongoCollection();
     for (const changeEvent of procedure) {
 
@@ -99,6 +98,13 @@ export async function incrementTruthTableActions(
                 queryParams: params
             };
             const state = getStateSet(input);
+
+
+            if (state === '10000000011000000') {
+                console.log('!!');
+                process.exit();
+            }
+
             let currentActionId = table.get(state);
             if (!currentActionId) {
                 table.set(state, 0);
