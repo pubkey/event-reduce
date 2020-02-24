@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link
+        rel="stylesheet"
+        type="text/css"
+        href="./style.css"
+    >
+</head>
+
+<body>
+    <div
+        id="queryInput"
+        class="one-third"
+    >
+        <textarea id="queryTextArea"></textarea>
+        <button id="submitQueryButton">Exec over Database</button><br /><br />
+        <button id="insertUserButton">Insert New User</button><br /><br />
+        <h4>Actions:</h4>
+        <button id="test100EventsButton">100 events (no event-reduce)</button><br /><br />
+        <button id="test100EventsEventReduceButton">100 with event-reduce</button><br /><br />
+    </div>
+
+    <div
+        id="log"
+        class="one-third"
+    >
+
+    </div>
+
+    <div
+        id="results"
+        class="one-third"
+    >
+        <table
+            id="results"
+            border="1"
+        ></table>
+    </div>
+
+
+    <script src="bundle.js"></script>
+</body>
+
+</html>

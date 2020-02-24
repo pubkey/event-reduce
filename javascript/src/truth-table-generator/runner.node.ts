@@ -9,9 +9,13 @@ import { getTestProcedures } from './procedures';
 import { generateTruthTable } from './';
 import {
     mapToObject,
-    objectToMap, readJsonFile,
-    writeJsonFile, lastOfArray
+    objectToMap,
+    lastOfArray
 } from '../util';
+import {
+    readJsonFile,
+    writeJsonFile
+} from './util';
 import { fuzzing } from './fuzzing';
 import { StateActionIdMap } from './types';
 import {

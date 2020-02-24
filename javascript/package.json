@@ -2,7 +2,10 @@
   "name": "event-reduce-js",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/es5/index.js",
+  "jsnext:main": "./dist/es6/index.js",
+  "module": "./dist/es6/index.js",
+  "types": "./dist/es6/index.d.js",
   "scripts": {
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",

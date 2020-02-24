@@ -10,6 +10,7 @@
         "noImplicitThis": true,
         "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true,
+        "declaration": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
         "target": "es5",
@@ -30,7 +31,7 @@
         "node_modules",
         "**/node_modules/*",
         "dist",
-        "src/logic-generator/logic-map-output",
+        "src/truth-table-generator/output",
         "**.txt",
         "**.json"
     ],

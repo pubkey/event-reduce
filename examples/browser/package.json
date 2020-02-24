@@ -1,0 +1,41 @@
+{
+    "name": "event-reduce-examples-browser",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "webpack-dev-server",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "mongo": "bash mongodb.bash",
+        "server": "ts-node -O '{\"module\": \"commonjs\"}' ./src/server.ts"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pubkey/event-reduce.git"
+    },
+    "author": "pubkey",
+    "bugs": {
+        "url": "https://github.com/pubkey/event-reduce/issues"
+    },
+    "homepage": "https://github.com/pubkey/event-reduce#readme",
+    "dependencies": {
+        "async-test-util": "1.7.3",
+        "event-reduce-js": "file:../../javascript/",
+        "faker": "4.1.0",
+        "json-pretty-html": "1.1.6",
+        "minimongo": "6.5.0",
+        "pouchdb": "7.2.1",
+        "pouchdb-adapter-idb": "7.2.1",
+        "pouchdb-adapter-memory": "7.0.0",
+        "pouchdb-find": "7.0.0",
+        "rxjs": "6.5.4",
+        "webpack": "4.41.6",
+        "webpack-cli": "3.3.11"
+    },
+    "devDependencies": {
+        "@babel/polyfill": "7.8.3",
+        "@types/faker": "4.1.9",
+        "ts-loader": "6.2.1",
+        "ts-node": "8.6.2",
+        "typescript": "3.8.2",
+        "webpack-dev-server": "3.10.3"
+    }
+}

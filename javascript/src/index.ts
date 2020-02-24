@@ -10,8 +10,10 @@ import {
 } from './types';
 import { getStateSet } from './states';
 import { actionFunctions, orderedActionList } from './actions';
-import { ResolverFunctions } from 'binary-decision-diagram';
-import { stateResolvers, resolveInput, simpleBdd } from './bdd/bdd.generated';
+import { resolveInput } from './bdd/bdd.generated';
+
+export * from './types';
+export * from './util';
 
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,
