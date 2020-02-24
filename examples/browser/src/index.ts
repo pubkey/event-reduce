@@ -92,6 +92,8 @@ async function run() {
             if (action === 'runFullQueryAgain') {
                 currentResults = await implementation.getRawResults(query);
                 currentDocMap = idToDocMapFromList(currentResults);
+                
+                // console.dir(JSON.parse(JSON.stringify(input)));
             } else {
                 optimizedEventsCount++;
                 runAction(
