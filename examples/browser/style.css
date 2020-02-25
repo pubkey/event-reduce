@@ -1,7 +1,7 @@
 .one-third {
-    width: 30%;
+    width  : 30%;
     padding: 1%;
-    float: left;
+    float  : left;
 }
 
 .pointer {
@@ -13,15 +13,15 @@
 }
 
 #queryInput textarea {
-    width: 100%;
-    height: 300px;
+    width    : 100%;
+    height   : 300px;
     font-size: 20px;
 }
 
 #log {
     border-style: solid;
-    min-height: 400px;
-    margin-left: 30px;
+    min-height  : 400px;
+    margin-left : 30px;
 }
 
 #log .single-log {
@@ -30,4 +30,8 @@
 
 #results {
     overflow-y: scroll;
+}
+
+#tech-selection {
+    width: 100%;
 }

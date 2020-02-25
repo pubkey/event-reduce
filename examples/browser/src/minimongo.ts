@@ -122,8 +122,20 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
 
 export class MiniMongoImplementation implements DatabaseImplementation<MongoQuery> {
     private col: MinimongoCollection;
-    async init() {
-        this.col = await getMinimongoCollection('indexeddb');
+
+    getName() {
+        return 'minimongo';
+    }
+
+    getStorageOptions() {
+        return [
+            'indexeddb',
+            'memory'
+        ];
+    }
+
+    async init(storageOption: string) {
+        this.col = await getMinimongoCollection(storageOption as any);
     }
     getExampleQueries(): MongoQuery[] {
         return [{
@@ -136,6 +148,9 @@ export class MiniMongoImplementation implements DatabaseImplementation<MongoQuer
             limit: 10,
             sort: ['name']
         }];
+    }
+    getQueryParams(query: MongoQuery): QueryParams<any> {
+        return getQueryParamsByMongoQuery(query);
     }
     getRawResults(query: MongoQuery): Promise<Human[]> {
         return minimongoFind(

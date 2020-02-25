@@ -1,6 +1,7 @@
 import {
     ChangeEvent
 } from 'event-reduce-js';
+import { QueryParams } from 'event-reduce-js';
 
 export type Procedure<DocType> = ChangeEvent<DocType>[];
 
@@ -19,11 +20,22 @@ export type MongoQuery = {
     sort?: any[]
 };
 
-export type Query = MongoQuery; // TODO add queries for firestore etc..
+export type FirestoreQueryPart = {
+    field: string;
+    op: '==' | '>=' | '<=' | '<' | '>';
+    value: string | number;
+}
+export type FirestoreQuery = FirestoreQueryPart[];
+
+export type Query = MongoQuery | FirestoreQuery;
 
 export interface DatabaseImplementation<QueryType = Query> {
-    init(): Promise<void>;
+    getName(): string;
+    getStorageOptions(): string[];
+
+    init(storageOption: string): Promise<void>;
     getExampleQueries(): QueryType[];
+    getQueryParams(query: QueryType): QueryParams<any>;
     getRawResults(query: QueryType): Promise<Human[]>;
     getAll(): Promise<Human[]>;
 

@@ -3,7 +3,8 @@ import {
     setResults,
     $test100EventsButton,
     appendToLog,
-    $test100EventsEventReduceButton
+    $test100EventsEventReduceButton,
+    $techSelectionSelect
 } from './dom';
 
 import {
@@ -14,15 +15,48 @@ import {
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
-import { Human, IdToDocumentMap } from './types';
-import { idToDocMapFromList } from './util';
+import { Human, IdToDocumentMap, DatabaseImplementation } from './types';
+import { idToDocMapFromList, removeOptions, getParameterByName } from './util';
 import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
+import { FirestoreImplementation } from './firestore';
 
 
 async function run() {
-    const implementation = new MiniMongoImplementation();
-    await implementation.init();
+    const implementations: DatabaseImplementation[] = [
+        new MiniMongoImplementation(),
+        new FirestoreImplementation()
+    ];
+
+    // init selects
+    implementations.forEach(imp => {
+        const name = imp.getName();
+        imp.getStorageOptions().forEach(storage => {
+            const option = document.createElement('option');
+            option.text = name + ': ' + storage;
+            option.value = name + ':' + storage;
+            $techSelectionSelect.add(option);
+        });
+    });
+    const techParam = getParameterByName('tech');
+    if (techParam) {
+        $techSelectionSelect.value = techParam;
+    }
+    $techSelectionSelect.onchange = () => {
+        console.log('selectred');
+        const newValue = $techSelectionSelect.value;
+        const newUrl = location.origin + location.pathname + '?tech=' + newValue;
+        window.location.href = newUrl;
+    };
+
+
+    const techValue = $techSelectionSelect.value;
+    console.log('techValue: ' + techValue);
+    const split = techValue.split(':');
+    const implementation: DatabaseImplementation = implementations.find(imp => imp.getName() === split[0]);
+    const storage = split[1];
+
+    await implementation.init(storage);
 
     // add initial data
     const initialData: ChangeEvent<Human>[] = getInitialData(100);
@@ -73,7 +107,7 @@ async function run() {
             prevData,
             100
         );
-        const queryParams = getQueryParamsByMongoQuery(query);
+        const queryParams = implementation.getQueryParams(query);
         let optimizedEventsCount = 0;
         let totalWriteTime = 0;
         const timeStart = performanceNow();
@@ -92,7 +126,7 @@ async function run() {
             if (action === 'runFullQueryAgain') {
                 currentResults = await implementation.getRawResults(query);
                 currentDocMap = idToDocMapFromList(currentResults);
-                
+
                 // console.dir(JSON.parse(JSON.stringify(input)));
             } else {
                 optimizedEventsCount++;

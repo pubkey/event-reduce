@@ -20,6 +20,7 @@
         "async-test-util": "1.7.3",
         "event-reduce-js": "file:../../javascript/",
         "faker": "4.1.0",
+        "firebase": "7.9.1",
         "json-pretty-html": "1.1.6",
         "minimongo": "6.5.0",
         "pouchdb": "7.2.1",

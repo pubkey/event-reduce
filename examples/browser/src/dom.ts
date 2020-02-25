@@ -14,6 +14,7 @@ const $queryTextArea = document.getElementById('queryTextArea');
 export const $test100EventsButton = document.getElementById('test100EventsButton');
 export const $test100EventsEventReduceButton = document.getElementById('test100EventsEventReduceButton');
 
+export const $techSelectionSelect: HTMLSelectElement = document.getElementById('techSelectionSelect') as HTMLSelectElement;
 
 export function setResults(docs: Human[]) {
 
