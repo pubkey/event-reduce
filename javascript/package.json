@@ -1,11 +1,12 @@
 {
   "name": "event-reduce-js",
   "version": "1.0.0",
-  "description": "",
+  "description": "javascript implementation of the event-reduce algorithm",
   "main": "./dist/es5/index.js",
   "jsnext:main": "./dist/es6/index.js",
   "module": "./dist/es6/index.js",
-  "types": "./dist/es6/index.d.js",
+  "types": "./dist/es6/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",

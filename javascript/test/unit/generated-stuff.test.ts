@@ -7,19 +7,15 @@ import {
     createBddFromTruthTable
 } from 'binary-decision-diagram';
 import {
-    FIRST_STATE_SET,
-    getNextStateSet,
-    decimalToPaddedBinary,
-    binaryToDecimal,
-    LAST_STATE_SET
-} from '../../src/truth-table-generator/binary-state';
-import {
-    orderedStateList, stateResolveFunctions
+    orderedStateList,
+    stateResolveFunctions
 } from '../../src/states';
 import {
-    objectToMap,
-    readJsonFile
+    objectToMap
 } from '../../src/util';
+import {
+    readJsonFile
+} from '../../src/truth-table-generator/util';
 import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
 import { StateActionIdMap, Human, MongoQuery } from '../../src/truth-table-generator/types';
 import { simpleBdd } from '../../src/bdd/bdd.generated';
