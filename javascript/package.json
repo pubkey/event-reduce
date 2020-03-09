@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "javascript implementation of the event-reduce algorithm",
   "main": "./dist/es5/index.js",
   "jsnext:main": "./dist/es6/index.js",
@@ -12,7 +12,9 @@
     "lint:fix": "tslint --project . --fix",
     "transpile": "tsc -p ./ && echo '# transpile es5 sucess!'",
     "transpile:es6": "tsc -p ./ --target ES6 --outDir ./dist/es6 && echo '# transpile es6 sucess!'",
-    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es6",
+    "transpile:removegen": "rimraf -r ./dist/es5/truth-table-generator && rimraf -r ./dist/es6/truth-table-generator",
+    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es6 && npm run transpile:removegen",
+    "dry": "npm pack --dry-run",
     "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 20000 --bail",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-truth-table": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts generate-truth-table",

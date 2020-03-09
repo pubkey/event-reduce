@@ -2,12 +2,14 @@ import {
     QueryParams,
     ActionFunctionInput,
     ChangeEvent,
-    ActionName
+    ActionName,
+    MongoQuery
 } from '../types';
 import { randomQuery } from './queries';
 import {
-    MongoQuery, Procedure,
-    StateActionIdMap, Human
+    Procedure,
+    StateActionIdMap,
+    Human
 } from './types';
 import { getRandomChangeEvents } from './data-generator';
 import {
@@ -21,11 +23,10 @@ import { doesActionWork } from '.';
 import { orderedActionList } from '../actions';
 
 
-
 /**
  * randomly generates queries and events
  * and returns on the first broken one
- * 
+ *
  * returns false if no problem was found
  */
 export async function fuzzing(

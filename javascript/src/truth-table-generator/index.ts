@@ -1,7 +1,9 @@
 import deepEqual from 'deep-equal';
 
 import {
-    StateActionIdMap, MongoQuery, Procedure, Human
+    StateActionIdMap,
+    Procedure,
+    Human
 } from './types';
 import {
     getMinimongoCollection,
@@ -12,19 +14,18 @@ import {
 import {
     QueryParams, ActionName,
     ActionFunctionInput,
-    StateSet
+    MongoQuery
 } from '../types';
 import { runAction } from '../';
 import { orderedActionList } from '../actions';
 import { getStateSet } from '../states';
-
 
 export interface GenerateTruthTableInput {
     queries: MongoQuery[];
     procedures: Procedure[];
     table?: StateActionIdMap;
     log?: boolean;
-};
+}
 
 export async function generateTruthTable({
     queries,

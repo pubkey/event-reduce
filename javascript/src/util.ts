@@ -1,7 +1,8 @@
 import {
-    StateResolveFunctionInput, UNKNOWN
+    StateResolveFunctionInput,
+    UNKNOWN,
+    MongoQuery
 } from './types';
-import { MongoQuery } from './truth-table-generator/types';
 
 export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 

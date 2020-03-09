@@ -1,5 +1,6 @@
 import { ChangeEvent } from './change-event';
 export * from './change-event';
+export * from './mongo';
 
 export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
 export type UNKNOWN = 'UNKNOWN';

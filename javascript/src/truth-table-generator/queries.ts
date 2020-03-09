@@ -1,6 +1,6 @@
 import {
     MongoQuery
-} from './types';
+} from '../types';
 import { randomBoolean, randomNumber } from 'async-test-util';
 import { randomOfArray } from '../util';
 

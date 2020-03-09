@@ -2,7 +2,6 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 import { ActionFunction } from '../types';
-import { STATIC_RANDOM_HUMAN } from '../truth-table-generator/data-generator';
 
 export const doNothing: ActionFunction<any> = (_input) => { };
 
@@ -101,13 +100,16 @@ export const replaceExisting: ActionFunction<any> = (input) => {
  * otherwise there is something broken
  */
 export const alwaysWrong: ActionFunction<any> = (input) => {
+    const wrongHuman = {
+        _id: 'wrongHuman' + new Date().getTime()
+    };
     input.previousResults.length = 0; // clear array
-    input.previousResults.push(STATIC_RANDOM_HUMAN);
+    input.previousResults.push(wrongHuman);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.clear();
         input.keyDocumentMap.set(
-            STATIC_RANDOM_HUMAN._id,
-            STATIC_RANDOM_HUMAN
+            wrongHuman._id,
+            wrongHuman
         );
     }
 };

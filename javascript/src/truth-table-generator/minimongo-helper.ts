@@ -5,8 +5,12 @@ import {
 import {
     randomString
 } from 'async-test-util';
-import { Human, MongoQuery } from './types';
-import { ChangeEvent, QueryParams } from '../types';
+import { Human } from './types';
+import {
+    ChangeEvent,
+    QueryParams,
+    MongoQuery
+} from '../types';
 import { getSortFieldsOfQuery } from '../util';
 import {
     compileDocumentSelector,

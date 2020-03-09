@@ -7,13 +7,6 @@ export interface Human {
     age: number;
 }
 
-export type MongoQuery = {
-    selector: any;
-    skip?: number;
-    limit?: number;
-    sort?: any[]
-};
-
 // a procedure is a list of events used in tests
 export type Procedure = ChangeEvent<Human>[];
 

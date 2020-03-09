@@ -1,5 +1,4 @@
 /node_modules
 /src/logic-generator/logic-map-output/
 
-# TODO remove this on release
 /dist

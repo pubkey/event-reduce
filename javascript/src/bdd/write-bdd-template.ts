@@ -1,11 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-    BooleanFunctionReorderMapping,
-    BooleanFunctionReorderMappingReverse
-} from 'binary-decision-diagram';
-import { orderedStateList, stateResolveFunctions } from '../states';
-import { orderedActionList } from '../actions';
+import { orderedStateList } from '../states';
 
 export const BDD_TEMPLATE_LOCATION = path.join(
     __dirname,
