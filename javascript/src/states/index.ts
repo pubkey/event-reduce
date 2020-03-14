@@ -95,3 +95,9 @@ export function getStateSet<DocType>(
     }
     return set;
 }
+
+export function logStateSet(stateSet: StateSet) {
+    orderedStateList.forEach((state, index) => {
+        console.log('state: ' + state + ' : ' + stateSet[index]);
+    });
+}

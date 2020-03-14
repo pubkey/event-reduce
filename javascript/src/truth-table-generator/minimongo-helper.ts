@@ -22,11 +22,11 @@ export {
     compileSort
 } from 'minimongo/src/selector';
 
-export function getMinimongoCollection(): MinimongoCollection<Human> {
+export function getMinimongoCollection<DocType = Human>(): MinimongoCollection<DocType> {
     const db: MemoryDb = new MemoryDb();
     const collectionName = randomString(12);
     db.addCollection(collectionName);
-    const collection: MinimongoCollection<Human> = db.collections[collectionName];
+    const collection: MinimongoCollection<DocType> = db.collections[collectionName];
     return collection;
 }
 

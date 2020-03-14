@@ -110,7 +110,34 @@ export function randomChangeEvent(
   return ret;
 }
 
+// ensure that the change-events get generated
+// before we even need them
+export const randomEventsPrematureCalculation: {
+  [amount: number]: Procedure;
+} = {};
+
 export async function getRandomChangeEvents(
+  amount: number = 100
+): Promise<Procedure> {
+  if (randomEventsPrematureCalculation[amount]) {
+    fillRandomEvents(amount);
+    const ret = randomEventsPrematureCalculation[amount];
+    delete randomEventsPrematureCalculation[amount];
+    return ret;
+  } else {
+    fillRandomEvents(amount);
+    return _getRandomChangeEvents(amount);
+  }
+}
+
+export function fillRandomEvents(amount: number) {
+  setTimeout(async () => {
+    const newEvents = await _getRandomChangeEvents(amount);
+    randomEventsPrematureCalculation[amount] = newEvents;
+  }, 20);
+}
+
+export async function _getRandomChangeEvents(
   amount: number = 100
 ): Promise<Procedure> {
   const ret: ChangeEvent<Human>[] = [];

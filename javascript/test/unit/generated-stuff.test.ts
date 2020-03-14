@@ -8,7 +8,8 @@ import {
 } from 'binary-decision-diagram';
 import {
     orderedStateList,
-    stateResolveFunctions
+    stateResolveFunctions,
+    logStateSet
 } from '../../src/states';
 import {
     objectToMap
@@ -17,10 +18,10 @@ import {
     readJsonFile
 } from '../../src/truth-table-generator/util';
 import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
-import { StateActionIdMap, Human, MongoQuery } from '../../src/truth-table-generator/types';
+import { StateActionIdMap, Human } from '../../src/truth-table-generator/types';
 import { simpleBdd } from '../../src/bdd/bdd.generated';
-import { StateResolveFunctionInput, QueryParams } from '../../src/types';
-import { getQueryParamsByMongoQuery, getMinimongoCollection, applyChangeEvent, minimongoFind } from '../../src/truth-table-generator/minimongo-helper';
+import { StateResolveFunctionInput, QueryParams, MongoQuery, ChangeEvent } from '../../src/types';
+import { getQueryParamsByMongoQuery, getMinimongoCollection, applyChangeEvent, minimongoFind, minimongoUpsert } from '../../src/truth-table-generator/minimongo-helper';
 import { randomHuman } from '../../src/truth-table-generator/data-generator';
 import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index';
 import { getQueryVariations } from '../../src/truth-table-generator/queries';
@@ -222,6 +223,71 @@ describe('generated-stuff.test.ts', () => {
                     }
                 }
             }
+        });
+    });
+    describe('issues', () => {
+        it('should not have actionName: runFullQueryAgain', async () => {
+            type Doc = {
+                _id: string;
+                var1: string;
+                var2: number;
+            };
+            const collection = getMinimongoCollection<Doc>();
+            const startResult: Doc[] = [
+                {
+                    _id: '39yje23e5ux0',
+                    var1: '107zw1je54os',
+                    var2: 3606
+                },
+                {
+                    _id: 'x0pvalh7e0lz',
+                    var1: 'p0lhxt4zh565',
+                    var2: 8253
+                }
+            ];
+            const changeEvent: ChangeEvent<Doc> = {
+                operation: 'INSERT',
+                id: '1b63wmdypo4p',
+                doc: {
+                    _id: '1b63wmdypo4p',
+                    var1: 'n27ofavt3ti2',
+                    var2: 19863
+                },
+                previous: null
+            };
+            const query: MongoQuery = {
+                selector: {
+                    var2: { $gt: 1 },
+                    var1: { $gt: '' }
+                },
+                sort: ['var1']
+            };
+
+            await Promise.all(
+                startResult.map(doc => minimongoUpsert(collection, doc))
+            );
+            const previousResults = await minimongoFind(collection, query);
+            const keyDocumentMap = new Map();
+            previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
+
+
+            const input: StateResolveFunctionInput<Doc> = {
+                previousResults,
+                queryParams: getQueryParamsByMongoQuery(query),
+                keyDocumentMap,
+                changeEvent
+            };
+
+            const resultFromMap = calculateActionFromMap(
+                truthTableWithActionName,
+                input
+            );
+
+            console.dir(resultFromMap);
+            logStateSet(resultFromMap.stateSet);
+
+            assert.ok(resultFromMap.action !== 'runFullQueryAgain');
+            process.exit();
         });
     });
 });

@@ -22,31 +22,32 @@ import { getStateSet } from '../states';
 import { doesActionWork } from '.';
 import { orderedActionList } from '../actions';
 
-
-/**
- * randomly generates queries and events
- * and returns on the first broken one
- *
- * returns false if no problem was found
- */
-export async function fuzzing(
-    table: StateActionIdMap,
-    queriesAmount: number = 30,
-    eventsAmount: number = 100
-): Promise<{
+export type FuzzingReturn = {
     ok: boolean,
     query: MongoQuery,
     procedure: Procedure,
     amountOfHandled: number,
     amountOfOptimized: number
-}> {
+};
+
+/**
+ * randomly generates queries and events
+ * and returns on the first broken one
+ *
+ * returns ok:true if no problem was found
+ */
+export async function fuzzing(
+    table: StateActionIdMap,
+    queriesAmount: number = 30,
+    eventsAmount: number = 100
+): Promise<FuzzingReturn> {
     let amountOfHandled = 0;
     let amountOfOptimized = 0;
 
     const queries: MongoQuery[] = new Array(queriesAmount)
         .fill(0)
         .map(() => randomQuery());
-    // console.dir(queries);
+
     const procedure = await getRandomChangeEvents(eventsAmount);
     const queryParamsByQuery: Map<MongoQuery, QueryParams<Human>> = new Map();
     queries.forEach(async (query) => {
@@ -75,11 +76,22 @@ export async function fuzzing(
             changeEvent
         );
 
+        // get results after event
+        const resultsAfter: Map<MongoQuery, Human[]> = new Map();
+        await Promise.all(
+            queries.map(async (query) => {
+                const res = await minimongoFind(collection, query);
+                resultsAfter.set(query, res);
+            })
+        );
+
+
+
         // find action to generate after results
         for (const query of queries) {
             const params = queryParamsByQuery.get(query) as QueryParams<Human>;
             const before = resultsBefore.get(query) as Human[];
-            const after = await minimongoFind(collection, query);
+            const after = resultsAfter.get(query) as Human[];
             const input: ActionFunctionInput<Human> = {
                 changeEvent,
                 previousResults: before.slice(),

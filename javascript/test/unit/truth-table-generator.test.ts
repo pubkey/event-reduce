@@ -1,11 +1,15 @@
 import * as assert from 'assert';
 
-import { MongoQuery, Human } from '../../src/truth-table-generator/types';
+import { Human } from '../../src/truth-table-generator/types';
 import { clone } from 'async-test-util';
 import { oneThatWasCrashing } from '../../src/truth-table-generator/procedures';
 import { generateTruthTable } from '../../src/truth-table-generator';
-import { getMinimongoCollection, minimongoFind, applyChangeEvent, getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
-import { StateResolveFunctionInput } from '../../src/types';
+import {
+    getMinimongoCollection,
+    minimongoFind, applyChangeEvent,
+    getQueryParamsByMongoQuery
+} from '../../src/truth-table-generator/minimongo-helper';
+import { StateResolveFunctionInput, MongoQuery } from '../../src/types';
 import { calculateActionFromMap } from '../../src';
 
 /**

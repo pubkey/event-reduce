@@ -9,8 +9,8 @@ import {
     minimongoUpsert,
     minimongoFind
 } from '../../src/truth-table-generator/minimongo-helper';
-import { MongoQuery } from '../../src/truth-table-generator/types';
 import { clone } from 'async-test-util';
+import { MongoQuery } from '../../src';
 
 /**
  * sometimes we think stuff is wrong with minimongo

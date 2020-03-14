@@ -113,7 +113,11 @@ async function run() {
                         totalAmountOfOptimized = totalAmountOfOptimized + result.amountOfOptimized;
 
                         const percentage = (totalAmountOfOptimized / totalAmountOfHandled) * 100;
-                        console.log('optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled + ' which is ' + percentage + '%');
+                        const rounded = percentage.toFixed(2);
+                        console.log(
+                            'optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled +
+                            ' which is ' + rounded + '%'
+                        );
 
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
