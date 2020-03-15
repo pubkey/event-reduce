@@ -1,13 +1,14 @@
 import * as assert from 'assert';
 
 import {
-    randomHuman
+    randomHuman, randomHumans
 } from '../../src/truth-table-generator/data-generator';
 
 import {
     getMinimongoCollection,
     minimongoUpsert,
-    minimongoFind
+    minimongoFind,
+    compileSort
 } from '../../src/truth-table-generator/minimongo-helper';
 import { clone } from 'async-test-util';
 import { MongoQuery } from '../../src';
@@ -52,5 +53,37 @@ describe('minimongo.test.ts', () => {
             query
         );
         assert.strictEqual(results2[0].age, 0);
+    });
+    it('if all attributes are equal, sort should use _id', async () => {
+        const query: MongoQuery = {
+            selector: {},
+            sort: [
+                'age',
+                'name',
+                '_id'
+            ]
+        };
+        const docs = randomHumans(20, {
+            age: 100,
+            name: 'alice'
+        });
+        const comparator = compileSort(query.sort);
+        const sortedDocs = docs.sort(comparator);
+
+        const collection = getMinimongoCollection();
+        await Promise.all(
+            docs.map(human => {
+                console.log(human._id);
+                minimongoUpsert(
+                    collection,
+                    human
+                );
+            })
+        );
+        const results = await minimongoFind(
+            collection,
+            query
+        );
+        assert.deepStrictEqual(sortedDocs, results);
     });
 });

@@ -18,20 +18,27 @@ import { randomOfArray } from '../util';
  */
 Faker.seed(2345);
 
-export function randomHuman(): Human {
-  return {
+export function randomHuman(partial?: Partial<Human>): Human {
+  const ret: Human = {
     _id: Faker.random.alphaNumeric(10),
     name: Faker.name.firstName().toLowerCase(),
     gender: Faker.random.boolean() ? 'f' : 'm',
     age: Faker.random.number({ min: 1, max: 100 })
   };
+  if (partial) {
+    Object.entries(partial).forEach(([k, v]) => {
+      ret[k] = v;
+    });
+  }
+
+  return ret;
 }
 
 export const STATIC_RANDOM_HUMAN: Human = randomHuman();
 STATIC_RANDOM_HUMAN._id = 'static_random_human';
 
-export function randomHumans(amount = 0): Human[] {
-  return new Array(amount).fill(0).map(() => randomHuman());
+export function randomHumans(amount = 0, partial?: Partial<Human>): Human[] {
+  return new Array(amount).fill(0).map(() => randomHuman(partial));
 }
 
 
@@ -154,7 +161,8 @@ export async function _getRandomChangeEvents(
       changeEvent
     );
     allDocs = await minimongoFind(collection, {
-      selector: {}
+      selector: {},
+      sort: ['_id']
     });
   }
 
@@ -167,7 +175,8 @@ export async function _getRandomChangeEvents(
       changeEvent
     );
     allDocs = await minimongoFind(collection, {
-      selector: {}
+      selector: {},
+      sort: ['_id']
     });
   }
 

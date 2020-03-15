@@ -61,7 +61,7 @@ describe('states.test.ts', () => {
                 ],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 })
             };
 
@@ -89,7 +89,7 @@ describe('states.test.ts', () => {
                 ],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 })
             };
 
@@ -110,7 +110,7 @@ describe('states.test.ts', () => {
                 previousResults: new Array(5).fill(0).map(() => randomHuman()),
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age'],
+                    sort: ['age', '_id'],
                     limit: 5
                 })
             };
@@ -129,7 +129,7 @@ describe('states.test.ts', () => {
                 previousResults: new Array(1).fill(0).map(() => randomHuman()),
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age'],
+                    sort: ['age', '_id'],
                     limit: 5
                 })
             };
@@ -159,7 +159,7 @@ describe('states.test.ts', () => {
                 ],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age'],
+                    sort: ['age', '_id'],
                     limit: 5
                 })
             };
@@ -188,7 +188,7 @@ describe('states.test.ts', () => {
                 ],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 }),
                 keyDocumentMap: keyDocMap
             };
@@ -212,7 +212,7 @@ describe('states.test.ts', () => {
                 ],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 })
             };
 
@@ -233,7 +233,7 @@ describe('states.test.ts', () => {
                 previousResults: [],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 })
             };
 
@@ -256,7 +256,7 @@ describe('states.test.ts', () => {
                 previousResults: [],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 })
             };
             const ok = sortParamsChanged(input);
@@ -275,7 +275,7 @@ describe('states.test.ts', () => {
                 previousResults: [],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['age']
+                    sort: ['age', '_id']
                 })
             };
             const ok = sortParamsChanged(input);
@@ -295,7 +295,7 @@ describe('states.test.ts', () => {
                 previousResults: [],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['-age']
+                    sort: ['-age', '_id']
                 })
             };
             const ok = sortParamsChanged(input);
@@ -314,7 +314,7 @@ describe('states.test.ts', () => {
                 previousResults: [],
                 queryParams: getQueryParamsByMongoQuery({
                     selector: {},
-                    sort: ['-age']
+                    sort: ['-age', '_id']
                 })
             };
             const ok = sortParamsChanged(input);
@@ -339,7 +339,8 @@ describe('states.test.ts', () => {
                         age: {
                             $gt: 10
                         }
-                    }
+                    },
+                    sort: ['_id']
                 })
             };
             const ok = wasMatching(input);

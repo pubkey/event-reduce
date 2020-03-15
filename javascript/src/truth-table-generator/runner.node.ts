@@ -125,7 +125,7 @@ async function run() {
                             console.log(JSON.stringify(result.query));
                             console.log(
                                 result.procedure.length + ' ' +
-                                JSON.stringify(lastOfArray(result.procedure))
+                                JSON.stringify(result.procedure, null, 4)
                             );
                             queries.push(result.query);
                             procedures.push(result.procedure);

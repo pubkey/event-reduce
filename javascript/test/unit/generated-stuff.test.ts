@@ -69,7 +69,8 @@ describe('generated-stuff.test.ts', () => {
             const input: StateResolveFunctionInput<Human> = {
                 previousResults: [],
                 queryParams: getQueryParamsByMongoQuery({
-                    selector: {}
+                    selector: {},
+                    sort: ['_id']
                 }),
                 keyDocumentMap: new Map(),
                 changeEvent: {

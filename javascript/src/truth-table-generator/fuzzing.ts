@@ -50,7 +50,7 @@ export async function fuzzing(
 
     const procedure = await getRandomChangeEvents(eventsAmount);
     const queryParamsByQuery: Map<MongoQuery, QueryParams<Human>> = new Map();
-    queries.forEach(async (query) => {
+    queries.forEach(query => {
         queryParamsByQuery.set(
             query,
             getQueryParamsByMongoQuery(query)
@@ -65,9 +65,9 @@ export async function fuzzing(
         // get previous results
         const resultsBefore: Map<MongoQuery, Human[]> = new Map();
         await Promise.all(
-            queries.map(async (query) => {
-                const res = await minimongoFind(collection, query);
-                resultsBefore.set(query, res);
+            queries.map(query => {
+                return minimongoFind(collection, query)
+                    .then(res => resultsBefore.set(query, res));
             })
         );
 
@@ -79,22 +79,20 @@ export async function fuzzing(
         // get results after event
         const resultsAfter: Map<MongoQuery, Human[]> = new Map();
         await Promise.all(
-            queries.map(async (query) => {
-                const res = await minimongoFind(collection, query);
-                resultsAfter.set(query, res);
+            queries.map(query => {
+                return minimongoFind(collection, query)
+                    .then(res => resultsAfter.set(query, res));
             })
         );
-
-
 
         // find action to generate after results
         for (const query of queries) {
             const params = queryParamsByQuery.get(query) as QueryParams<Human>;
-            const before = resultsBefore.get(query) as Human[];
+            const previousResults = resultsBefore.get(query) as Human[];
             const after = resultsAfter.get(query) as Human[];
             const input: ActionFunctionInput<Human> = {
                 changeEvent,
-                previousResults: before.slice(),
+                previousResults,
                 queryParams: params
             };
             const state = getStateSet(input);
@@ -109,7 +107,7 @@ export async function fuzzing(
                     amountOfOptimized
                 };
             } else {
-                const currentActionId = table.get(state) as number;
+                const currentActionId = actionId as number;
                 const action: ActionName = orderedActionList[currentActionId];
                 amountOfHandled++;
                 if (action !== 'runFullQueryAgain') {

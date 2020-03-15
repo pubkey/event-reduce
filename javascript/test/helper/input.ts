@@ -8,7 +8,8 @@ import { randomChangeEvent } from '../../src/truth-table-generator/data-generato
 
 export function getExampleStateResolveFunctionInput(): StateResolveFunctionInput<Human> {
     const queryParams: QueryParams<Human> = getQueryParamsByMongoQuery({
-        selector: {}
+        selector: {},
+        sort: ['_id']
     });
     return {
         previousResults: [],

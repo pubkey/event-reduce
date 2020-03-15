@@ -21,7 +21,7 @@ describe('truth-table-generator.test.ts', () => {
         it('should contain all itterated states', async () => {
             const query: MongoQuery = {
                 selector: { gender: 'm' },
-                sort: ['age']
+                sort: ['age', '_id']
             };
             const procedures = [oneThatWasCrashing()];
             const table = await generateTruthTable({

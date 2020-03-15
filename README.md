@@ -49,6 +49,13 @@
 
 ### When not to use this
 
+### Limitations
+
+- EventReduce only works with queries that have a predictable sort-order for any given documents https://stackoverflow.com/a/11599283
+
+So if you sort by `gender` and `age` and two documents have the same `gender` and `age` the sorting is not predictable. Therefore you could add the primary key as third sort parameter.
+
+
 ### Previous Work
 
 

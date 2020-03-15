@@ -11,11 +11,12 @@ export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {
 };
 
 export const findAllQuery: MongoQuery = {
-    selector: {}
+    selector: {},
+    sort: ['_id']
 };
 
 
-export const SELECTOR_VARIATIONS: MongoQuery[] = [
+export const SELECTOR_VARIATIONS: Partial<MongoQuery>[] = [
     // find all
     findAllQuery,
     // find none
@@ -97,11 +98,11 @@ export const SORT_VARIATION: { sort: string[] | string[][] }[] = [
     },
     // sort by mutable age
     {
-        sort: ['age']
+        sort: ['age', '_id']
     },
     // sort reverse
     {
-        sort: ['-age']
+        sort: ['-age', '_id']
     }
 ];
 
@@ -121,13 +122,14 @@ export const QUERIES_FROM_FUZZING: MongoQuery[] = [
         },
         limit: 21,
         sort: [
-            '-age'
+            '-age',
+            '_id'
         ]
     }, {
         selector: {},
         skip: 3,
         limit: 3,
-        sort: ['age']
+        sort: ['age', '_id']
     }
 ];
 

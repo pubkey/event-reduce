@@ -9,7 +9,8 @@ import { Human } from './types';
 import {
     ChangeEvent,
     QueryParams,
-    MongoQuery
+    MongoQuery,
+    SortComparator
 } from '../types';
 import { getSortFieldsOfQuery } from '../util';
 import {
@@ -48,11 +49,11 @@ export async function minimongoRemove<DocType>(
     );
 }
 
-export async function minimongoFind<DocType>(
+export function minimongoFind<DocType>(
     collection: MinimongoCollection<DocType>,
     query: MongoQuery
 ): Promise<DocType[]> {
-    const results: DocType[] = await new Promise(
+    return new Promise(
         (resolve, reject) => collection.find(
             query.selector,
             {
@@ -62,7 +63,6 @@ export async function minimongoFind<DocType>(
             }
         ).fetch(resolve, reject)
     );
-    return results;
 }
 
 export async function applyChangeEvent<DocType>(
@@ -93,6 +93,12 @@ export async function applyChangeEvent<DocType>(
 
 export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> {
     const sort = query.sort ? query.sort : [];
+
+    // ensure primary is in sort so we have a predictable query
+    if (!(sort.includes('_id') || sort.includes('-_id'))) {
+        throw new Error('MongoQueries must have a predictable sorting');
+    }
+
     return {
         primaryKey: '_id',
         sortFields: getSortFieldsOfQuery(query),
