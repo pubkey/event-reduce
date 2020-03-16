@@ -10,7 +10,8 @@ import { generateTruthTable } from './';
 import {
     mapToObject,
     objectToMap,
-    lastOfArray
+    lastOfArray,
+    sortObject
 } from '../util';
 import {
     readJsonFile,
@@ -144,7 +145,7 @@ async function run() {
                     const tableObject = mapToObject(truthTable);
                     writeJsonFile(
                         OUTPUT_TRUTH_TABLE_PATH,
-                        tableObject
+                        sortObject(tableObject)
                     );
                 }
             })();

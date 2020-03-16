@@ -106,3 +106,17 @@ export function mergeSets<T>(sets: Set<T>[]): Set<T> {
     });
     return ret;
 }
+
+/**
+ * sort object attributes
+ * @link https://stackoverflow.com/a/39442287
+ */
+export function sortObject<T>(obj: T): T {
+    return Object
+        .entries(obj)
+        .sort()
+        .reduce((_sortedObj, [k, v]) => ({
+            ..._sortedObj,
+            [k]: v
+        }), {}) as T;
+}
