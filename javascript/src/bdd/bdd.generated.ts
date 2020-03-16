@@ -25,7 +25,7 @@ import {
     doesMatchNow
 } from '../states/state-resolver';
 
-export const minimalBddString = '11a2b0c3d)e*f/g.h-i+j4k(lbj1mkj1nmj3ojk3pkj3qij3rnp,sjo,tlh,ujk,vch,wjh,xmk,yko,zgh,{sj/|ej/}kj/~aj)u{)¡e|)¢k})£~j+¤jx7¥jk7¦jl7§r7¨~n7©jy7ªwt7«¡h7¬¢j7­}i7®}j7¯¢i7°¢q7±¤j4²§j4³©j4´«e4µ¬k4¶­k4·®k4¸¯k4¹°k4ºe´-»£¨-¼±²-½d¥-¾z³-¿cj-Àvj-Ákµ-Âk¶-Ãk·-Äk¸-Åk¹-ÆÄÂ*ÇÁÃ*Èºc2É»¦2Ê¼ª2Ë½¿2Ì¾À2ÍÆf2ÎÇj2ÏÁj2ÐÄf2ÑÅj2ÒÈÏ0ÓÉÊ0ÔËÌ0ÕÍÎ0ÖkÏ0×ÐÑ0ØÓÒ6ÙÕÖ6ÚØÔ5ÛÙ×5ÜÚ½.ÝÛk.ÝÜ8';
+export const minimalBddString = '11a+b0c/d3e.f2g*h-i)j(k4lfk-mgk-ndk-ojk-pek-qhk-rik-sbd1tsh,udh,vnq,wpq,xst0yfk0zgj0{lk0|mo0}ck0~du0dk0¡nv0¢ak0£hk0¤rw0¥x6¦yz6§{|6¨~6©k£6ªkj6«¦z4¬«¤5­¦¤5®¥¡5¯jo5°§¤5±¨¡5²©j5³ªw5´¯o*µj´/¶¬°/·µj3¸j¢3¹¶­3º³²3»·}2¼¸}2½¹±2¾º®2¿»¼7À½¾7Árj7Â¿À8ÃjÁ8ÂÃ.';
 export const stateResolvers: ResolverFunctions<StateResolveFunctionInput<any>> = {
     0: isInsert,
     1: isUpdate,

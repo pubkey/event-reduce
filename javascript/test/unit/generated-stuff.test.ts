@@ -86,7 +86,7 @@ describe('generated-stuff.test.ts', () => {
         it('should calculate the same action by input from bdds and map', async () => {
             const query = {
                 selector: { gender: 'm' },
-                sort: ['age']
+                sort: ['age', '_id']
             };
             const procedure = oneThatWasCrashing();
 
@@ -261,7 +261,7 @@ describe('generated-stuff.test.ts', () => {
                     var2: { $gt: 1 },
                     var1: { $gt: '' }
                 },
-                sort: ['var1']
+                sort: ['var1', '_id']
             };
 
             await Promise.all(
@@ -284,11 +284,10 @@ describe('generated-stuff.test.ts', () => {
                 input
             );
 
-            console.dir(resultFromMap);
-            logStateSet(resultFromMap.stateSet);
+            // console.dir(resultFromMap);
+            // logStateSet(resultFromMap.stateSet);
 
             assert.ok(resultFromMap.action !== 'runFullQueryAgain');
-            process.exit();
         });
     });
 });

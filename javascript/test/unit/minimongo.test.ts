@@ -73,7 +73,6 @@ describe('minimongo.test.ts', () => {
         const collection = getMinimongoCollection();
         await Promise.all(
             docs.map(human => {
-                console.log(human._id);
                 minimongoUpsert(
                     collection,
                     human
