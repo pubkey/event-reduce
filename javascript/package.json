@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "javascript implementation of the event-reduce algorithm",
   "main": "./dist/es5/index.js",
   "jsnext:main": "./dist/es6/index.js",
