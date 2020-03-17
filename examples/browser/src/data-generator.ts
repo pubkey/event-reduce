@@ -145,7 +145,8 @@ export async function getRandomChangeEvents(
       changeEvent
     );
     allDocs = await minimongoFind(collection, {
-      selector: {}
+      selector: {},
+      sort: ['_id']
     });
   }
 
@@ -158,7 +159,8 @@ export async function getRandomChangeEvents(
       changeEvent
     );
     allDocs = await minimongoFind(collection, {
-      selector: {}
+      selector: {},
+      sort: ['_id']
     });
   }
 

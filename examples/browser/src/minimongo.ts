@@ -108,7 +108,7 @@ export async function applyChangeEvent<DocType>(
 }
 
 export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> {
-    const sort = query.sort ? query.sort : [];
+    const sort = query.sort ? query.sort : ['_id'];
     return {
         primaryKey: '_id',
         sortFields: getSortFieldsOfQuery(query),
@@ -146,7 +146,7 @@ export class MiniMongoImplementation implements DatabaseImplementation<MongoQuer
                 gender: 'm'
             },
             limit: 10,
-            sort: ['name']
+            sort: ['name', '_id']
         }];
     }
     getQueryParams(query: MongoQuery): QueryParams<any> {
@@ -162,7 +162,8 @@ export class MiniMongoImplementation implements DatabaseImplementation<MongoQuer
         return minimongoFind(
             this.col,
             {
-                selector: {}
+                selector: {},
+                sort: ['_id']
             }
         );
     }

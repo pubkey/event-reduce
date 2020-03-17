@@ -8,10 +8,9 @@ import {
 } from './dom';
 
 import {
-    MiniMongoImplementation, getQueryParamsByMongoQuery
+    MiniMongoImplementation
 } from './minimongo';
 import {
-    randomHumans,
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
@@ -19,13 +18,10 @@ import { Human, IdToDocumentMap, DatabaseImplementation } from './types';
 import { idToDocMapFromList, removeOptions, getParameterByName } from './util';
 import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
-import { FirestoreImplementation } from './firestore';
-
 
 async function run() {
     const implementations: DatabaseImplementation[] = [
-        new MiniMongoImplementation(),
-        new FirestoreImplementation()
+        new MiniMongoImplementation()
     ];
 
     // init selects
