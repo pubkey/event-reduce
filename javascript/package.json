@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "javascript implementation of the event-reduce algorithm",
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "1.2.0",
-    "binary-decision-diagram": "1.0.3",
+    "binary-decision-diagram": "1.1.0",
     "child-process-promise": "2.2.1",
     "object-path": "0.11.4",
     "read-last-lines": "1.7.2"
