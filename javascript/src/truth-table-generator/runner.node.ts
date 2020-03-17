@@ -82,8 +82,8 @@ async function run() {
          * runs the fuzzing and each time a non-working set is found,
          * generate the table again
          */
-        case 'itterative-fuzzing':
-            (async function itterativeFuzzing() {
+        case 'iterative-fuzzing':
+            (async function iterativeFuzzing() {
                 const truthTable: StateActionIdMap = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
                 );
@@ -194,7 +194,7 @@ async function run() {
                 let currentBest: RootNode;
                 optimizeBruteForce({
                     truthTable,
-                    itterations: 10000000,
+                    iterations: 10000000,
                     afterBddCreation: (bdd: RootNode) => {
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
                         if (currentBest) {

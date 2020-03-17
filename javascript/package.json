@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "javascript implementation of the event-reduce algorithm",
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
@@ -19,7 +19,7 @@
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-truth-table": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts generate-truth-table",
     "test-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts fuzzing",
-    "itterative-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts itterative-fuzzing",
+    "iterative-fuzzing": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts iterative-fuzzing",
     "create-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts create-bdd",
     "optimize-bdd": "ts-node /home/dnl/workspace/event-reduce/javascript/src/truth-table-generator/runner.node.ts optimize-bdd"
   },
