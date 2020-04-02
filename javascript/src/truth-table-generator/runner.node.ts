@@ -19,8 +19,7 @@ import { getTestProcedures } from './procedures';
 import { generateTruthTable } from './';
 import {
     mapToObject,
-    objectToMap,
-    sortObject
+    objectToMap
 } from '../util';
 import {
     readJsonFile,
@@ -29,6 +28,20 @@ import {
 import { fuzzing } from './fuzzing';
 import { writeBddTemplate } from '../bdd/write-bdd-template';
 import { measurePerformanceOfStateFunctions, getBetterBdd, getQualityOfBdd, QUALITY_BY_BDD_CACHE } from './calculate-bdd-quality';
+
+/**
+ * sort object attributes
+ * @link https://stackoverflow.com/a/39442287
+ */
+export function sortObject<T>(obj: T): T {
+    return Object
+        .entries(obj)
+        .sort()
+        .reduce((_sortedObj, [k, v]) => ({
+            ..._sortedObj,
+            [k]: v
+        }), {}) as T;
+}
 
 const unknownValueActionId: number = 42;
 
