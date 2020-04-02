@@ -2,7 +2,8 @@ import * as assert from 'assert';
 import {
     orderedStateList,
     stateResolveFunctions,
-    getStateSet
+    getStateSet,
+    stateResolveFunctionByIndex
 } from '../../src/states';
 import { getExampleStateResolveFunctionInput } from '../helper/input';
 import { StateResolveFunctionInput } from '../../src/types';
@@ -26,6 +27,21 @@ describe('states.test.ts', () => {
                 orderedStateList.length,
                 Object.keys(stateResolveFunctions).length
             );
+            assert.strictEqual(
+                orderedStateList.length,
+                Object.keys(stateResolveFunctionByIndex).length
+            );
+        });
+        it('stateResolveFunctions must have same sorting as orderedStateList', () => {
+            assert.deepStrictEqual(
+                orderedStateList,
+                Object.keys(stateResolveFunctions)
+            );
+        });
+        it('stateResolveFunctionByIndex should match orderedStateList', () => {
+            orderedStateList.forEach((name, index) => {
+                assert.ok(stateResolveFunctionByIndex[index] === stateResolveFunctions[name]);
+            });
         });
     });
     describe('getStateSet()', () => {

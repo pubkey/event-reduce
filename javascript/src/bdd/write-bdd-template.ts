@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { orderedStateList } from '../states';
 
 export const BDD_TEMPLATE_LOCATION = path.join(
     __dirname,
@@ -15,16 +14,8 @@ export function writeBddTemplate(
     minimalBddString: string
 ) {
     let templateString: string = fs.readFileSync(BDD_TEMPLATE_LOCATION, 'utf-8');
-
-    let stateResolvers = '\n';
-    orderedStateList.forEach((stateName, index) => {
-        stateResolvers += '    ' + index + ': ' + stateName + ',\n';
-    });
-    stateResolvers = '{' + stateResolvers + '}';
-
     const replaceVariables = {
         minimalBddString: '\'' + minimalBddString + '\'',
-        stateResolvers
     };
 
     Object.entries(replaceVariables).forEach(([key, content]) => {

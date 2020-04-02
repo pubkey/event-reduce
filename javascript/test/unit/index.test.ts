@@ -5,6 +5,7 @@ import './states.test';
 import './binary-state.test';
 import './queries.test';
 import './fuzzing.test';
+import './calculate-bdd-quality.test';
 import './truth-table-generator.test';
 
 // should be last

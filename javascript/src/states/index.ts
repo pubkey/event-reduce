@@ -24,6 +24,7 @@ import {
     wasMatching,
     doesMatchNow
 } from './state-resolver';
+import { ResolverFunctions } from 'binary-decision-diagram';
 
 /**
  * all states ordered by performance-cost
@@ -51,7 +52,7 @@ export const orderedStateList: StateName[] = [
 ];
 
 export const stateResolveFunctions: {
-    [k in StateName]: StateResolveFunction<any>
+    readonly [k in StateName]: StateResolveFunction<any>
 } = {
     isInsert,
     isUpdate,
@@ -70,6 +71,28 @@ export const stateResolveFunctions: {
     isSortedAfterLast,
     wasMatching,
     doesMatchNow
+};
+
+export const stateResolveFunctionByIndex: ResolverFunctions<
+    StateResolveFunctionInput<any>
+> = {
+    0: isInsert,
+    1: isUpdate,
+    2: isDelete,
+    3: hasLimit,
+    4: isFindOne,
+    5: hasSkip,
+    6: wasResultsEmpty,
+    7: previousUnknown,
+    8: wasLimitReached,
+    9: sortParamsChanged,
+    10: wasInResult,
+    11: wasSortedBeforeFirst,
+    12: wasSortedAfterLast,
+    13: isSortedBeforeFirst,
+    14: isSortedAfterLast,
+    15: wasMatching,
+    16: doesMatchNow
 };
 
 export function resolveState<DocType>(

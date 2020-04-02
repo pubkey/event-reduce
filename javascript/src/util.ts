@@ -17,6 +17,10 @@ export function randomOfArray<T>(items: T[]): T {
     return items[Math.floor(Math.random() * items.length)];
 }
 
+export function shuffleArray<T>(arr: T[]): T[] {
+    return arr.slice().sort(() => (Math.random() - 0.5));
+}
+
 /**
  * if the previous doc-data is unknown,
  * try to get it from previous results
@@ -96,6 +100,16 @@ export function objectToMap<K, V>(object: {
     Object.entries(object).forEach(([k, v]) => {
         ret.set(k, v);
     });
+    return ret;
+}
+
+export function cloneMap<K, V>(map: Map<K, V>): Map<K, V> {
+    const ret = new Map();
+    map.forEach(
+        (value: V, key: K) => {
+            ret[key as any] = value;
+        }
+    );
     return ret;
 }
 

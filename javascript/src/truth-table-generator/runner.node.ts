@@ -29,6 +29,7 @@ import {
     RootNode
 } from 'binary-decision-diagram';
 import { writeBddTemplate } from '../bdd/write-bdd-template';
+import { measurePerformanceOfStateFunctions, getBetterBdd, getQualityOfBdd, QUALITY_BY_BDD_CACHE } from './calculate-bdd-quality';
 
 const unknownValueActionId: number = 42;
 
@@ -176,6 +177,9 @@ async function run() {
                 console.log('nodes after minify: ' + bdd.countNodes());
             })();
             break;
+
+
+        // optimizes the bdd to big small and fast
         case 'optimize-bdd':
             (async function optimizeBdd() {
                 console.log('read table..');
@@ -192,23 +196,44 @@ async function run() {
                 );
 
                 let currentBest: RootNode;
-                optimizeBruteForce({
+
+                const perfMeasurement = await measurePerformanceOfStateFunctions(10000);
+
+                await optimizeBruteForce({
                     truthTable,
                     iterations: 10000000,
                     afterBddCreation: (bdd: RootNode) => {
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
                         if (currentBest) {
-                            console.log('current best bdd has ' + currentBest.countNodes() + ' nodes');
+                            console.log(
+                                'current best bdd has ' + currentBest.countNodes() + ' nodes ' +
+                                'and a quality of ' + QUALITY_BY_BDD_CACHE.get(currentBest)
+                            );
                         }
                     },
-                    onBetterBdd: (res: OptimisationResult) => {
+                    compareResults: async (a: RootNode, b: RootNode) => {
+                        const betterOne = await getBetterBdd(
+                            a, b,
+                            perfMeasurement,
+                            getQueryVariations(),
+                            getTestProcedures()
+                        );
+                        return betterOne;
+                    },
+                    onBetterBdd: async (res: OptimisationResult) => {
+                        console.log('#'.repeat(100));
+                        console.log('## found better bdd ##');
                         currentBest = res.bdd;
-                        const bddMinimalString = bddToMinimalString(res.bdd);
+                        const bddMinimalString = bddToMinimalString(currentBest);
+                        const quality = QUALITY_BY_BDD_CACHE.get(currentBest);
+                        console.log('nodes: ' + currentBest.countNodes());
+                        console.log('quality: ' + quality);
                         console.log('new string: ' + bddMinimalString);
 
                         writeBddTemplate(
                             bddMinimalString
                         );
+                        console.log('-'.repeat(100));
                     },
                     log: false
                 });

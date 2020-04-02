@@ -25,9 +25,9 @@ import { getQueryParamsByMongoQuery, getMinimongoCollection, applyChangeEvent, m
 import { randomHuman } from '../../src/truth-table-generator/data-generator';
 import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index';
 import { getQueryVariations } from '../../src/truth-table-generator/queries';
-import { getTestProcedures, insertChangeAndCleanup, oneThatWasCrashing } from '../../src/truth-table-generator/procedures';
+import { getTestProcedures, oneThatWasCrashing } from '../../src/truth-table-generator/procedures';
 import deepEqual = require('deep-equal');
-import { orderedActionList, actionFunctions } from '../../src/actions';
+import { orderedActionList } from '../../src/actions';
 
 
 describe('generated-stuff.test.ts', () => {
