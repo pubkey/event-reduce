@@ -3,10 +3,10 @@ import {
     minimalStringToSimpleBdd,
     resolveWithSimpleBdd
 } from 'binary-decision-diagram';
-import { StateResolveFunctionInput } from '../types';
+import type { StateResolveFunctionInput } from '../types';
 import { stateResolveFunctionByIndex } from '../states';
 
-export const minimalBddString = '11a+b0c/d3e.f2g*h-i)j(k4lbd1mfk/njk/olh,pdh,qnk,reh,skg4tnj4ukj4vqj4wmf3xsg3ytj3zuj3{vj3|jk3}kj3~fw-gx-¡jy-¢jz-£j{-¤j|-¥r}-¦dk-§pk-¨rk-©ik-ª~k0«¢0¬¡£0­lo0®h¤0¯a¤0°j¥0±ck0²dp0³dk0´¦§0µfk0¶gj0·©¨0¸~k7¹h7º¡a7»dl7¼ªk7½«®7¾¬¯7¿·°7À²­7Á©j7Âjº5Ã¸Á5Ä»¦5Åj¾5Æ¼¿5ÇÀ´5Èf©5Éµ·5ÊÂÃ8Ëj¹8ÌcÄ8ÍÅÆ8Îj½8Ï±Ç8ÐjÁ8ÑjÈ8Òjg8ÓjÉ8Ôj¶8Õj©8ÖÊË6×Ìd6ØÍÎ6ÙÏ³6ÚÑÒ6ÛÓÔ6Üº¾+Ýc±+ÞÖØ+ß×Ù+àÚÛ+áÜÞ)âÝß)ãjÐ)äáâ2åäã.æàÕ.åæ(';
+export const minimalBddString = '11a+b0c/d3e.f2g*h-i)j(k4lkh6mdk6nhk6ofg6pkj6qfg4rkj4smd5tlj5udk5vmk5wnh5xkj5ynk5zoi5{pe5|ok5}pk5~jh5jk5¡r{7¢ja7£|t7¤rj7¥r}7¦}x7§j~7¨j7©jk7ªx7«kj7¬jk-­j¢-®z£-¯e«-°¡¥-±{¦-²zk-³du-´{k-µsv-¶j©-·h«-¸§¨-¹~ª-ºj-»~k-¼wy-½i«-¾z|-¿{}-À~-Áik-Â½®1Ãb³1Ä¤°1Å¯±1Æbµ1Çj¸1È·¹1Éh¼1Ê¬c2Ë¬k2Ìjc2ÍqÃ2ÎÄÆ2Ïºc2Ð²³2Ñ´µ2Òjk2ÓÇÉ2Ôºk2Õ»¼2ÖÎÓ,×ÅÈ,ØÑÕ,Ù¿À,ÚÌ­3ÛÍÂ3ÜÒ¶3ÝÖ×3ÞÚÊ/ßÜË/à½Á/áÚÏ/âÛÐ/ãÜÔ/äÝØ/åÁà)æjá)ç¾â)èjã)éÙä)êæÞ*ëèß*ìêë0íçé0îêç8ïjå8ðìí8ñîð+ñï.';
 
 export const simpleBdd: SimpleBdd = minimalStringToSimpleBdd(minimalBddString);
 export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveWithSimpleBdd(

@@ -1,8 +1,10 @@
 import Faker from 'faker';
-import {
-  Human, Procedure
+
+import type {
+  Human,
+  Procedure
 } from './types';
-import {
+import type {
   ChangeEvent
 } from '../../src/types';
 import {

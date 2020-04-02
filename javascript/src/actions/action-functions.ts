@@ -1,7 +1,8 @@
 import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
-import { ActionFunction } from '../types';
+
+import type { ActionFunction } from '../types';
 
 export const doNothing: ActionFunction<any> = (_input) => { };
 

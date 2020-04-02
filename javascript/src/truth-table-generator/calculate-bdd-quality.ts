@@ -4,13 +4,13 @@ import {
     ResolverFunctions
 } from 'binary-decision-diagram';
 import {
-    performanceNow, clone
+    performanceNow,
+    clone
 } from 'async-test-util';
 
-import {
+import type {
     MongoQuery,
     StateResolveFunctionInput,
-    ChangeEvent,
     ResultKeyDocumentMap,
     QueryParams,
     StateName,

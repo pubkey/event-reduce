@@ -1,4 +1,6 @@
-import {
+import { ResolverFunctions } from 'binary-decision-diagram';
+
+import type {
     StateName,
     StateResolveFunction,
     StateSet,
@@ -24,7 +26,6 @@ import {
     wasMatching,
     doesMatchNow
 } from './state-resolver';
-import { ResolverFunctions } from 'binary-decision-diagram';
 
 /**
  * all states ordered by performance-cost

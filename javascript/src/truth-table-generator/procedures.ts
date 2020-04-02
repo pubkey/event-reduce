@@ -1,11 +1,11 @@
+import { clone } from 'async-test-util';
 import Faker from 'faker';
-import { ChangeEvent } from '../types';
-import { Human, Procedure } from './types';
+
+import type { ChangeEvent } from '../types';
+import type { Human, Procedure } from './types';
 import { randomHumans, randomChangeHuman } from './data-generator';
 import { UNKNOWN_VALUE } from './config';
 import { compileSort } from './minimongo-helper';
-import { clone } from 'async-test-util';
-
 
 export function insertChangeAndCleanup(
     unknownPrevious: boolean = false

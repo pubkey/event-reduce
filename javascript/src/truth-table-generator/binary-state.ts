@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { StateSet, StateName } from '../types';
+import type { StateSet } from '../types';
 import { orderedStateList } from '../states';
 
 export const STATE_SET_LENGTH = orderedStateList.length;

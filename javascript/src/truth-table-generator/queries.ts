@@ -1,7 +1,8 @@
-import {
+import { randomBoolean, randomNumber } from 'async-test-util';
+
+import type {
     MongoQuery
 } from '../types';
-import { randomBoolean, randomNumber } from 'async-test-util';
 import { randomOfArray } from '../util';
 
 export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {

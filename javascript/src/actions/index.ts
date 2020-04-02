@@ -1,4 +1,4 @@
-import {
+import type {
     ActionName,
     ActionFunction
 } from '../types';

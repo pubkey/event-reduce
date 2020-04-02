@@ -1,4 +1,4 @@
-import {
+import type {
     WriteOperation,
     UNKNOWN
 } from './index';

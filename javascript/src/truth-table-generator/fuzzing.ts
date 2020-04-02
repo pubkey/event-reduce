@@ -1,16 +1,16 @@
-import {
+import type {
     QueryParams,
     ActionFunctionInput,
     ChangeEvent,
     ActionName,
     MongoQuery
 } from '../types';
-import { randomQuery } from './queries';
-import {
+import type {
     Procedure,
     StateActionIdMap,
     Human
 } from './types';
+import { randomQuery } from './queries';
 import { getRandomChangeEvents } from './data-generator';
 import {
     getMinimongoCollection,

@@ -1,4 +1,4 @@
-import {
+import type {
     StateResolveFunctionInput,
     UNKNOWN,
     MongoQuery

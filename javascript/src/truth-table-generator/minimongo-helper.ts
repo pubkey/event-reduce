@@ -3,25 +3,24 @@ import {
     MinimongoCollection
 } from 'minimongo';
 import {
-    randomString
-} from 'async-test-util';
-import { Human } from './types';
-import {
-    ChangeEvent,
-    QueryParams,
-    MongoQuery,
-    SortComparator
-} from '../types';
-import { getSortFieldsOfQuery } from '../util';
-import {
     compileDocumentSelector,
     compileSort
 } from 'minimongo/src/selector';
-
 export {
     compileDocumentSelector,
     compileSort
 } from 'minimongo/src/selector';
+import {
+    randomString
+} from 'async-test-util';
+
+import type { Human } from './types';
+import type {
+    ChangeEvent,
+    QueryParams,
+    MongoQuery
+} from '../types';
+import { getSortFieldsOfQuery } from '../util';
 
 export function getMinimongoCollection<DocType = Human>(): MinimongoCollection<DocType> {
     const db: MemoryDb = new MemoryDb();

@@ -1,5 +1,6 @@
 import objectPath from 'object-path';
-import { StateResolveFunction } from '../types';
+
+import type { StateResolveFunction } from '../types';
 import { lastOfArray, UNKNOWN_VALUE } from '../util';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {

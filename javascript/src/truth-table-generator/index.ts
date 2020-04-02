@@ -1,21 +1,22 @@
 import deepEqual from 'deep-equal';
 
-import {
+import type {
     StateActionIdMap,
     Procedure,
     Human
 } from './types';
+import type {
+    QueryParams,
+    ActionName,
+    ActionFunctionInput,
+    MongoQuery
+} from '../types';
 import {
     getMinimongoCollection,
     minimongoFind,
     applyChangeEvent,
     getQueryParamsByMongoQuery
 } from './minimongo-helper';
-import {
-    QueryParams, ActionName,
-    ActionFunctionInput,
-    MongoQuery
-} from '../types';
 import { runAction } from '../';
 import { orderedActionList } from '../actions';
 import { getStateSet } from '../states';

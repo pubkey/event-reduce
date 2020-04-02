@@ -1,5 +1,15 @@
 import * as fs from 'fs';
+import {
+    createBddFromTruthTable,
+    TruthTable,
+    bddToMinimalString,
+    fillTruthTable,
+    optimizeBruteForce,
+    OptimisationResult,
+    RootNode
+} from 'binary-decision-diagram';
 
+import type { StateActionIdMap } from './types';
 import {
     OUTPUT_FOLDER_PATH,
     OUTPUT_TRUTH_TABLE_PATH
@@ -10,7 +20,6 @@ import { generateTruthTable } from './';
 import {
     mapToObject,
     objectToMap,
-    lastOfArray,
     sortObject
 } from '../util';
 import {
@@ -18,16 +27,6 @@ import {
     writeJsonFile
 } from './util';
 import { fuzzing } from './fuzzing';
-import { StateActionIdMap } from './types';
-import {
-    createBddFromTruthTable,
-    TruthTable,
-    bddToMinimalString,
-    fillTruthTable,
-    optimizeBruteForce,
-    OptimisationResult,
-    RootNode
-} from 'binary-decision-diagram';
 import { writeBddTemplate } from '../bdd/write-bdd-template';
 import { measurePerformanceOfStateFunctions, getBetterBdd, getQualityOfBdd, QUALITY_BY_BDD_CACHE } from './calculate-bdd-quality';
 
