@@ -212,7 +212,6 @@ async function run() {
                 const perfMeasurement = await measurePerformanceOfStateFunctions(10000);
                 console.log('state function performance:');
                 console.dir(perfMeasurement);
-    
 
                 await optimizeBruteForce({
                     truthTable,
