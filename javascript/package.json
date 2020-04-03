@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "javascript implementation of the event-reduce algorithm",
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
@@ -8,6 +8,7 @@
   "types": "./dist/es/index.d.ts",
   "sideEffects": false,
   "scripts": {
+    "prepublish": "npm run build",
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
     "transpile": "tsc -p ./ && echo '# transpile es5 (require) sucess!'",
