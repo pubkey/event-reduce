@@ -38,9 +38,6 @@ describe('calculate-bdd-quality.test.ts', () => {
     describe('.measurePerformanceOfStateFunctions()', () => {
         it('should give valid results', async () => {
             const res = await measurePerformanceOfStateFunctions(10000);
-
-            console.log('state function performance:');
-            console.dir(res);
             orderedStateList.forEach(k => {
                 assert.ok(res[k]);
                 assert.ok(res[k] > 0);
