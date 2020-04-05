@@ -7,7 +7,7 @@ import {
 import type { StateResolveFunctionInput } from '../types';
 import { stateResolveFunctionByIndex } from '../states';
 
-export const minimalBddString = '11a+b0c/d3e.f2g*h-i)j(k4lfk7mja7ngh7ojk7pkj7qfl1rbd1sng4tmj4uoj4vpk4wrd5xjt5yqp5zju5{kv5|rk5}jk5~dk5hk5¡fi5¢ke5£fk5¤tk/¥wd/¦x}/§yk/¨sk/©z}/ª{k/«|~/¬uk/­vk/®pk/¯¥d6°¦j6±§¨6²«d6³¥k6´©j6µª¬6¶«k6·hk6¸¬j6¹­¬6ºk6»¡g6¼£g6½¢j6¾hj6¿kj6À¤°)Á¬´)Â¬¸)ÃjÀ-ÄjÁ-ÅjÂ-Æ»±-Ç¯²-È½µ-É³¶-Ê¾¹-Ë·º-Ìi®-Í»¼-Î½¿-Ï¾¿-Ðik-ÑÃj(ÒÄj(ÓÅj(ÔÆÍ(ÕÌÐ(ÖÈÎ(×ÊÏ(ØÑc2ÙÒk2ÚÓk2ÛÔÇ2ÜÖÉ2Ý×Ë2ÞØÙ0ßÛÜ0àÞÚ,áßÝ,âàj.ãáÕ.âã8';
+export const minimalBddString = '11a+b0c/d3e.f2g*h-i)j(k4lkj5mjk5ndk5ohk5pfi5qfk5rke5sfi3tfp3ufk3vfq3wke3xkr3yst1zuv1{wx1|bd1}jl1~bn1ho1¡}k4¢kj4£jk4¤y{0¥zk0¦a¢0§}¡0¨h¢0©ck0ªdk0«pr0¬qk0­gj0®¤r7¯­j7°j¦7±¥§7²­¨7³j¢7´k£7µkj7¶j°-·®±-¸¯²-¹|~-ºjm-»«k-¼­k-½dn-¾j³-¿h´-Àh-Ájk-Âho-Ãiµ-Ä«¬-Åhk-Æik-ÇÁ©2È¶©2É·¹2Ê¸ª2Ëº©2Ì»½2Í¼ª2Î¾k2Ï¿À2ÐÁk2ÑÅÂ2ÒÇÐ,ÓÈÎ,ÔÉÏ,ÕÊÎ,ÖËÐ,×ÌÑ,ØÍÐ,ÙÄÅ,Ú­j,ÛÓÒ/ÜÓÖ/ÝÔ×/ÞÕØ/ßÃÆ/àÜj6áÝÞ6âÙÚ6ãàj(äáâ(åßÆ(æÛj.çãj.èäå.éçè8éæ*';
 
 export const simpleBdd: SimpleBdd = minimalStringToSimpleBdd(minimalBddString);
 export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveWithSimpleBdd(
