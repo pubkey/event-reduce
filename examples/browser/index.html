@@ -4,45 +4,85 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
-    <link
-        rel="stylesheet"
-        type="text/css"
-        href="./style.css"
-    >
 </head>
 
 <body>
-
-
-    <div id="tech-selection">
-        <select id="techSelectionSelect"></select>
-    </div>
-
     <div
         id="queryInput"
         class="one-third"
     >
-        <textarea id="queryTextArea"></textarea>
-        <h4>Actions:</h4>
-        <button id="test100EventsButton">100 events (no event-reduce)</button><br /><br />
-        <button id="test100EventsEventReduceButton">100 with event-reduce</button><br /><br />
+
+        <div class="panel">
+            <h4>Query:</h4>
+            <textarea id="queryTextArea"></textarea>
+        </div>
+
+        <div class="panel">
+            <h4>Actions:</h4>
+            <div
+                id="test100EventsButton"
+                class="button"
+            >100 events (no EventReduce)</div>
+            <p>
+                This will run 100 random events and after each event it will query the database for the new results
+            </p>
+            <hr />
+            <div
+                id="test100EventsEventReduceButton"
+                class="button"
+            >100 events (with EventReduce)</div>
+            <p>
+                This will run 100 random events and after each event it will use EventReduce to calculate the new
+                results
+            </p>
+            <br /><br />
+        </div>
     </div>
 
-    <div
-        id="log"
-        class="one-third"
-    >
+    <div class="one-third">
 
+        <div class="panel">
+            <div class="list-item">
+                <div class="key">Database</div>
+                <div class="value">
+                    <select id="techSelectionSelect"></select>
+                </div>
+            </div>
+            <hr />
+            <div class="list-item">
+                <div class="key">State</div>
+                <div
+                    class="value"
+                    id="loading-state"
+                >
+                    loading page..
+                    <div class="loading-icon"></div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+            <h4>Logs:</h4>
+            <h5>(newest first)</h5>
+            <div id="log">
+                <div id="logs-placeholder">
+                    No logs yet <br />
+                    (use the action buttons)
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div
-        id="results"
-        class="one-third"
-    >
-        <table
-            id="results"
-            border="1"
-        ></table>
+    <div class="one-third">
+        <div class="panel">
+            <h4>Results:</h4>
+            <table
+                id="results"
+                border="1"
+            ></table>
+        </div>
     </div>
 
 

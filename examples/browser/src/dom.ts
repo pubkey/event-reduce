@@ -1,13 +1,9 @@
-
-import AsyncTestUtil from 'async-test-util';
-
 import {
     Human,
     MongoQuery,
     DatabaseImplementation,
     Query
 } from './types';
-const prettyHtml = require('json-pretty-html').default;
 
 const $results = document.getElementById('results');
 const $queryTextArea = document.getElementById('queryTextArea');
@@ -36,11 +32,10 @@ export function setResults(docs: Human[]) {
 
     // add headers
     const headTr = document.createElement('tr');
-    addTdToTr(headTr, 'Id:', true);
-    addTdToTr(headTr, 'Name:', true);
-    addTdToTr(headTr, 'Gender:', true);
-    addTdToTr(headTr, 'Age:', true);
-    addTdToTr(headTr, 'delete:', true);
+    addTdToTr(headTr, '_id:', true);
+    addTdToTr(headTr, 'name:', true);
+    addTdToTr(headTr, 'gender:', true);
+    addTdToTr(headTr, 'age:', true);
     $results.appendChild(headTr);
 
     docs.forEach(doc => {
@@ -85,6 +80,11 @@ export function setQuery(query: Query) {
 }
 
 export function appendToLog(title: string, data?: any) {
+    const logPlaceholder = document.getElementById('logs-placeholder');
+    if (logPlaceholder) {
+        logPlaceholder.remove();
+    }
+
     const logDiv = document.getElementById('log') as any;
     const newLog = document.createElement('div');
     newLog.classList.add('single-log');
@@ -93,15 +93,62 @@ export function appendToLog(title: string, data?: any) {
     titleDiv.innerHTML = title;
     newLog.appendChild(titleDiv);
 
+    const dateDiv = document.createElement('h5');
+    dateDiv.innerHTML = new Date().toLocaleTimeString();
+    newLog.appendChild(dateDiv);
+
+
     if (data) {
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('content');
-        const jsonString = prettyHtml(data);
-        contentDiv.innerHTML = jsonString;
+
+        Object.entries(data).forEach(([key, value], index) => {
+            if (index > 0) {
+                const hrDiv = document.createElement('hr');
+                contentDiv.appendChild(hrDiv);
+            }
+
+            const entryDiv = document.createElement('div');
+            entryDiv.classList.add('list-item');
+
+            const keyDiv = document.createElement('div');
+            keyDiv.classList.add('key');
+            keyDiv.innerHTML = key;
+            entryDiv.appendChild(keyDiv);
+
+            const valueDiv = document.createElement('div');
+            valueDiv.classList.add('value');
+            valueDiv.innerHTML = value.toString();
+            entryDiv.appendChild(valueDiv);
+
+            contentDiv.appendChild(entryDiv);
+        });
         newLog.appendChild(contentDiv);
     }
 
     logDiv.prepend(newLog);
+}
+
+const $loadingState = document.getElementById('loading-state');
+
+export function setLoadingState(label: string = 'Waiting for action trigger') {
+    $loadingState.innerHTML = label;
+    if (label.toLowerCase().startsWith('run')) {
+        const iconDiv = document.createElement('div');
+        iconDiv.classList.add('loading-icon');
+        $loadingState.appendChild(iconDiv);
+    }
+}
+
+export function setButtonsDisableState(to: boolean) {
+    const buttons = document.getElementsByClassName('button');
+    for (let i = 0; i < buttons.length; i++) {
+        if (to) {
+            buttons[i].classList.add('disabled');
+        } else {
+            buttons[i].classList.remove('disabled');
+        }
+    }
 }
 
 export function initDom<QueryType>(implementation: DatabaseImplementation<QueryType>) {

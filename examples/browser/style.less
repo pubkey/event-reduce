@@ -1,0 +1,204 @@
+body {
+    font-family     : Arial, Helvetica, sans-serif;
+    background-color: #e6e6e6;
+
+    .panel {
+        background-color: white;
+        border-radius   : 4px;
+        padding         : 1.25rem;
+
+        box-shadow: 0 .15rem 1.75rem 0 rgba(33, 37, 41, .15);
+        margin-top: 10px;
+
+        h4 {
+            font-size    : 1.25rem;
+            margin-bottom: 20px;
+            font-weight  : 600;
+            line-height  : 1.2;
+            margin-top   : 0;
+        }
+
+        h5 {
+            font-size    : .75rem;
+            margin-bottom: 20px;
+            font-weight  : 300;
+            line-height  : 1.2;
+            margin-top   : 0;
+            color        : grey;
+        }
+
+        hr {
+            margin-top   : 1rem;
+            margin-bottom: 1rem;
+            border       : 0;
+            border-top   : 1px solid #e6e6e6;
+            clear        : both;
+        }
+    }
+
+    .clear {
+        clear: both;
+    }
+
+    .one-third {
+        width  : 30%;
+        padding: 0.5%;
+        float  : left;
+    }
+
+    .list-item {
+        font-size: 85%;
+
+        .key {
+            float      : left;
+            font-weight: 700;
+        }
+
+        .value {
+            float: right;
+        }
+
+        // clearfix
+        &:after {
+            content   : ".";
+            clear     : both;
+            display   : block;
+            visibility: hidden;
+            height    : 0px;
+        }
+    }
+
+    #queryInput {
+        textarea {
+            width        : 100%;
+            height       : 300px;
+            font-size    : 1.2rem;
+            border-radius: 4px;
+            padding-top  : 10px;
+        }
+    }
+
+    #log {
+        min-height: 400px;
+
+        .single-log {
+            border-style : solid;
+            border-width : 1px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            padding      : 1.25rem;
+
+            h4 {
+                margin-bottom: 4px;
+            }
+
+            hr {
+                margin-top   : 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        #logs-placeholder {
+            width      : 100%;
+            text-align : center;
+            padding-top: 100px;
+            color      : grey;
+        }
+    }
+
+    #results {
+        overflow-y: scroll;
+    }
+
+    .button {
+        cursor          : pointer;
+        background-color: #4e73df;
+        color           : white;
+        text-align      : center;
+        padding         : 8px;
+        padding-left    : 10px;
+        padding-right   : 10px;
+        border-radius   : 4px;
+
+        &:hover {
+            text-decoration : underline;
+            background-color: #405cb0;
+        }
+
+        &.disabled {
+            text-decoration : line-through;
+            background-color: #88a4f8;
+        }
+    }
+
+    select {
+        cursor          : pointer;
+        background-color: #4e73df;
+        color           : white;
+        text-align      : center;
+        padding         : 8px;
+        padding-left    : 10px;
+        padding-right   : 10px;
+        border-radius   : 4px;
+
+        &:hover {
+            text-decoration : underline;
+            background-color: #405cb0;
+        }
+
+        option {
+            padding      : 8px;
+            padding-left : 10px;
+            padding-right: 10px;
+            border-radius: 4px;
+        }
+    }
+
+    table {
+        border         : 1px solid #e6e6e6;
+        border-collapse: separate;
+        border-spacing : 0;
+        width          : 100%;
+        border-radius  : 4px;
+
+        th,
+        td {
+            border-spacing: 0;
+            border        : 1px solid #e6e6e6;
+            padding       : 8px;
+            padding-left  : 12px;
+            padding-right : 12px;
+        }
+    }
+}
+
+
+// https://loading.io/css/
+.loading-icon {
+    display: inline-block;
+    width  : 20px;
+    height : 20px;
+    margin-top: 2px;
+}
+
+.loading-icon:after {
+    content      : " ";
+    display      : block;
+    width        : 16px;
+    height       : 16px;
+    margin       : 2px;
+    border-radius: 50%;
+    border       : 1.5px solid #405cb0;
+    border-color : #405cb0 transparent #405cb0 transparent;
+    animation    : loading-icon 1.2s linear infinite;
+}
+
+@keyframes loading-icon {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

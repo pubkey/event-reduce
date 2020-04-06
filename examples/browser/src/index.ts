@@ -4,7 +4,9 @@ import {
     $test100EventsButton,
     appendToLog,
     $test100EventsEventReduceButton,
-    $techSelectionSelect
+    $techSelectionSelect,
+    setButtonsDisableState,
+    setLoadingState
 } from './dom';
 
 import {
@@ -18,6 +20,8 @@ import { Human, IdToDocumentMap, DatabaseImplementation } from './types';
 import { idToDocMapFromList, removeOptions, getParameterByName } from './util';
 import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
+
+import '../style.less';
 
 async function run() {
     const implementations: DatabaseImplementation[] = [
@@ -69,6 +73,9 @@ async function run() {
 
     // without event-reduce
     $test100EventsButton.onclick = async () => {
+        setButtonsDisableState(true);
+        setLoadingState('Run without EventReduce..');
+
         const prevData = await implementation.getAll();
         const events = await getRandomChangeEvents(
             prevData,
@@ -94,10 +101,16 @@ async function run() {
             totalWriteTime,
             queryTime
         });
+
+        setButtonsDisableState(false);
+        setLoadingState();
     };
 
     // with event-reduce
     $test100EventsEventReduceButton.onclick = async () => {
+        setButtonsDisableState(true);
+        setLoadingState('Run with EventReduce..');
+
         const prevData = await implementation.getAll();
         const events = await getRandomChangeEvents(
             prevData,
@@ -148,7 +161,12 @@ async function run() {
             optimizedEventsCount,
             queryTime
         });
+
+        setButtonsDisableState(false);
+        setLoadingState();
     };
+
+    setLoadingState();
 }
 
 run();
