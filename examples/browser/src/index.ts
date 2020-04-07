@@ -13,6 +13,10 @@ import {
     MiniMongoImplementation
 } from './minimongo';
 import {
+    NeDbImplementation
+} from './nedb';
+
+import {
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
@@ -25,7 +29,8 @@ import '../style.less';
 
 async function run() {
     const implementations: DatabaseImplementation[] = [
-        new MiniMongoImplementation()
+        new MiniMongoImplementation(),
+        new NeDbImplementation()
     ];
 
     // init selects
