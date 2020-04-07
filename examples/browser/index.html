@@ -3,20 +3,40 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>EventReduce Browser Demo</title>
 </head>
 
 <body>
-    <div
-        id="queryInput"
-        class="one-third"
-    >
+    <div class="one-third">
 
         <div class="panel">
-            <h4>Query:</h4>
-            <textarea id="queryTextArea"></textarea>
-        </div>
+            <h4>EventReduce Browser Demo</h4>
+            <p>
+                This is the browser demo where the EventReduce algorithm is used in different browser databases
+                so you can test out the performance gains of different queries.
+            </p>
 
+            <hr />
+
+            <div class="list-item">
+                <div class="key">Database</div>
+                <div class="value">
+                    <select id="techSelectionSelect"></select>
+                </div>
+            </div>
+            <hr />
+            <div class="list-item">
+                <div class="key">State</div>
+                <div
+                    class="value"
+                    id="loading-state"
+                >
+                    loading page..
+                    <div class="loading-icon"></div>
+                </div>
+            </div>
+
+        </div>
         <div class="panel">
             <h4>Actions:</h4>
             <div
@@ -41,25 +61,18 @@
 
     <div class="one-third">
 
-        <div class="panel">
-            <div class="list-item">
-                <div class="key">Database</div>
-                <div class="value">
-                    <select id="techSelectionSelect"></select>
-                </div>
-            </div>
-            <hr />
-            <div class="list-item">
-                <div class="key">State</div>
-                <div
-                    class="value"
-                    id="loading-state"
-                >
-                    loading page..
-                    <div class="loading-icon"></div>
-                </div>
-            </div>
+        <div
+            class="panel"
+            id="queryInput"
+        >
+            <h4>Query:</h4>
+            <textarea id="queryTextArea"></textarea>
 
+            <br />
+
+            <div class="button example-query-button">Query #1</div>
+            <div class="button example-query-button">Query #2</div>
+            <div class="button example-query-button">Query #3</div>
         </div>
 
 
@@ -73,6 +86,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="one-third">
