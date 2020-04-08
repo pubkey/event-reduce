@@ -168,12 +168,20 @@ async function run() {
             };
             const action = calculateActionName(input);
             if (action === 'runFullQueryAgain') {
+                /**
+                 * when EventReduce could not optimize the input,
+                 * we get the actionName 'runFullQueryAgain'
+                 * and run the query over the database again
+                 */
                 currentResults = await implementation.getRawResults(query);
                 currentDocMap = idToDocMapFromList(currentResults);
-
-                // console.dir(JSON.parse(JSON.stringify(input)));
             } else {
                 optimizedEventsCount++;
+                /**
+                 * EventReduce was able to optimize the event
+                 * and we can run the correct action function
+                 * to calculate the new results
+                 */
                 runAction(
                     action,
                     queryParams,

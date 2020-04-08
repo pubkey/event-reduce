@@ -13,16 +13,16 @@
 
 
 <ul>
-    <li>You make a query to the database which returns the result in 100 milliseconds</li>
-    <li>A write event occurs on the database and changes some data</li>
-    <li>To get the new version of the query's results you now have three options:</li>
+    <li>1. You make a query to the database which returns the result in 100 milliseconds</li>
+    <li>2. A write event occurs on the database and changes some data</li>
+    <li>3. To get the new version of the query's results you now have three options:</li>
     <ul>
-        <li>Run the query over the database again which takes again 100 milliseconds</li>
+        <li>a. Run the query over the database again which takes again 100 milliseconds</li>
         <li>
-            Write complex code that calculates the new result depending on many different states and conditions
+            b. Write complex code that somehow merges the incoming event with the old state
         </li>
         <li>
-            Use <b>Event-Reduce</b> to calculate the new results on the CPU without disc-IO <b>nearly instant</b>
+            c. Use <b>Event-Reduce</b> to calculate the new results on the CPU without disc-IO <b>nearly instant</b>
         </li>
     </ul>
 </ul>
@@ -51,7 +51,7 @@ For each of our `2^17` state combinations, we calculate which action function gi
 
 From this state-action combinations we create a big truth table that is used to create a [binary decision diagram](https://github.com/pubkey/binary-decision-diagram). The BDD is then optimized to call as less `state functions` as possible to determine the correct action of an incoming event-results combination.
 
-The resulting optimized BDD is then shipped as the EventReduce algoritm and can be used in different programming languages and implementations.
+The resulting optimized BDD is then shipped as the EventReduce algoritm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [browser demo](https://github.com/pubkey/event-reduce/blob/master/examples/browser/src/index.ts#L163-L191)
 
 ## When to use this
 
@@ -69,7 +69,7 @@ You can use this to..
 
 ## Implementations
 
-At the moment there is only the [javascript implementation](./javascript/) that you can use over npm. Pull requests for other languages are welcomed.
+At the moment there is only the [JavaScript implementation](./javascript/) that you can use over npm. Pull requests for other languages are welcomed.
 
 ## Previous Work
 
