@@ -70,12 +70,23 @@
 
             <br />
 
-            <div class="button example-query-button">Query #1</div>
-            <div class="button example-query-button">Query #2</div>
-            <div class="button example-query-button">Query #3</div>
+            <div
+                class="button"
+                id="invalid-query"
+            >Invalid Query</div>
+            <div id="query-example-buttons"></div>
         </div>
 
+        <div class="panel">
+            <h4>Results:</h4>
+            <table
+                id="results"
+                border="1"
+            ></table>
+        </div>
+    </div>
 
+    <div class="one-third">
         <div class="panel">
             <h4>Logs:</h4>
             <h5>(newest first)</h5>
@@ -85,17 +96,6 @@
                     (use the action buttons)
                 </div>
             </div>
-        </div>
-
-    </div>
-
-    <div class="one-third">
-        <div class="panel">
-            <h4>Results:</h4>
-            <table
-                id="results"
-                border="1"
-            ></table>
         </div>
     </div>
 

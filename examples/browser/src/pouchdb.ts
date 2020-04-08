@@ -1,12 +1,14 @@
-import { randomString, performanceNow, clone } from 'async-test-util';
+import { randomString, performanceNow } from 'async-test-util';
 import { ChangeEvent, QueryParams } from 'event-reduce-js';
 
 import PouchDb from 'pouchdb-core';
 import PouchFind from 'pouchdb-find';
-import PouchIdb from 'pouchdb-adapter-indexeddb';
+import PouchIndexedDb from 'pouchdb-adapter-indexeddb';
+import PouchIdb from 'pouchdb-adapter-idb';
 import PouchMem from 'pouchdb-adapter-memory';
 
 PouchDb.plugin(PouchFind as any);
+PouchDb.plugin(PouchIndexedDb as any);
 PouchDb.plugin(PouchIdb as any);
 PouchDb.plugin(PouchMem as any);
 
@@ -27,7 +29,8 @@ export class PouchDbImplementation implements DatabaseImplementation<MongoQuery>
     getStorageOptions(): string[] {
         return [
             'indexeddb',
-            'memory'
+            'memory',
+            // 'idb' // old pouchdb indexeddb adapter (about half as fast)
         ];
     }
     async init(storageOption: string): Promise<void> {
@@ -58,19 +61,29 @@ export class PouchDbImplementation implements DatabaseImplementation<MongoQuery>
 
     }
     getExampleQueries(): MongoQuery[] {
-        return [{
-            selector: {
-                age: {
-                    $gt: 18
+        return [
+            {
+                selector: {
+                    age: {
+                        $gt: 18
+                    },
+                    gender: 'm',
+                    name: {
+                        $gt: null
+                    }
                 },
-                gender: 'm',
-                name: {
-                    $gt: null
-                }
+                limit: 10,
+                sort: ['name']
             },
-            limit: 10,
-            sort: ['name']
-        }];
+            {
+                selector: {
+                    gender: 'f'
+                },
+                skip: 5,
+                limit: 10,
+                sort: ['-age']
+            }
+        ];
     }
     getQueryParams(query: MongoQuery): QueryParams<any> {
         return getQueryParamsByMongoQuery(query);

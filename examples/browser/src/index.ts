@@ -2,11 +2,13 @@ import {
     setQuery,
     setResults,
     $test100EventsButton,
-    appendToLog,
     $test100EventsEventReduceButton,
     $techSelectionSelect,
     setButtonsDisableState,
-    setLoadingState
+    setLoadingState,
+    setExampleQueries,
+    $queryTextArea,
+    $invalidQuery
 } from './dom';
 
 import {
@@ -20,29 +22,30 @@ import {
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
-import { Human, IdToDocumentMap, DatabaseImplementation } from './types';
+import { Human, IdToDocumentMap, DatabaseImplementation, Query } from './types';
 import { idToDocMapFromList, removeOptions, getParameterByName } from './util';
 import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
 
 import '../style.less';
 import { PouchDbImplementation } from './pouchdb';
+import { appendToLog } from './logs';
 
 async function run() {
     const implementations: DatabaseImplementation[] = [
         new MiniMongoImplementation(),
-        new NeDbImplementation(),
-        new PouchDbImplementation()
+        new PouchDbImplementation(),
+        new NeDbImplementation()
     ];
 
     // init selects
     implementations.forEach(imp => {
         const name = imp.getName();
-        imp.getStorageOptions().forEach(storage => {
-            const option = document.createElement('option');
-            option.text = name + ': ' + storage;
-            option.value = name + ':' + storage;
-            $techSelectionSelect.add(option);
+        imp.getStorageOptions().forEach(option => {
+            const optionDiv = document.createElement('option');
+            optionDiv.text = name + ': ' + option;
+            optionDiv.value = name + ':' + option;
+            $techSelectionSelect.add(optionDiv);
         });
     });
     const techParam = getParameterByName('tech');
@@ -71,12 +74,37 @@ async function run() {
 
 
     // init inintial query
-    const query = implementation.getExampleQueries()[0];
+    let query = implementation.getExampleQueries()[0];
     setQuery(query);
     let currentResults: Human[] = await implementation.getRawResults(query);
     let currentDocMap: IdToDocumentMap = idToDocMapFromList(currentResults);
     setResults(currentResults);
 
+    // update results on query change
+    $queryTextArea.onkeyup = async () => {
+        console.log('$queryTextArea.onkeyup()');
+        const newValue = ($queryTextArea as any).value;
+        try {
+            query = JSON.parse(newValue);
+            currentResults = await implementation.getRawResults(query);
+            setResults(currentResults);
+            $invalidQuery.style.display = 'none';
+        } catch (err) {
+            console.dir(newValue);
+            console.dir(err);
+            $invalidQuery.style.display = 'block';
+        }
+    };
+
+    // add query example buttons
+    setExampleQueries(
+        implementation.getExampleQueries(),
+        async (clickedQuery: Query) => {
+            $invalidQuery.style.display = 'none';
+            currentResults = await implementation.getRawResults(clickedQuery);
+            setResults(currentResults);
+        }
+    );
 
     // without event-reduce
     $test100EventsButton.onclick = async () => {

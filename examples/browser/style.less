@@ -2,6 +2,15 @@ body {
     font-family     : Arial, Helvetica, sans-serif;
     background-color: #e6e6e6;
 
+
+    .clear {
+        clear: both;
+    }
+
+    .info-icon {
+        color: #2a67c9;
+    }
+
     .panel {
         background-color: white;
         border-radius   : 4px;
@@ -34,10 +43,6 @@ body {
             border-top   : 1px solid #e6e6e6;
             clear        : both;
         }
-    }
-
-    .clear {
-        clear: both;
     }
 
     .one-third {
@@ -78,9 +83,18 @@ body {
         }
 
         .example-query-button {
-            width  : fit-content;
-            display: inline-block;
+            width       : fit-content;
+            display     : inline-block;
+            margin-right: 5px;
+
         }
+
+        #invalid-query {
+            background-color: #df4e55;
+            margin-bottom   : 10px;
+            display         : none;
+        }
+
     }
 
     #log {
@@ -88,6 +102,7 @@ body {
 
         .single-log {
             border-style : solid;
+            border-color : #bebebe;
             border-width : 1px;
             border-radius: 4px;
             margin-bottom: 8px;

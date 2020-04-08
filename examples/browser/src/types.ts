@@ -24,7 +24,8 @@ export type FirestoreQueryPart = {
     field: string;
     op: '==' | '>=' | '<=' | '<' | '>';
     value: string | number;
-}
+};
+
 export type FirestoreQuery = FirestoreQueryPart[];
 
 export type Query = MongoQuery | FirestoreQuery;

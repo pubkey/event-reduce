@@ -74,16 +74,26 @@ export class NeDbImplementation implements DatabaseImplementation<MongoQuery> {
     }
 
     getExampleQueries(): MongoQuery[] {
-        return [{
-            selector: {
-                age: {
-                    $gt: 18
+        return [
+            {
+                selector: {
+                    age: {
+                        $gt: 18
+                    },
+                    gender: 'm'
                 },
-                gender: 'm'
+                limit: 10,
+                sort: ['name', '_id']
             },
-            limit: 10,
-            sort: ['name', '_id']
-        }];
+            {
+                selector: {
+                    gender: 'f'
+                },
+                skip: 5,
+                limit: 10,
+                sort: ['-age', '_id']
+            }
+        ];
     }
     getQueryParams(query: MongoQuery): QueryParams<any> {
         return getQueryParamsByMongoQuery(query);
