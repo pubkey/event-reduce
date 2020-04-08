@@ -26,11 +26,13 @@ import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction 
 import { performanceNow } from 'async-test-util';
 
 import '../style.less';
+import { PouchDbImplementation } from './pouchdb';
 
 async function run() {
     const implementations: DatabaseImplementation[] = [
         new MiniMongoImplementation(),
-        new NeDbImplementation()
+        new NeDbImplementation(),
+        new PouchDbImplementation()
     ];
 
     // init selects
