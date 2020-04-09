@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>EventReduce Browser Demo</title>
+</head>
+
+<body>
+    <div class="one-third">
+
+        <div class="panel">
+            <h4>EventReduce Browser Demo</h4>
+            <p>
+                This is the browser demo where the EventReduce algorithm is used in different browser databases
+                so you can test out the performance gains of different queries.
+            </p>
+
+            <hr />
+
+            <div class="list-item">
+                <div class="key">Database</div>
+                <div class="value">
+                    <select id="techSelectionSelect"></select>
+                </div>
+            </div>
+            <hr />
+            <div class="list-item">
+                <div class="key">State</div>
+                <div
+                    class="value"
+                    id="loading-state"
+                >
+                    loading page..
+                    <div class="loading-icon"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="panel">
+            <h4>Actions:</h4>
+            <div
+                id="test100EventsButton"
+                class="button"
+            >100 events (no EventReduce)</div>
+            <p>
+                This will run 100 random events and after each event it will query the database for the new results
+            </p>
+            <hr />
+            <div
+                id="test100EventsEventReduceButton"
+                class="button"
+            >100 events (with EventReduce)</div>
+            <p>
+                This will run 100 random events and after each event it will use EventReduce to calculate the new
+                results
+            </p>
+            <br /><br />
+        </div>
+    </div>
+
+    <div class="one-third">
+
+        <div
+            class="panel"
+            id="queryInput"
+        >
+            <h4>Query:</h4>
+            <textarea id="queryTextArea"></textarea>
+
+            <br />
+
+            <div
+                class="button"
+                id="invalid-query"
+            >Invalid Query</div>
+            <div id="query-example-buttons"></div>
+        </div>
+
+        <div class="panel">
+            <h4>Results:</h4>
+            <table
+                id="results"
+                border="1"
+            ></table>
+        </div>
+    </div>
+
+    <div class="one-third">
+        <div class="panel">
+            <h4>Logs:</h4>
+            <h5>(newest first)</h5>
+            <div id="log">
+                <div id="logs-placeholder">
+                    No logs yet <br />
+                    (use the action buttons)
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="bundle.js"></script>
+</body>
+
+</html>

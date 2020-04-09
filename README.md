@@ -55,11 +55,11 @@ The resulting optimized BDD is then shipped as the EventReduce algoritm and can 
 
 ## When to use this
 
-You can use this to..
+You can use this to
 
-* ..reduce the latency until a change to the database updates your application
-* ..make observing query results more scalable by doing less disk-io
-* ..reduce the bandwith when streaming realtime query results from the backend to the client
+* reduce the latency until a change to the database updates your application
+* make observing query results more scalable by doing less disk-io
+* reduce the bandwith when streaming realtime query results from the backend to the client
 
 ## Limitations
 
