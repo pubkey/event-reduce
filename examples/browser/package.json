@@ -3,10 +3,11 @@
     "version": "1.0.0",
     "scripts": {
         "lint": "tslint --project .",
-        "start": "webpack-dev-server",
+        "start": "webpack-dev-server --config webpack.dev.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "mongo": "bash mongodb.bash",
-        "server": "ts-node -O '{\"module\": \"commonjs\"}' ./src/server.ts"
+        "server": "ts-node -O '{\"module\": \"commonjs\"}' ./src/server.ts",
+        "build": "webpack --config webpack.prod.js && cp ./index.html ./dist/index.html"
     },
     "repository": {
         "type": "git",

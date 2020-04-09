@@ -1,4 +1,8 @@
-import Faker from 'faker';
+import {
+  random,
+  name,
+  seed
+} from 'faker';
 import {
   Human,
   Procedure
@@ -16,14 +20,14 @@ import { randomOfArray } from './util';
 /**
  * use a seed to ensure each time we generate the same data
  */
-Faker.seed(2345);
+seed(2345);
 
 export function randomHuman(): Human {
   return {
-    _id: Faker.random.alphaNumeric(10),
-    name: Faker.name.firstName().toLowerCase(),
-    gender: Faker.random.boolean() ? 'f' : 'm',
-    age: Faker.random.number({ min: 1, max: 100 })
+    _id: random.alphaNumeric(10),
+    name: name.firstName().toLowerCase(),
+    gender: random.boolean() ? 'f' : 'm',
+    age: random.number({ min: 1, max: 100 })
   };
 }
 
@@ -47,15 +51,15 @@ export function getInitialData(amount: number = 100): ChangeEvent<Human>[] {
 }
 
 const keyToChangeFn = {
-  1: (i: Human) => i.name = Faker.name.firstName().toLowerCase(),
-  2: (i: Human) => i.gender = Faker.random.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = Faker.random.number({ min: 1, max: 100 })
+  1: (i: Human) => i.name = name.firstName().toLowerCase(),
+  2: (i: Human) => i.gender = random.boolean() ? 'f' : 'm',
+  3: (i: Human) => i.age = random.number({ min: 1, max: 100 })
 };
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = Faker.random.number({ min: 1, max: 3 });
+  const field = random.number({ min: 1, max: 3 });
   keyToChangeFn[field](cloned);
 
   return cloned;
@@ -93,7 +97,7 @@ export function randomChangeEvent(
       };
       break;
     case 'UPDATE':
-      const oldDoc = Faker.random.arrayElement(allDocs);
+      const oldDoc = random.arrayElement(allDocs);
       const changedDoc = randomChangeHuman(oldDoc);
       ret = {
         operation,
@@ -103,7 +107,7 @@ export function randomChangeEvent(
       };
       break;
     case 'DELETE':
-      const docToDelete: Human = Faker.random.arrayElement(allDocs);
+      const docToDelete: Human = random.arrayElement(allDocs);
       ret = {
         operation,
         id: docToDelete._id,
