@@ -27,9 +27,9 @@ stages:
 jobs:
   include:
     - stage: implementations
-      script: npm run build && (cd ./javascript && npm install > "/dev/null" 2>&1 &&  npm run lint && npm run build && travis_retry npm run test)
+      script: (cd ./javascript && npm install > "/dev/null" 2>&1 &&  npm run lint && npm run build && travis_retry npm run test)
       env: LABEL=javascript
 
     - stage: examples
-      script: npm run build && (cd ./examples/browser && npm install > "/dev/null" 2>&1 &&  npm run lint && npm run build)
+      script: (cd ./examples/browser && npm install > "/dev/null" 2>&1 &&  npm run lint && npm run build)
       env: LABEL=browser
