@@ -103,21 +103,38 @@ export function setExampleQueries(
 
 const $loadingState = document.getElementById('loading-state');
 
+export function isLoading() {
+    const label = $loadingState.innerHTML;
+    if (label.toLowerCase().startsWith('run')) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 export function setLoadingState(label: string = 'Waiting for action trigger') {
     $loadingState.innerHTML = label;
-    if (label.toLowerCase().startsWith('run')) {
+    if (isLoading()) {
         const iconDiv = document.createElement('div');
         iconDiv.classList.add('loading-icon');
         $loadingState.appendChild(iconDiv);
     }
 }
 
+
+let disabledState = false;
+export function buttonsDisabled(): boolean {
+    return disabledState;
+}
+
 export function setButtonsDisableState(to: boolean) {
     const buttons = document.getElementsByClassName('button');
     for (let i = 0; i < buttons.length; i++) {
         if (to) {
+            disabledState = true;
             buttons[i].classList.add('disabled');
         } else {
+            disabledState = false;
             buttons[i].classList.remove('disabled');
         }
     }

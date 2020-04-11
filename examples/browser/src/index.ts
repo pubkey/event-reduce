@@ -8,7 +8,8 @@ import {
     setLoadingState,
     setExampleQueries,
     $queryTextArea,
-    $invalidQuery
+    $invalidQuery,
+    buttonsDisabled
 } from './dom';
 
 import {
@@ -108,6 +109,8 @@ async function run() {
 
     // without event-reduce
     $test100EventsButton.onclick = async () => {
+        if (buttonsDisabled()) return;
+
         setButtonsDisableState(true);
         setLoadingState('Run without EventReduce..');
 
@@ -143,6 +146,8 @@ async function run() {
 
     // with event-reduce
     $test100EventsEventReduceButton.onclick = async () => {
+        if (buttonsDisabled()) return;
+
         setButtonsDisableState(true);
         setLoadingState('Run with EventReduce..');
 
