@@ -1,0 +1,18 @@
+import type { StateResolveFunction } from '../types';
+export declare const hasLimit: StateResolveFunction<any>;
+export declare const isFindOne: StateResolveFunction<any>;
+export declare const hasSkip: StateResolveFunction<any>;
+export declare const isDelete: StateResolveFunction<any>;
+export declare const isInsert: StateResolveFunction<any>;
+export declare const isUpdate: StateResolveFunction<any>;
+export declare const previousUnknown: StateResolveFunction<any>;
+export declare const wasLimitReached: StateResolveFunction<any>;
+export declare const sortParamsChanged: StateResolveFunction<any>;
+export declare const wasInResult: StateResolveFunction<any>;
+export declare const wasSortedBeforeFirst: StateResolveFunction<any>;
+export declare const wasSortedAfterLast: StateResolveFunction<any>;
+export declare const isSortedBeforeFirst: StateResolveFunction<any>;
+export declare const isSortedAfterLast: StateResolveFunction<any>;
+export declare const wasMatching: StateResolveFunction<any>;
+export declare const doesMatchNow: StateResolveFunction<any>;
+export declare const wasResultsEmpty: StateResolveFunction<any>;

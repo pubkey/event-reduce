@@ -17,7 +17,7 @@
     <li>2. A write event occurs on the database and changes some data</li>
     <li>3. To get the new version of the query's results you now have three options:</li>
     <ul>
-        <li>a. Run the query over the database again which takes again 100 milliseconds</li>
+        <li>a. Run the query over the database again which takes another 100 milliseconds</li>
         <li>
             b. Write complex code that somehow merges the incoming event with the old state
         </li>
