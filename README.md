@@ -51,7 +51,7 @@ For each of our `2^17` state combinations, we calculate which action function gi
 
 From this state-action combinations we create a big truth table that is used to create a [binary decision diagram](https://github.com/pubkey/binary-decision-diagram). The BDD is then optimized to call as less `state functions` as possible to determine the correct action of an incoming event-results combination.
 
-The resulting optimized BDD is then shipped as the EventReduce algoritm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [browser demo](https://github.com/pubkey/event-reduce/blob/master/examples/browser/src/index.ts#L163-L191)
+The resulting optimized BDD is then shipped as the EventReduce algoritm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [javascript implementation](https://github.com/pubkey/event-reduce/tree/master/javascript)
 
 ## When to use this
 
