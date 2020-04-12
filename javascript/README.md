@@ -65,7 +65,7 @@ const queryParams = getQueryParamsByMongoQuery(exampleQuery);
 
 ```typescript
 
-// build a 
+// build the input
 const input: StateResolveFunctionInput<DocumentType> = {
     // the changeEvent
     changeEvent,
@@ -91,7 +91,7 @@ if (action === 'runFullQueryAgain') {
     // also refresh the key-document map
     currentDocMap.clear();
     currentResults.forEach(doc => currentDocMap.set(doc._id, doc));
-}else {
+} else {
     // event-reduce could optimize the event, run the action function
     runAction(
         action,
