@@ -60,7 +60,7 @@ You can use this to
 * reduce the latency until a change to the database updates your application
 * make observing query results more scalable by doing less disk-io
 * reduce the bandwith when streaming realtime query results from the backend to the client
-* create a better form of caching where instead of invalidating the cache on write, you update it's content
+* create a better form of caching where instead of invalidating the cache on write, you update its content
 
 ## Limitations
 
