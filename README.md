@@ -85,15 +85,15 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 
 <details>
   <summary>Is this something like materialized views?</summary>
-  Yes and now. Materialized views solve a similar problem but in a different way with different tradeoffs. When you have many users, all subscribing to **different** queries, you cannot create that many views because they are all recalculated on each write access to the database. EventReduce however has a better scalability because I does not affect write performance and the calculation is done when the fresh query results are requested not beforehand.
+  Yes and now. Materialized views solve a similar problem but in a different way with different tradeoffs. When you have many users, all subscribing to <b>different queries</b>, you cannot create that many views because they are all recalculated on each write access to the database. EventReduce however has a better scalability because I does not affect write performance and the calculation is done when the fresh query results are requested not beforehand.
 </details>
 
 <details>
   <summary>Is this something like event sourcing or CQRS?</summary>
-  No, event sourcing is mostly used to calculate a current state by attaching the full event stream to the starting state. This allows for stuff like time travel and so on. EventReduce solves a completely different (performance-) problem and only shares some common keywords like `event`.
+  No, event sourcing is mostly used to calculate a current state by attaching the full event stream to the starting state. This allows for stuff like time travel and so on. EventReduce solves a completely different (performance-) problem and only shares some common keywords like <b>event</b>.
 </details>
 
 <details>
   <summary>Isn't this optimization already done by database engines?</summary>
-  No, I tested EventReduce with many common databases like MongoDB, MySQL and Postgres. Each of had better performance with Event-Reduce then just observing the eventstream and running the queries again. If you understand what Event-Reduce exactly does, it comes clear that this optimization can not done by pull-based databases because they have missing information.
+  No. I tested EventReduce with many common databases like MongoDB, MySQL and Postgres. Each of them had better performance with Event-Reduce then just observing the eventstream and running the queries again. If you understand what Event-Reduce exactly does, it comes clear that this optimization can not done by pull-based databases because they have missing information.
 </details>
