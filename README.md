@@ -66,7 +66,7 @@ You can use this to
 
 - EventReduce only works with queries that have a [predictable](https://stackoverflow.com/a/11599283) sort-order for any given documents. (you can make any query predicable by adding the primary key as last sort parameter)
 
-- EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround)
+- EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for realtional queries but I did not need this for now. Also it takes about one week on an average machine to run all optimizations, and having more state functions looks like an NP problem.
 
 ## Implementations
 
@@ -79,3 +79,21 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 - RxDB used the [QueryChangeDetection](https://github.com/pubkey/rxdb/blob/a7202ac7e2985ff088d53d6a0c86d90d0b438467/docs-src/query-change-detection.md) which works by many handwritten if-else comparisons. RxDB will switch to EventReduce in it's next major release.
 
 - Baqend is [creating a database](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/620/invalidb_4-pages.pdf) that optimizes for realtime queries. Watch the video [Real-Time Databases Explained: Why Meteor, RethinkDB, Parse & Firebase Don't Scale](https://www.youtube.com/watch?v=HiQgQ88AdYo&t=1703s) to learn more.
+
+
+## FAQ
+
+<details>
+  <summary>Is this something like materialized views?</summary>
+  Yes and now. Materialized views solve a similar problem but in a different way with different tradeoffs. When you have many users, all subscribing to **different** queries, you cannot create that many views because they are all recalculated on each write access to the database. EventReduce however has a better scalability because I does not affect write performance and the calculation is done when the fresh query results are requested not beforehand.
+</details>
+
+<details>
+  <summary>Is this something like event sourcing or CQRS?</summary>
+  No, event sourcing is mostly used to calculate a current state by attaching the full event stream to the starting state. This allows for stuff like time travel and so on. EventReduce solves a completely different (performance-) problem and only shares some common keywords like `event`.
+</details>
+
+<details>
+  <summary>Isn't this optimization already done by database engines?</summary>
+  No, I tested EventReduce with many common databases like MongoDB, MySQL and Postgres. Each of had better performance with Event-Reduce then just observing the eventstream and running the queries again. If you understand what Event-Reduce exactly does, it comes clear that this optimization can not done by pull-based databases because they have missing information.
+</details>
