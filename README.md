@@ -66,7 +66,7 @@ You can use this to
 
 - EventReduce only works with queries that have a [predictable](https://stackoverflow.com/a/11599283) sort-order for any given documents. (you can make any query predicable by adding the primary key as last sort parameter)
 
-- EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for realtional queries but I did not need this for now. Also it takes about one week on an average machine to run all optimizations, and having more state functions looks like an NP problem.
+- EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for realational queries but I did not need this for now. Also it takes about one week on an average machine to run all optimizations, and having more state functions looks like an NP problem.
 
 ## Implementations
 
