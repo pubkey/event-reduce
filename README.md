@@ -85,7 +85,7 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 
 <details>
   <summary>Is this something like materialized views?</summary>
-  Yes and now. Materialized views solve a similar problem but in a different way with different tradeoffs. When you have many users, all subscribing to <b>different queries</b>, you cannot create that many views because they are all recalculated on each write access to the database. EventReduce however has a better scalability because I does not affect write performance and the calculation is done when the fresh query results are requested not beforehand.
+  Yes and no. Materialized views solve a similar problem but in a different way with different trade-offs. When you have many users, all subscribing to <b>different queries</b>, you cannot create that many views because they are all recalculated on each write access to the database. EventReduce however has a better scalability because I does not affect write performance and the calculation is done when the fresh query results are requested not beforehand.
 </details>
 
 <details>
