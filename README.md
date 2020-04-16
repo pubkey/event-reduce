@@ -78,7 +78,7 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 
 - RxDB used the [QueryChangeDetection](https://github.com/pubkey/rxdb/blob/a7202ac7e2985ff088d53d6a0c86d90d0b438467/docs-src/query-change-detection.md) which works by many handwritten if-else comparisons. RxDB will switch to EventReduce in it's next major release.
 
-- Baqend is [creating a database](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/620/invalidb_4-pages.pdf) that optimizes for realtime queries. Watch the video [Real-Time Databases Explained: Why Meteor, RethinkDB, Parse & Firebase Don't Scale](https://www.youtube.com/watch?v=HiQgQ88AdYo&t=1703s) to learn more.
+- Baqend is [creating a database](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/620/invalidb_4-pages.pdf) that optimizes for realtime queries. Watch the video [Real-Time Databases Explained: Why Meteor, RethinkDB, Parse & Firebase Don't Scale](https://www.youtube.com/watch?v=HiQgQ88AdYo) to learn more.
 
 
 ## FAQ
