@@ -7,7 +7,7 @@ Run all tests in nodejs
 
 Calculate the initial truth table from the defined events and queries.
 
-## npm run itterative-fuzzing
+## npm run iterative-fuzzing
 
 Randomly generate write events and check if their optimized result matches a full query over the database
 
