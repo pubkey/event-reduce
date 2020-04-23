@@ -30,26 +30,26 @@
     "@types/deep-equal": "1.0.1",
     "@types/faker": "4.1.11",
     "@types/mocha": "7.0.2",
-    "@types/node": "13.11.0",
+    "@types/node": "13.13.2",
     "array-shuffle": "1.0.1",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
+    "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "deep-equal": "2.0.2",
     "faker": "4.1.0",
     "minimongo": "6.5.0",
     "mocha": "7.1.1",
     "pouchdb-selector-core": "7.2.1",
-    "rimraf": "3.0.2",
-    "ts-node": "8.8.2",
-    "tslint": "6.1.1",
-    "typescript": "3.8.3",
     "read-last-lines": "1.7.2",
-    "child-process-promise": "2.2.1"
+    "rimraf": "3.0.2",
+    "ts-node": "8.9.0",
+    "tslint": "6.1.1",
+    "typescript": "3.8.3"
   },
   "dependencies": {
     "array-push-at-sort-position": "1.2.0",
-    "binary-decision-diagram": "1.2.1",
+    "binary-decision-diagram": "1.2.2",
     "object-path": "0.11.4"
   }
 }
