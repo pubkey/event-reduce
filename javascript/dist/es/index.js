@@ -1,6 +1,7 @@
 import { getStateSet } from './states';
 import { actionFunctions, orderedActionList } from './actions';
 import { resolveInput } from './bdd/bdd.generated';
+export * from './states';
 export * from './util';
 export function calculateActionFromMap(stateSetToActionMap, input) {
     var stateSet = getStateSet(input);

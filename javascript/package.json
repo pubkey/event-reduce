@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "javascript implementation of the event-reduce algorithm",
   "license": "MIT",
   "main": "./dist/lib/index.js",
@@ -43,13 +43,13 @@
     "rimraf": "3.0.2",
     "ts-node": "8.8.2",
     "tslint": "6.1.1",
-    "typescript": "3.8.3"
+    "typescript": "3.8.3",
+    "read-last-lines": "1.7.2",
+    "child-process-promise": "2.2.1"
   },
   "dependencies": {
     "array-push-at-sort-position": "1.2.0",
     "binary-decision-diagram": "1.2.1",
-    "child-process-promise": "2.2.1",
-    "object-path": "0.11.4",
-    "read-last-lines": "1.7.2"
+    "object-path": "0.11.4"
   }
 }

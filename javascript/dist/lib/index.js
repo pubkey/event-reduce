@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var states_1 = require("./states");
 var actions_1 = require("./actions");
 var bdd_generated_1 = require("./bdd/bdd.generated");
+__export(require("./states"));
 __export(require("./util"));
 function calculateActionFromMap(stateSetToActionMap, input) {
     var stateSet = states_1.getStateSet(input);
