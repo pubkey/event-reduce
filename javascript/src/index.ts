@@ -13,6 +13,7 @@ import { actionFunctions, orderedActionList } from './actions';
 import { resolveInput } from './bdd/bdd.generated';
 
 export * from './types';
+export * from './states';
 export * from './util';
 
 export function calculateActionFromMap<DocType>(
