@@ -66,7 +66,7 @@ You can use this to
 
 - EventReduce only works with queries that have a [predictable](https://stackoverflow.com/a/11599283) sort-order for any given documents. (you can make any query predicable by adding the primary key as last sort parameter)
 
-- EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for realational queries but I did not need this for now. Also it takes about one week on an average machine to run all optimizations, and having more state functions looks like an NP problem.
+- EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for relational queries but I did not need this for now. Also it takes about one week on an average machine to run all optimizations, and having more state functions looks like an NP problem.
 
 ## Implementations
 
@@ -79,6 +79,8 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 - RxDB used the [QueryChangeDetection](https://github.com/pubkey/rxdb/blob/a7202ac7e2985ff088d53d6a0c86d90d0b438467/docs-src/query-change-detection.md) which works by many handwritten if-else comparisons. RxDB will switch to EventReduce in it's next major release.
 
 - Baqend is [creating a database](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/620/invalidb_4-pages.pdf) that optimizes for realtime queries. Watch the video [Real-Time Databases Explained: Why Meteor, RethinkDB, Parse & Firebase Don't Scale](https://www.youtube.com/watch?v=HiQgQ88AdYo) to learn more.
+
+- [Noria](https://github.com/mit-pdos/noria) also uses the priciple of recomputing query results incrementally on table writes. Read the paper [Noria: dynamic, partially-stateful data-flow for high-performance web applications](https://pdos.csail.mit.edu/papers/noria:osdi18.pdf)
 
 
 ## FAQ
