@@ -37,7 +37,7 @@
         "webpack-cli": "3.3.11"
     },
     "devDependencies": {
-        "@babel/polyfill": "7.8.3",
+        "@babel/polyfill": "7.10.4",
         "@types/faker": "4.1.9",
         "css-loader": "3.5.0",
         "less": "3.11.1",
