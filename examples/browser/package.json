@@ -39,7 +39,7 @@
     "devDependencies": {
         "@babel/polyfill": "7.10.4",
         "@types/faker": "4.1.12",
-        "css-loader": "3.5.0",
+        "css-loader": "3.6.0",
         "less": "3.11.1",
         "less-loader": "5.0.0",
         "style-loader": "1.1.3",
