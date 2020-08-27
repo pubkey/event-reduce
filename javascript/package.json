@@ -36,7 +36,7 @@
     "async-test-util": "1.7.3",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
-    "deep-equal": "2.0.2",
+    "deep-equal": "2.0.3",
     "faker": "4.1.0",
     "minimongo": "6.5.0",
     "mocha": "7.1.1",
