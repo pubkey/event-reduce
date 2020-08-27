@@ -38,7 +38,7 @@
     "clone": "2.1.2",
     "deep-equal": "2.0.3",
     "faker": "4.1.0",
-    "minimongo": "6.5.0",
+    "minimongo": "6.5.1",
     "mocha": "7.1.1",
     "pouchdb-selector-core": "7.2.1",
     "read-last-lines": "1.7.2",
