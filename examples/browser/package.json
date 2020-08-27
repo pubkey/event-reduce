@@ -32,7 +32,7 @@
         "pouchdb-adapter-memory": "7.2.1",
         "pouchdb-core": "7.2.1",
         "pouchdb-find": "7.2.1",
-        "rxjs": "6.5.4",
+        "rxjs": "6.6.2",
         "webpack": "4.41.6",
         "webpack-cli": "3.3.11"
     },
