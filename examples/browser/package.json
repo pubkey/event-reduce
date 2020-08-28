@@ -43,7 +43,7 @@
         "less": "3.12.2",
         "less-loader": "5.0.0",
         "style-loader": "1.2.1",
-        "ts-loader": "6.2.1",
+        "ts-loader": "6.2.2",
         "ts-node": "8.6.2",
         "tslint": "6.1.1",
         "typescript": "3.8.2",
