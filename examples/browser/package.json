@@ -44,7 +44,7 @@
         "less-loader": "5.0.0",
         "style-loader": "1.2.1",
         "ts-loader": "6.2.2",
-        "ts-node": "8.6.2",
+        "ts-node": "8.10.2",
         "tslint": "6.1.1",
         "typescript": "3.8.2",
         "webpack-dev-server": "3.10.3"
