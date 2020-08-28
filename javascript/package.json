@@ -40,7 +40,7 @@
     "faker": "4.1.0",
     "minimongo": "6.5.1",
     "mocha": "7.2.0",
-    "pouchdb-selector-core": "7.2.1",
+    "pouchdb-selector-core": "7.2.2",
     "read-last-lines": "1.7.2",
     "rimraf": "3.0.2",
     "ts-node": "8.10.2",
