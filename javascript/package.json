@@ -43,7 +43,7 @@
     "pouchdb-selector-core": "7.2.1",
     "read-last-lines": "1.7.2",
     "rimraf": "3.0.2",
-    "ts-node": "8.9.0",
+    "ts-node": "8.10.2",
     "tslint": "6.1.1",
     "typescript": "3.8.3"
   },
