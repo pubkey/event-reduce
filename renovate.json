@@ -6,7 +6,7 @@
     "ignoreDeps": [],
     "automerge": true,
     "major": {
-        "automerge": false
+        "automerge": true
     },
     "ignorePaths": [],
     "rebaseStalePrs": true,
