@@ -25,7 +25,7 @@
         "event-reduce-js": "file:../../javascript/",
         "faker": "5.1.0",
         "json-pretty-html": "1.1.6",
-        "minimongo": "6.5.1",
+        "minimongo": "6.6.0",
         "nedb": "1.8.0",
         "pouchdb-adapter-idb": "7.2.2",
         "pouchdb-adapter-indexeddb": "7.2.2",
