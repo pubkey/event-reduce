@@ -19,7 +19,7 @@
     },
     "homepage": "https://github.com/pubkey/event-reduce#readme",
     "dependencies": {
-        "@types/nedb": "1.8.10",
+        "@types/nedb": "1.8.11",
         "@types/pouchdb-core": "7.0.6",
         "async-test-util": "1.7.3",
         "event-reduce-js": "file:../../javascript/",
