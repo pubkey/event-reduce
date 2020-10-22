@@ -28,7 +28,7 @@
   "author": "pubkey",
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
-    "@types/faker": "5.1.2",
+    "@types/faker": "5.1.3",
     "@types/mocha": "8.0.3",
     "@types/node": "13.13.15",
     "array-shuffle": "1.0.1",
