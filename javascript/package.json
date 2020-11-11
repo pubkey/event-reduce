@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
     "@types/faker": "5.1.4",
-    "@types/mocha": "8.0.3",
+    "@types/mocha": "8.0.4",
     "@types/node": "13.13.15",
     "array-shuffle": "1.0.1",
     "assert": "2.0.0",
