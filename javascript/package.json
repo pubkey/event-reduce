@@ -31,7 +31,7 @@
     "@types/faker": "5.1.4",
     "@types/mocha": "8.0.4",
     "@types/node": "13.13.48",
-    "array-shuffle": "1.0.1",
+    "array-shuffle": "2.0.0",
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
     "child-process-promise": "2.2.1",
