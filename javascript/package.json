@@ -41,7 +41,7 @@
     "minimongo": "6.8.2",
     "mocha": "8.2.1",
     "pouchdb-selector-core": "7.2.2",
-    "read-last-lines": "1.7.2",
+    "read-last-lines": "1.8.0",
     "rimraf": "3.0.2",
     "ts-node": "9.0.0",
     "tslint": "6.1.3",
