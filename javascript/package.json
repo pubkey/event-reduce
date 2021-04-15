@@ -8,6 +8,10 @@
   "module": "./dist/es/index.js",
   "types": "./dist/es/index.d.ts",
   "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pubkey/event-reduce"
+  },
   "scripts": {
     "prepublish": "npm run build",
     "lint": "tslint --project .",
