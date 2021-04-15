@@ -23,7 +23,7 @@
         "@types/pouchdb-core": "7.0.6",
         "async-test-util": "1.7.3",
         "event-reduce-js": "file:../../javascript/",
-        "faker": "5.1.0",
+        "faker": "5.5.3",
         "json-pretty-html": "1.1.6",
         "minimongo": "6.8.2",
         "nedb": "1.8.0",
@@ -38,7 +38,7 @@
     },
     "devDependencies": {
         "@babel/polyfill": "7.12.1",
-        "@types/faker": "5.1.4",
+        "@types/faker": "5.5.1",
         "css-loader": "5.2.1",
         "less": "4.1.1",
         "less-loader": "7.1.0",
