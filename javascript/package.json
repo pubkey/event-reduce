@@ -28,7 +28,7 @@
   "author": "pubkey",
   "devDependencies": {
     "@types/deep-equal": "1.0.1",
-    "@types/faker": "5.1.4",
+    "@types/faker": "5.5.1",
     "@types/mocha": "8.0.4",
     "@types/node": "13.13.49",
     "array-shuffle": "2.0.0",
@@ -37,7 +37,7 @@
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "deep-equal": "2.0.4",
-    "faker": "5.1.0",
+    "faker": "5.5.3",
     "minimongo": "6.8.2",
     "mocha": "8.2.1",
     "pouchdb-selector-core": "7.2.2",
