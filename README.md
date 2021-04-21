@@ -99,3 +99,8 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
   <summary>Isn't this optimization already done by database engines?</summary>
   No. I tested EventReduce with many common databases like MongoDB, MySQL and Postgres. Each of them had better performance with Event-Reduce then just observing the eventstream and running the queries again. If you understand what Event-Reduce exactly does, it comes clear that this optimization can not done by pull-based databases because they have missing information.
 </details>
+
+<details>
+  <summary>Isn't this the same as product XY?</summary>
+  No. EventReduce is not a product, it is not comparable to any database or streaming backend out there. EventReduce is an algorithm with a specific input and output, nothing more, nothing less. You can use EventReduce without having to change your underlaying data infrastructure.
+</details>
