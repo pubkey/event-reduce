@@ -41,7 +41,7 @@
         "@types/faker": "5.5.5",
         "css-loader": "5.2.4",
         "less": "4.1.1",
-        "less-loader": "7.3.0",
+        "less-loader": "8.1.1",
         "style-loader": "2.0.0",
         "ts-loader": "8.2.0",
         "ts-node": "9.1.1",
