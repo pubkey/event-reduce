@@ -7,7 +7,7 @@ import type {
     StateSet,
     ActionFunction,
     StateResolveFunctionInput
-} from './types/index.d';
+} from './types/';
 import { getStateSet } from './states';
 import { actionFunctions, orderedActionList } from './actions';
 import { resolveInput } from './bdd/bdd.generated';
