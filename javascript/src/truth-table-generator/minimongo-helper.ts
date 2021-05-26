@@ -44,7 +44,7 @@ export async function minimongoRemove<DocType>(
     id: string
 ): Promise<void> {
     await new Promise(
-        (resolve, reject) => collection.remove(id, resolve, reject)
+        (resolve, reject) => collection.remove(id, resolve as any, reject)
     );
 }
 
