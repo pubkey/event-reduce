@@ -1,4 +1,4 @@
-import type { ChangeEvent } from './change-event';
+import { ChangeEvent } from './change-event';
 export * from './change-event';
 export * from './mongo';
 

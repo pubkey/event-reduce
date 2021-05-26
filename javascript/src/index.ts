@@ -7,12 +7,39 @@ import type {
     StateSet,
     ActionFunction,
     StateResolveFunctionInput
-} from './types';
+} from './types/index.d';
 import { getStateSet } from './states';
 import { actionFunctions, orderedActionList } from './actions';
 import { resolveInput } from './bdd/bdd.generated';
 
-export * from './types';
+/**
+ * Export as type to ensure we do not
+ * end with an import statement in the build output
+ * which would increase the build size.
+ */
+export type {
+    ActionFunction,
+    ActionFunctionInput,
+    ActionName,
+    ChangeEvent,
+    ChangeEventBase,
+    ChangeEventDelete,
+    ChangeEventInsert,
+    ChangeEventUpdate,
+    MongoQuery,
+    QueryMatcher,
+    QueryParams,
+    ResultKeyDocumentMap,
+    SortComparator,
+    StateName,
+    StateResolveFunction,
+    StateResolveFunctionInput,
+    StateSet,
+    StateSetToActionMap,
+    UNKNOWN,
+    WriteOperation
+} from './types';
+
 export * from './states';
 export * from './util';
 
