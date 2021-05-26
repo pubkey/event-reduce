@@ -6,13 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
 var object_path_1 = __importDefault(require("object-path"));
 var util_1 = require("../util");
-exports.hasLimit = function (input) {
+var hasLimit = function (input) {
     return !!input.queryParams.limit;
 };
-exports.isFindOne = function (input) {
+exports.hasLimit = hasLimit;
+var isFindOne = function (input) {
     return input.queryParams.limit === 1;
 };
-exports.hasSkip = function (input) {
+exports.isFindOne = isFindOne;
+var hasSkip = function (input) {
     if (input.queryParams.skip && input.queryParams.skip > 0) {
         return true;
     }
@@ -20,22 +22,28 @@ exports.hasSkip = function (input) {
         return false;
     }
 };
-exports.isDelete = function (input) {
+exports.hasSkip = hasSkip;
+var isDelete = function (input) {
     return input.changeEvent.operation === 'DELETE';
 };
-exports.isInsert = function (input) {
+exports.isDelete = isDelete;
+var isInsert = function (input) {
     return input.changeEvent.operation === 'INSERT';
 };
-exports.isUpdate = function (input) {
+exports.isInsert = isInsert;
+var isUpdate = function (input) {
     return input.changeEvent.operation === 'UPDATE';
 };
-exports.previousUnknown = function (input) {
+exports.isUpdate = isUpdate;
+var previousUnknown = function (input) {
     return input.changeEvent.previous === util_1.UNKNOWN_VALUE;
 };
-exports.wasLimitReached = function (input) {
+exports.previousUnknown = previousUnknown;
+var wasLimitReached = function (input) {
     return exports.hasLimit(input) && input.previousResults.length >= input.queryParams.limit;
 };
-exports.sortParamsChanged = function (input) {
+exports.wasLimitReached = wasLimitReached;
+var sortParamsChanged = function (input) {
     var sortFields = input.queryParams.sortFields;
     var prev = input.changeEvent.previous;
     var doc = input.changeEvent.doc;
@@ -55,7 +63,8 @@ exports.sortParamsChanged = function (input) {
     }
     return false;
 };
-exports.wasInResult = function (input) {
+exports.sortParamsChanged = sortParamsChanged;
+var wasInResult = function (input) {
     var id = input.changeEvent.id;
     if (input.keyDocumentMap) {
         var has = input.keyDocumentMap.has(id);
@@ -73,7 +82,8 @@ exports.wasInResult = function (input) {
         return false;
     }
 };
-exports.wasSortedBeforeFirst = function (input) {
+exports.wasInResult = wasInResult;
+var wasSortedBeforeFirst = function (input) {
     var prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
@@ -85,7 +95,8 @@ exports.wasSortedBeforeFirst = function (input) {
     var comp = input.queryParams.sortComparator(prev, first);
     return comp < 0;
 };
-exports.wasSortedAfterLast = function (input) {
+exports.wasSortedBeforeFirst = wasSortedBeforeFirst;
+var wasSortedAfterLast = function (input) {
     var prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
@@ -97,7 +108,8 @@ exports.wasSortedAfterLast = function (input) {
     var comp = input.queryParams.sortComparator(prev, last);
     return comp > 0;
 };
-exports.isSortedBeforeFirst = function (input) {
+exports.wasSortedAfterLast = wasSortedAfterLast;
+var isSortedBeforeFirst = function (input) {
     var doc = input.changeEvent.doc;
     if (!doc) {
         return false;
@@ -109,7 +121,8 @@ exports.isSortedBeforeFirst = function (input) {
     var comp = input.queryParams.sortComparator(doc, first);
     return comp < 0;
 };
-exports.isSortedAfterLast = function (input) {
+exports.isSortedBeforeFirst = isSortedBeforeFirst;
+var isSortedAfterLast = function (input) {
     var doc = input.changeEvent.doc;
     if (!doc) {
         return false;
@@ -121,14 +134,16 @@ exports.isSortedAfterLast = function (input) {
     var comp = input.queryParams.sortComparator(doc, last);
     return comp > 0;
 };
-exports.wasMatching = function (input) {
+exports.isSortedAfterLast = isSortedAfterLast;
+var wasMatching = function (input) {
     var prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
     }
     return input.queryParams.queryMatcher(prev);
 };
-exports.doesMatchNow = function (input) {
+exports.wasMatching = wasMatching;
+var doesMatchNow = function (input) {
     var doc = input.changeEvent.doc;
     if (!doc) {
         return false;
@@ -136,7 +151,9 @@ exports.doesMatchNow = function (input) {
     var ret = input.queryParams.queryMatcher(doc);
     return ret;
 };
-exports.wasResultsEmpty = function (input) {
+exports.doesMatchNow = doesMatchNow;
+var wasResultsEmpty = function (input) {
     return input.previousResults.length === 0;
 };
+exports.wasResultsEmpty = wasResultsEmpty;
 //# sourceMappingURL=state-resolver.js.map

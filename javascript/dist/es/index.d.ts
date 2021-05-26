@@ -1,5 +1,10 @@
-import type { ChangeEvent, ActionName, ResultKeyDocumentMap, QueryParams, StateSetToActionMap, StateSet, ActionFunction, StateResolveFunctionInput } from './types';
-export * from './types';
+import type { ChangeEvent, ActionName, ResultKeyDocumentMap, QueryParams, StateSetToActionMap, StateSet, ActionFunction, StateResolveFunctionInput } from './types/index.d';
+/**
+ * Export as type to ensure we do not
+ * end with an import statement in the build output
+ * which would increase the build size.
+ */
+export type { ActionFunction, ActionFunctionInput, ActionName, ChangeEvent, ChangeEventBase, ChangeEventDelete, ChangeEventInsert, ChangeEventUpdate, MongoQuery, QueryMatcher, QueryParams, ResultKeyDocumentMap, SortComparator, StateName, StateResolveFunction, StateResolveFunctionInput, StateSet, StateSetToActionMap, UNKNOWN, WriteOperation } from './types';
 export * from './states';
 export * from './util';
 export declare function calculateActionFromMap<DocType>(stateSetToActionMap: StateSetToActionMap, input: StateResolveFunctionInput<DocType>): {

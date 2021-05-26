@@ -14,7 +14,6 @@ exports.runAction = exports.calculateActionFunction = exports.calculateActionNam
 var states_1 = require("./states");
 var actions_1 = require("./actions");
 var bdd_generated_1 = require("./bdd/bdd.generated");
-__exportStar(require("./types"), exports);
 __exportStar(require("./states"), exports);
 __exportStar(require("./util"), exports);
 function calculateActionFromMap(stateSetToActionMap, input) {
