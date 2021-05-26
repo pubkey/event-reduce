@@ -1,4 +1,4 @@
-import type { ChangeEvent, ActionName, ResultKeyDocumentMap, QueryParams, StateSetToActionMap, StateSet, ActionFunction, StateResolveFunctionInput } from './types/index.d';
+import type { ChangeEvent, ActionName, ResultKeyDocumentMap, QueryParams, StateSetToActionMap, StateSet, ActionFunction, StateResolveFunctionInput } from './types/';
 /**
  * Export as type to ensure we do not
  * end with an import statement in the build output
