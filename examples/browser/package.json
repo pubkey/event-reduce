@@ -34,7 +34,7 @@
         "pouchdb-find": "7.2.2",
         "rxjs": "7.4.0",
         "webpack": "4.46.0",
-        "webpack-cli": "4.9.0"
+        "webpack-cli": "4.9.1"
     },
     "devDependencies": {
         "@babel/polyfill": "7.12.1",
