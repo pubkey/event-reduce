@@ -21,7 +21,7 @@
     "dependencies": {
         "@types/nedb": "1.8.12",
         "@types/pouchdb-core": "7.0.8",
-        "async-test-util": "1.7.3",
+        "async-test-util": "2.0.0",
         "event-reduce-js": "file:../../javascript/",
         "faker": "5.5.3",
         "json-pretty-html": "1.1.6",
