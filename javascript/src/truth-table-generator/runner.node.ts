@@ -174,6 +174,10 @@ async function run() {
             })();
             break;
 
+            /**
+             * Creates a fresh, un-optimized bdd from the truth table.
+             * Use this to ensure the bdd still matches a newly generated table.
+             */
         case 'create-bdd':
             (async function createBdd() {
                 console.log('read table..');
@@ -196,6 +200,12 @@ async function run() {
                 bdd.removeIrrelevantLeafNodes(unknownValueActionId);
 
                 bdd.log();
+
+                const bddMinimalString = bddToMinimalString(bdd);
+                writeBddTemplate(
+                    bddMinimalString
+                );
+
                 console.log('nodes after minify: ' + bdd.countNodes());
             })();
             break;

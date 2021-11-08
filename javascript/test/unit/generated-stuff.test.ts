@@ -1,3 +1,4 @@
+import 'mocha';
 import * as assert from 'assert';
 import {
     ResolverFunctions,
@@ -8,8 +9,7 @@ import {
 } from 'binary-decision-diagram';
 import {
     orderedStateList,
-    stateResolveFunctions,
-    logStateSet
+    stateResolveFunctions
 } from '../../src/states';
 import {
     objectToMap
@@ -20,8 +20,19 @@ import {
 import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
 import { StateActionIdMap, Human } from '../../src/truth-table-generator/types';
 import { simpleBdd } from '../../src/bdd/bdd.generated';
-import { StateResolveFunctionInput, QueryParams, MongoQuery, ChangeEvent } from '../../src/types';
-import { getQueryParamsByMongoQuery, getMinimongoCollection, applyChangeEvent, minimongoFind, minimongoUpsert } from '../../src/truth-table-generator/minimongo-helper';
+import {
+    StateResolveFunctionInput,
+    QueryParams,
+    MongoQuery,
+    ChangeEvent
+} from '../../src/types';
+import {
+    getQueryParamsByMongoQuery,
+    getMinimongoCollection,
+    applyChangeEvent,
+    minimongoFind,
+    minimongoUpsert
+} from '../../src/truth-table-generator/minimongo-helper';
 import { randomHuman } from '../../src/truth-table-generator/data-generator';
 import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index';
 import { getQueryVariations } from '../../src/truth-table-generator/queries';
@@ -206,6 +217,8 @@ describe('generated-stuff.test.ts', () => {
                             useQuery.previousResults,
                             execResults
                         )) {
+                            console.log('#'.repeat(20));
+                            console.log('#'.repeat(20));
                             console.dir(changeEvent);
                             console.dir(procedure);
                             console.log('execResults:');
