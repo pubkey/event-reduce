@@ -133,7 +133,7 @@ export const insertAtSortPosition: ActionFunction<any> = (input) => {
             doc
         );
     } else {
-        const isDocInResults = input.previousResults.find((doc: any) => doc[input.queryParams.primaryKey] === docId);
+        const isDocInResults = input.previousResults.find((d: any) => d[input.queryParams.primaryKey] === docId);
         /**
          * If document is already in results,
          * we cannot add it again because it would throw on non-deterministic ordering.
