@@ -161,7 +161,7 @@ async function run() {
                         table: truthTable,
                         queries,
                         procedures,
-                        log: false
+                        log: true
                     });
 
                     console.log('saving table to json');

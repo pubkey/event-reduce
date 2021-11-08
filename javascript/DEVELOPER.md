@@ -22,6 +22,9 @@ If not, it adapts the truth table to ensure that the errored query now works.
 
 Run this until it no longer logs that it has found errors. I had let this run about one month.
 
+To let it run on a server, use this command
+`nohup npm run iterative-fuzzing > itterative-fuzzing.out 2>&1`
+
 ### optimize bdd
 
 Optimize the binary decision diagramm to get the one which has the best performance.
