@@ -3,7 +3,10 @@ import Faker, { datatype as fakerDatatype } from 'faker';
 
 import type { ChangeEvent } from '../types';
 import type { Human, Procedure } from './types';
-import { randomHumans, randomChangeHuman } from './data-generator';
+import {
+    randomHumans,
+    randomChangeHuman
+} from './data-generator';
 import { UNKNOWN_VALUE } from './config';
 import { compileSort } from './minimongo-helper';
 

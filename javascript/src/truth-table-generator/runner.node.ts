@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import Faker from 'faker';
 import {
     createBddFromTruthTable,
     TruthTable,
@@ -101,6 +102,13 @@ async function run() {
          */
         case 'iterative-fuzzing':
             (async function iterativeFuzzing() {
+                /**
+                 * Reset the random seed!
+                 * When we restart the generating processes,
+                 * we do not want up to run with the same dataset again.
+                 */
+                Faker.seed(new Date().getTime());
+
                 const truthTable: StateActionIdMap = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
                 );
@@ -174,10 +182,10 @@ async function run() {
             })();
             break;
 
-            /**
-             * Creates a fresh, un-optimized bdd from the truth table.
-             * Use this to ensure the bdd still matches a newly generated table.
-             */
+        /**
+         * Creates a fresh, un-optimized bdd from the truth table.
+         * Use this to ensure the bdd still matches a newly generated table.
+         */
         case 'create-bdd':
             (async function createBdd() {
                 console.log('read table..');
@@ -211,7 +219,7 @@ async function run() {
             break;
 
 
-        // optimizes the bdd to big small and fast
+        // optimizes the bdd to become small and fast
         case 'optimize-bdd':
             (async function optimizeBdd() {
                 console.log('read table..');
@@ -269,7 +277,7 @@ async function run() {
                         );
                         console.log('-'.repeat(100));
                     },
-                    log: false
+                    log: true
                 });
             })();
             break;
