@@ -90,20 +90,18 @@ export const stateResolveFunctionByIndex: ResolverFunctions<
     4: isFindOne,
     5: hasSkip,
     6: wasResultsEmpty,
-    7: wasFirst,
-    8: wasLast,
-    9: previousUnknown,
-    10: wasLimitReached,
+    7: previousUnknown,
+    8: wasLimitReached,
+    9: wasFirst,
+    10: wasLast,
     11: sortParamsChanged,
     12: wasInResult,
-    13: wasFirst,
-    14: wasLast,
-    15: wasSortedBeforeFirst,
-    16: wasSortedAfterLast,
-    17: isSortedBeforeFirst,
-    18: isSortedAfterLast,
-    19: wasMatching,
-    20: doesMatchNow
+    13: wasSortedBeforeFirst,
+    14: wasSortedAfterLast,
+    15: isSortedBeforeFirst,
+    16: isSortedAfterLast,
+    17: wasMatching,
+    18: doesMatchNow
 };
 
 export function resolveState<DocType>(

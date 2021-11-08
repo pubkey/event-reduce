@@ -39,8 +39,15 @@ describe('states.test.ts', () => {
             );
         });
         it('stateResolveFunctionByIndex should match orderedStateList', () => {
+
+            console.dir(stateResolveFunctionByIndex);
+            console.dir(stateResolveFunctions);
+            console.dir(orderedStateList);
+
             orderedStateList.forEach((name, index) => {
-                assert.ok(stateResolveFunctionByIndex[index] === stateResolveFunctions[name]);
+                if (stateResolveFunctionByIndex[index] !== stateResolveFunctions[name]) {
+                    throw new Error('wrong function by index ' + index + ' name: ' + name);
+                }
             });
         });
     });

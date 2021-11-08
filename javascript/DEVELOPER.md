@@ -22,12 +22,17 @@ If not, it adapts the truth table to ensure that the errored query now works.
 
 Run this until it no longer logs that it has found errors. I had let this run about one month.
 
-To let it run on a server, use this command
-`nohup npm run iterative-fuzzing > itterative-fuzzing.out 2>&1`
+To let it run on a server, use this command so you can exit the terminal and it still runs:
+`nohup npm run iterative-fuzzing &`
 
 ### optimize bdd
+
+`npm run optimize-bdd`
 
 Optimize the binary decision diagramm to get the one which has the best performance.
 Because there are 2^13 permutations or the bdd order, we just generate a random order and test it.
 As soon as we find a better bdd, it is written to the generated files.
 Run this until it no longer finds a better bdd. I had let this run about one week.
+
+To let it run on a server, use this command so you can exit the terminal and it still runs:
+`nohup npm run optimize-bdd &`
