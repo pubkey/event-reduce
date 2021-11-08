@@ -1,5 +1,9 @@
 import Faker from 'faker';
 
+import {
+  datatype as fakerDatatype
+} from 'faker';
+
 import type {
   Human,
   Procedure
@@ -24,8 +28,8 @@ export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {
     _id: Faker.random.alphaNumeric(10),
     name: Faker.name.firstName().toLowerCase(),
-    gender: Faker.random.boolean() ? 'f' : 'm',
-    age: Faker.random.number({ min: 1, max: 100 })
+    gender: fakerDatatype.boolean() ? 'f' : 'm',
+    age: fakerDatatype.number({ min: 1, max: 100 })
   };
   if (partial) {
     Object.entries(partial).forEach(([k, v]) => {
@@ -46,14 +50,14 @@ export function randomHumans(amount = 0, partial?: Partial<Human>): Human[] {
 
 const keyToChangeFn = {
   1: (i: Human) => i.name = Faker.name.firstName().toLowerCase(),
-  2: (i: Human) => i.gender = Faker.random.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = Faker.random.number({ min: 1, max: 100 })
+  2: (i: Human) => i.gender = fakerDatatype.boolean() ? 'f' : 'm',
+  3: (i: Human) => i.age = fakerDatatype.number({ min: 1, max: 100 })
 };
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = Faker.random.number({ min: 1, max: 3 });
+  const field = fakerDatatype.number({ min: 1, max: 3 });
   keyToChangeFn[field](cloned);
 
   return cloned;
@@ -112,7 +116,7 @@ export function randomChangeEvent(
   }
 
   // randomly set previous to UNKNOWN
-  if (ret.previous && Faker.random.boolean()) {
+  if (ret.previous && fakerDatatype.boolean()) {
     ret.previous = UNKNOWN_VALUE;
   }
 

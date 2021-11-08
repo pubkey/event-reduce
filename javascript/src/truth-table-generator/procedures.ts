@@ -1,5 +1,5 @@
 import { clone } from 'async-test-util';
-import Faker from 'faker';
+import Faker, { datatype as fakerDatatype } from 'faker';
 
 import type { ChangeEvent } from '../types';
 import type { Human, Procedure } from './types';
@@ -48,7 +48,7 @@ export function insertChangeAndCleanup(
         docs = docs.filter(d => d._id !== changeMe._id);
         docs.push(changeMeAfter);
 
-        changeMeAfter.age = 1000 + Faker.random.number({
+        changeMeAfter.age = 1000 + fakerDatatype.number({
             min: 10,
             max: 100
         });
