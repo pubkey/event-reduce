@@ -27,7 +27,11 @@ import {
 } from './util';
 import { fuzzing } from './fuzzing';
 import { writeBddTemplate } from '../bdd/write-bdd-template';
-import { measurePerformanceOfStateFunctions, getBetterBdd, getQualityOfBdd, QUALITY_BY_BDD_CACHE } from './calculate-bdd-quality';
+import {
+    measurePerformanceOfStateFunctions,
+    getBetterBdd,
+    QUALITY_BY_BDD_CACHE
+} from './calculate-bdd-quality';
 
 /**
  * sort object attributes
@@ -111,7 +115,13 @@ async function run() {
                     let fuzzingCount = 0;
                     while (!fuzzingFoundError) {
                         fuzzingCount++;
+                        console.log('#'.repeat(20));
+                        console.log('#'.repeat(20));
+                        console.log('#'.repeat(20));
                         console.log('run fuzzing() #' + fuzzingCount);
+                        console.log('#'.repeat(20));
+                        console.log('#'.repeat(20));
+                        console.log('#'.repeat(20));
 
 
                         //                    const indexOfRunAgain = orderedActionList.indexOf('runFullQueryAgain');
@@ -151,7 +161,7 @@ async function run() {
                         table: truthTable,
                         queries,
                         procedures,
-                        log: true
+                        log: false
                     });
 
                     console.log('saving table to json');

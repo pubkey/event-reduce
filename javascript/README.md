@@ -40,7 +40,7 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
         limit: query.limit ? query.limit : undefined,
         // a function that returns true if the given document matches the query's selector
         queryMatcher: compileDocumentSelector(query.selector),
-        // a function that can be used as comparator in Array.sort()
+        // a function that can be used as comparator in Array.sort() (returns 1 or -1)
         sortComparator: compileSort(sort)
     };
 }

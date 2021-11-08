@@ -18,7 +18,8 @@ import type { Human } from './types';
 import type {
     ChangeEvent,
     QueryParams,
-    MongoQuery
+    MongoQuery,
+    DeterministicSortComparator
 } from '../types';
 import { getSortFieldsOfQuery } from '../util';
 
@@ -90,7 +91,7 @@ export async function applyChangeEvent<DocType>(
     }
 }
 
-export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> {
+export function getQueryParamsByMongoQuery<DocType>(query: MongoQuery<DocType>): QueryParams<DocType> {
     const sort = query.sort ? query.sort : [];
 
     // ensure primary is in sort so we have a predictable query
@@ -98,12 +99,22 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
         throw new Error('MongoQueries must have a predictable sorting');
     }
 
+    const nonDeterministicSort = compileSort(sort);
+    const deterministicSort: DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => {
+        const result = nonDeterministicSort(a, b);
+        if (result === 0) {
+            throw new Error('sort would output a non-deterministic order');
+        } else {
+            return result;
+        }
+    };
+
     return {
         primaryKey: '_id',
         sortFields: getSortFieldsOfQuery(query),
         skip: query.skip ? query.skip : undefined,
         limit: query.limit ? query.limit : undefined,
         queryMatcher: compileDocumentSelector(query.selector),
-        sortComparator: compileSort(sort)
+        sortComparator: deterministicSort
     };
 }

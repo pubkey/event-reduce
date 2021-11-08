@@ -20,9 +20,11 @@ import { UNKNOWN_VALUE } from './config';
 import { randomOfArray } from '../util';
 
 /**
- * use a seed to ensure each time we generate the same data
+ * Do not use a seed!
+ * When we restart the generating processes,
+ * we do not want up to run with the same dataset again.
  */
-Faker.seed(2345);
+// Faker.seed(2345);
 
 export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {

@@ -30,7 +30,7 @@ export type {
     QueryMatcher,
     QueryParams,
     ResultKeyDocumentMap,
-    SortComparator,
+    DeterministicSortComparator,
     StateName,
     StateResolveFunction,
     StateResolveFunctionInput,

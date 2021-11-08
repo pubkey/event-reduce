@@ -35,6 +35,8 @@ export type StateName =
     'wasLimitReached' |
     'sortParamsChanged' |
     'wasInResult' |
+    'wasFirst' |
+    'wasLast' |
     'wasSortedBeforeFirst' |
     'wasSortedAfterLast' |
     'isSortedAfterLast' |
@@ -48,11 +50,18 @@ export interface QueryParams<DocType> {
     skip?: number;
     limit?: number;
     queryMatcher: QueryMatcher<DocType>;
-    sortComparator: SortComparator<DocType>;
+    sortComparator: DeterministicSortComparator<DocType>;
 }
 
 export type QueryMatcher<DocType> = (doc: DocType) => boolean;
-export type SortComparator<DocType> = (a: DocType, b: DocType) => 1 | 0 | -1;
+
+/**
+ * To have a deterministic sorting, we cannot return 0,
+ * we only return 1 or -1.
+ * This ensures that we always end with the same output array, no mather of the
+ * pre-sorting of the input array.
+ */
+export type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;
 
 /**
  * A map contains a stateSet as key and an ActionName as value

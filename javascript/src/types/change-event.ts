@@ -5,7 +5,11 @@ import type {
 
 export interface ChangeEventBase {
     operation: WriteOperation;
-    id: string; // value of the primary key
+    /**
+     * document id,
+     * value of the primary key.
+     */
+    id: string;
 }
 
 export interface ChangeEventInsert<DocType> extends ChangeEventBase {

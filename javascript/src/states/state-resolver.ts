@@ -79,6 +79,25 @@ export const wasInResult: StateResolveFunction<any> = (input) => {
     }
 };
 
+export const wasFirst: StateResolveFunction<any> = (input) => {
+    const first = input.previousResults[0];
+    if (first && first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+export const wasLast: StateResolveFunction<any> = (input) => {
+    const last = lastOfArray(input.previousResults);
+    if (last && last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+
 export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
     const prev = input.changeEvent.previous;
     if (!prev || prev === UNKNOWN_VALUE) {
@@ -88,6 +107,16 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
     const first = input.previousResults[0];
     if (!first) {
         return false;
+    }
+
+    /**
+     * If the changed document is the same as the first,
+     * we cannot sort-compare them, because it might end in a non-deterministic
+     * sort order. Because both document could be equal.
+     * So instead we have to return true.
+     */
+    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
 
     const comp = input.queryParams.sortComparator(
@@ -108,6 +137,10 @@ export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
         return false;
     }
 
+    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
+
     const comp = input.queryParams.sortComparator(
         prev,
         last
@@ -126,6 +159,10 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         return false;
     }
 
+    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
+
     const comp = input.queryParams.sortComparator(
         doc,
         first
@@ -142,6 +179,10 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
     const last = lastOfArray(input.previousResults);
     if (!last) {
         return false;
+    }
+
+    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
 
     const comp = input.queryParams.sortComparator(

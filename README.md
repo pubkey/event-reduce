@@ -43,11 +43,11 @@ In the [browser demo](https://pubkey.github.io/event-reduce) you can see that fo
 
 ## How they do it
 
-EventReduce uses 17 different `state functions` to 'describe' an event+previousResults combination. A state function is a function that returns a boolean value like `isInsert()`, `wasResultsEmpty()`, `sortParamsChanged()` and so on.
+EventReduce uses 21 different `state functions` to 'describe' an event+previousResults combination. A state function is a function that returns a boolean value like `isInsert()`, `wasResultsEmpty()`, `sortParamsChanged()` and so on.
 
 Also there are 14 different `action functions`. An action function gets the event+previousResults and modifies the results array in a given way like `insertFirst()`, `replaceExisting()`, `insertAtSortPosition()`, `doNothing()` and so on.
 
-For each of our `2^17` state combinations, we calculate which action function gives the same results that the database would return when the full query is executed again.
+For each of our `2^21` state combinations, we calculate which action function gives the same results that the database would return when the full query is executed again.
 
 From this state-action combinations we create a big truth table that is used to create a [binary decision diagram](https://github.com/pubkey/binary-decision-diagram). The BDD is then optimized to call as few `state functions` as possible to determine the correct action of an incoming event-results combination.
 

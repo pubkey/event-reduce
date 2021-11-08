@@ -116,13 +116,33 @@ export const alwaysWrong: ActionFunction<any> = (input) => {
 };
 
 export const insertAtSortPosition: ActionFunction<any> = (input) => {
+    const docId = input.changeEvent.id;
     const doc = input.changeEvent.doc;
     if (input.keyDocumentMap) {
+
+        if (input.keyDocumentMap.has(docId)) {
+            /**
+             * If document is already in results,
+             * we cannot add it again because it would throw on non-deterministic ordering.
+             */
+            return;
+        }
+
         input.keyDocumentMap.set(
-            input.changeEvent.id,
+            docId,
             doc
         );
+    } else {
+        const isDocInResults = input.previousResults.find((doc: any) => doc[input.queryParams.primaryKey] === docId);
+        /**
+         * If document is already in results,
+         * we cannot add it again because it would throw on non-deterministic ordering.
+         */
+        if (isDocInResults) {
+            return;
+        }
     }
+
     pushAtSortPosition(
         input.previousResults,
         doc,

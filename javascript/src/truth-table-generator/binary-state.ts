@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-
 import type { StateSet } from '../types';
 import { orderedStateList } from '../states';
 
