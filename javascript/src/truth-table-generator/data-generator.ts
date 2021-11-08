@@ -20,11 +20,10 @@ import { UNKNOWN_VALUE } from './config';
 import { randomOfArray } from '../util';
 
 /**
- * Do not use a seed!
- * When we restart the generating processes,
- * we do not want up to run with the same dataset again.
+ * Set a seed to ensure we create deterministic and testable
+ * test data.
  */
-// Faker.seed(2345);
+Faker.seed(2345);
 
 export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {
