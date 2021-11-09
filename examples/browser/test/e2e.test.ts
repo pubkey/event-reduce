@@ -1,7 +1,7 @@
 import {
     Selector
 } from 'testcafe';
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import { wait, waitUntil } from 'async-test-util';
 import { DEFAULT_LOADING_STATE, getImplementations } from '../src/util';
 
 console.log('open page');
