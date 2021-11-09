@@ -21,7 +21,7 @@
     "transpile:removegen": "rimraf -r ./dist/lib/truth-table-generator && rimraf -r ./dist/es/truth-table-generator",
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es && npm run transpile:removegen",
     "dry": "npm pack --dry-run",
-    "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 20000 --bail",
+    "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 50000 --bail",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-truth-table": "ts-node ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
     "test-fuzzing": "ts-node ./src/truth-table-generator/runner.node.ts fuzzing",
