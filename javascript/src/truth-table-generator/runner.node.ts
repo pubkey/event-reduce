@@ -167,8 +167,11 @@ async function run() {
                                 result.procedure.length + ' ' +
                                 JSON.stringify(result.procedure, null, 4)
                             );
-                            queries.push(result.query);
-                            procedures.push(result.procedure);
+
+                            // add as first of array to ensure it will be used first in the future
+                            // because new procedures are more likely to hit wrong states.
+                            queries.unshift(result.query);
+                            procedures.unshift(result.procedure);
                         }
                     }
 
