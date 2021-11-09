@@ -1,4 +1,3 @@
-import { clone } from 'async-test-util';
 import Faker, { datatype as fakerDatatype } from 'faker';
 
 import type { ChangeEvent } from '../types';
@@ -9,6 +8,7 @@ import {
 } from './data-generator';
 import { UNKNOWN_VALUE } from './config';
 import { compileSort } from './minimongo-helper';
+import { ensureNotFalsy, flatClone } from '../util';
 
 export function insertChangeAndCleanup(
     unknownPrevious: boolean = false
@@ -98,7 +98,7 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
         return changeEvent;
     });
     const prevDoc = humans[3];
-    const changedDoc = clone(prevDoc);
+    const changedDoc = flatClone(prevDoc);
     changedDoc.age = 0;
 
     const updateEvent: ChangeEvent<Human> = {
@@ -110,7 +110,7 @@ export function insertFiveThenChangeAgeOfOne(): ChangeEvent<Human>[] {
     ret.push(updateEvent);
 
 
-    const deleteDoc = clone(changedDoc);
+    const deleteDoc = flatClone(changedDoc);
     const deleteEvent: ChangeEvent<Human> = {
         operation: 'DELETE',
         id: deleteDoc._id,
@@ -183,7 +183,7 @@ export function insertFiveSortedThenRemoveSorted(): ChangeEvent<Human>[] {
     const inserts = insertFiveSorted();
     const ret: ChangeEvent<Human>[] = inserts.slice();
     inserts.forEach(cE => {
-        const doc = clone(cE.doc);
+        const doc = flatClone(ensureNotFalsy(cE.doc));
         ret.push({
             operation: 'DELETE',
             doc: null,

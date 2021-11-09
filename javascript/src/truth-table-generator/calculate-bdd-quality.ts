@@ -4,8 +4,7 @@ import {
     ResolverFunctions
 } from 'binary-decision-diagram';
 import {
-    performanceNow,
-    clone
+    performanceNow
 } from 'async-test-util';
 
 import type {
@@ -30,7 +29,7 @@ import {
 } from './minimongo-helper';
 import { randomHuman } from './data-generator';
 import { Human, Procedure } from './types';
-import { shuffleArray } from '../util';
+import { flatClone, shuffleArray } from '../util';
 
 export type PerformanceMeasurement = {
     [k in StateName]: number // avg runtime in ms
@@ -88,7 +87,7 @@ export async function measurePerformanceOfStateFunctions(
         keyDocumentMap
     };
 
-    const changedDoc = clone(previousResults[2]);
+    const changedDoc = flatClone(previousResults[2]);
     changedDoc.age = 100;
     changedDoc.name = 'alice';
     const updateStateInput: StateResolveFunctionInput<Human> = {
@@ -97,7 +96,7 @@ export async function measurePerformanceOfStateFunctions(
             operation: 'UPDATE',
             doc: changedDoc,
             id: changedDoc._id,
-            previous: clone(previousResults[2])
+            previous: flatClone(previousResults[2])
         },
         previousResults,
         keyDocumentMap
@@ -110,7 +109,7 @@ export async function measurePerformanceOfStateFunctions(
             operation: 'DELETE',
             doc: null,
             id: previousResults[2]._id,
-            previous: clone(previousResults[2])
+            previous: flatClone(previousResults[2])
         },
         previousResults,
         keyDocumentMap

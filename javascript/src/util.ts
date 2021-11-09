@@ -1,7 +1,8 @@
 import type {
     StateResolveFunctionInput,
     UNKNOWN,
-    MongoQuery
+    MongoQuery,
+    DeepReadonlyObject
 } from './types';
 
 export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
@@ -111,6 +112,22 @@ export function cloneMap<K, V>(map: Map<K, V>): Map<K, V> {
         }
     );
     return ret;
+}
+
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
+    return Object.assign({}, obj) as any;
+}
+
+export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
+    if (!obj) {
+        throw new Error('ensureNotFalsy() is falsy');
+    }
+    return obj;
 }
 
 export function mergeSets<T>(sets: Set<T>[]): Set<T> {
