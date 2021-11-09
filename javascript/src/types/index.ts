@@ -15,6 +15,8 @@ export type ActionName =
     'removeLastItem' |
     'removeFirstInsertLast' |
     'removeLastInsertFirst' |
+    'removeFirstInsertFirst' |
+    'removeLastInsertLast' |
     'removeExisting' |
     'replaceExisting' |
     'alwaysWrong' | // this should be optimised out by later steps

@@ -17,7 +17,9 @@ import {
     insertAtSortPosition,
     removeExistingAndInsertAtSortPosition,
     runFullQueryAgain,
-    unknownAction
+    unknownAction,
+    removeFirstInsertFirst,
+    removeLastInsertLast
 } from './action-functions';
 
 /**
@@ -30,9 +32,11 @@ export const orderedActionList: ActionName[] = [
     'insertFirst',
     'insertLast',
     'removeFirstItem',
-    'removeLastItem', // TODO could this ever be useful?
+    'removeLastItem',
     'removeFirstInsertLast',
     'removeLastInsertFirst',
+    'removeFirstInsertFirst',
+    'removeLastInsertLast',
     'removeExisting',
     'replaceExisting',
     'alwaysWrong',
@@ -53,6 +57,8 @@ export const actionFunctions: {
     removeLastItem,
     removeFirstInsertLast,
     removeLastInsertFirst,
+    removeFirstInsertFirst,
+    removeLastInsertLast,
     removeExisting,
     replaceExisting,
     alwaysWrong,

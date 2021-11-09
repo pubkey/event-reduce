@@ -52,6 +52,15 @@ export const removeLastInsertFirst: ActionFunction<any> = (input) => {
     insertFirst(input);
 };
 
+export const removeFirstInsertFirst: ActionFunction<any> = (input) => {
+    removeFirstItem(input);
+    insertFirst(input);
+};
+
+export const removeLastInsertLast: ActionFunction<any> = (input) => {
+    removeLastItem(input);
+    insertLast(input);
+};
 
 export const removeExisting: ActionFunction<any> = (input) => {
     if (input.keyDocumentMap) {
