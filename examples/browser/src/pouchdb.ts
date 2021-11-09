@@ -1,7 +1,7 @@
 import { randomString, performanceNow } from 'async-test-util';
 import { ChangeEvent, QueryParams } from 'event-reduce-js';
 
-import PouchDb from 'pouchdb-core';
+const PouchDb = require('pouchdb-core').default;
 import PouchFind from 'pouchdb-find';
 import PouchIndexedDb from 'pouchdb-adapter-indexeddb';
 import PouchIdb from 'pouchdb-adapter-idb';

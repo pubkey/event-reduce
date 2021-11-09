@@ -4,6 +4,7 @@ import {
     DatabaseImplementation,
     Query
 } from './types';
+import { DEFAULT_LOADING_STATE } from './util';
 
 const $results = document.getElementById('results');
 export const $queryTextArea = document.getElementById('queryTextArea');
@@ -112,7 +113,7 @@ export function isLoading() {
     }
 }
 
-export function setLoadingState(label: string = 'Waiting for action trigger') {
+export function setLoadingState(label: string = DEFAULT_LOADING_STATE) {
     $loadingState.innerHTML = label;
     if (isLoading()) {
         const iconDiv = document.createElement('div');

@@ -1,7 +1,7 @@
 import {
   random,
-  name,
-  seed
+  datatype as fakerDatatype,
+  name
 } from 'faker';
 import {
   Human,
@@ -17,17 +17,12 @@ import {
 } from './minimongo';
 import { randomOfArray } from './util';
 
-/**
- * use a seed to ensure each time we generate the same data
- */
-seed(2345);
-
 export function randomHuman(): Human {
   return {
     _id: random.alphaNumeric(10),
     name: name.firstName().toLowerCase(),
-    gender: random.boolean() ? 'f' : 'm',
-    age: random.number({ min: 1, max: 100 })
+    gender: fakerDatatype.boolean() ? 'f' : 'm',
+    age: fakerDatatype.number({ min: 1, max: 100 })
   };
 }
 

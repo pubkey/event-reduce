@@ -4,9 +4,10 @@
     "scripts": {
         "lint": "tslint --project .",
         "start": "webpack-dev-server --config webpack.dev.js",
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test:e2e": "testcafe chrome -e test/ --hostname localhost",
+        "test": "concurrently \"npm run serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
         "mongo": "bash mongodb.bash",
-        "server": "ts-node -O '{\"module\": \"commonjs\"}' ./src/server.ts",
+        "serve": "ws -p 8888 -d dist/",
         "build": "webpack --config webpack.prod.js && cp ./index.html ./dist/index.html"
     },
     "repository": {
@@ -39,10 +40,13 @@
     "devDependencies": {
         "@babel/polyfill": "7.12.1",
         "@types/faker": "5.5.9",
+        "concurrently": "6.3.0",
         "css-loader": "5.2.7",
         "less": "4.1.2",
         "less-loader": "7.3.0",
+        "local-web-server": "5.1.1",
         "style-loader": "2.0.0",
+        "testcafe": "1.17.0",
         "ts-loader": "8.3.0",
         "ts-node": "10.4.0",
         "tslint": "6.1.3",

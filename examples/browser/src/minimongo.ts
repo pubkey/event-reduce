@@ -59,7 +59,7 @@ export async function minimongoRemove<DocType>(
     collection: MinimongoCollection<DocType>,
     id: string
 ): Promise<void> {
-    await new Promise(
+    await new Promise<void>(
         (resolve, reject) => collection.remove(id, resolve, reject)
     );
 }

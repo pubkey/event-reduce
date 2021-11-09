@@ -1,5 +1,8 @@
+import { MiniMongoImplementation } from './minimongo';
+import { NeDbImplementation } from './nedb';
+import { PouchDbImplementation } from './pouchdb';
 import {
-    MongoQuery,
+    DatabaseImplementation,
     Human,
     IdToDocumentMap
 } from './types';
@@ -39,4 +42,15 @@ export function getParameterByName(name, url?) {
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+export const DEFAULT_LOADING_STATE = 'Waiting for action trigger';
+
+export function getImplementations() {
+    const implementations: DatabaseImplementation[] = [
+        new MiniMongoImplementation(),
+        new PouchDbImplementation(),
+        new NeDbImplementation()
+    ];
+    return implementations;
 }

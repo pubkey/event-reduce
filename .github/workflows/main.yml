@@ -15,7 +15,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-
   test:
     runs-on: ubuntu-20.04
     env:
@@ -23,7 +22,7 @@ jobs:
       COMPOSE_DOCKER_CLI_BUILD: 1
       DOCKER_BUILDKIT: 1
       NODE_OPTIONS: "--max-old-space-size=4096"
-      
+
     steps:
       - uses: actions/checkout@v2
       - name: Set node version
@@ -48,9 +47,15 @@ jobs:
           working-directory: ./javascript
           run: npm run test
 
-      - name: examples
+      - name: build examples
         working-directory: ./examples/browser
         run: |
           npm install
           npm run lint
           npm run build
+
+      - name: test examples
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/browser
+          run: npm run test

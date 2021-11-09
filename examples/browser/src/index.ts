@@ -13,31 +13,19 @@ import {
 } from './dom';
 
 import {
-    MiniMongoImplementation
-} from './minimongo';
-import {
-    NeDbImplementation
-} from './nedb';
-
-import {
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
 import { Human, IdToDocumentMap, DatabaseImplementation, Query } from './types';
-import { idToDocMapFromList, removeOptions, getParameterByName } from './util';
+import { idToDocMapFromList, removeOptions, getParameterByName, getImplementations } from './util';
 import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
 
 import '../style.less';
-import { PouchDbImplementation } from './pouchdb';
 import { appendToLog } from './logs';
 
 async function run() {
-    const implementations: DatabaseImplementation[] = [
-        new MiniMongoImplementation(),
-        new PouchDbImplementation(),
-        new NeDbImplementation()
-    ];
+    const implementations = getImplementations();
 
     // init selects
     implementations.forEach(imp => {
