@@ -8,11 +8,6 @@ console.log('open page');
 
 const implementations = getImplementations();
 
-
-fixture`Example page`
-    .page`http://0.0.0.0:8888/`;
-
-
 const techs: string[] = [];
 implementations.forEach(imp => {
     const name = imp.getName();
@@ -21,6 +16,9 @@ implementations.forEach(imp => {
         techs.push(tech);
     });
 });
+
+/* tslint:disable-next-line */
+fixture `A fixture`;
 
 const rootUrl = 'http://0.0.0.0:8888/';
 // const rootUrl = 'https://pubkey.github.io/event-reduce/';

@@ -2,15 +2,10 @@ import { randomString, performanceNow } from 'async-test-util';
 import { ChangeEvent, QueryParams } from 'event-reduce-js';
 
 const PouchDb = require('pouchdb-core').default;
-import PouchFind from 'pouchdb-find';
-import PouchIndexedDb from 'pouchdb-adapter-indexeddb';
-import PouchIdb from 'pouchdb-adapter-idb';
-import PouchMem from 'pouchdb-adapter-memory';
-
-PouchDb.plugin(PouchFind as any);
-PouchDb.plugin(PouchIndexedDb as any);
-PouchDb.plugin(PouchIdb as any);
-PouchDb.plugin(PouchMem as any);
+const PouchFind = require('pouchdb-find').default;
+const PouchIndexedDb = require('pouchdb-adapter-indexeddb').default;
+const PouchIdb = require('pouchdb-adapter-idb').default;
+const PouchMem = require('pouchdb-adapter-memory').default;
 
 import {
     DatabaseImplementation,
@@ -34,6 +29,11 @@ export class PouchDbImplementation implements DatabaseImplementation<MongoQuery>
         ];
     }
     async init(storageOption: string): Promise<void> {
+        PouchDb.plugin(PouchFind as any);
+        PouchDb.plugin(PouchIndexedDb as any);
+        PouchDb.plugin(PouchIdb as any);
+        PouchDb.plugin(PouchMem as any);
+
         const dbName = randomString(12);
         this.col = new PouchDb(
             dbName,

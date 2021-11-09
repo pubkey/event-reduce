@@ -5,7 +5,7 @@
         "lint": "tslint --project .",
         "start": "webpack-dev-server --config webpack.dev.js",
         "test:e2e": "testcafe chrome -e test/ --hostname localhost",
-        "test": "concurrently \"npm run serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
+        "test": "concurrently \"npm run serve\" \"sleep 4 && npm run test:e2e\" --kill-others --success first",
         "mongo": "bash mongodb.bash",
         "serve": "ws -p 8888 -d dist/",
         "build": "webpack --config webpack.prod.js && cp ./index.html ./dist/index.html"

@@ -47,14 +47,14 @@ export function getInitialData(amount: number = 100): ChangeEvent<Human>[] {
 
 const keyToChangeFn = {
   1: (i: Human) => i.name = name.firstName().toLowerCase(),
-  2: (i: Human) => i.gender = random.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = random.number({ min: 1, max: 100 })
+  2: (i: Human) => i.gender = fakerDatatype.boolean() ? 'f' : 'm',
+  3: (i: Human) => i.age = fakerDatatype.number({ min: 1, max: 100 })
 };
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = random.number({ min: 1, max: 3 });
+  const field = fakerDatatype.number({ min: 1, max: 3 });
   keyToChangeFn[field](cloned);
 
   return cloned;
