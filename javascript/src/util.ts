@@ -120,3 +120,10 @@ export function mergeSets<T>(sets: Set<T>[]): Set<T> {
     });
     return ret;
 }
+
+/**
+ * @link https://stackoverflow.com/a/12830454/3443137
+ */
+export function roundToTwoDecimals(num: number): number {
+    return parseFloat(num.toFixed(2));
+}

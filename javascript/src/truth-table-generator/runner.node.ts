@@ -20,7 +20,8 @@ import { getTestProcedures } from './procedures';
 import { generateTruthTable } from './';
 import {
     mapToObject,
-    objectToMap
+    objectToMap,
+    roundToTwoDecimals
 } from '../util';
 import {
     readJsonFile,
@@ -102,6 +103,8 @@ async function run() {
          */
         case 'iterative-fuzzing':
             (async function iterativeFuzzing() {
+                let lastErrorFoundTime = new Date().getTime();
+
                 /**
                  * Reset the random seed!
                  * When we restart the generating processes,
@@ -151,8 +154,13 @@ async function run() {
                             ' which is ' + rounded + '%'
                         );
 
+                        const lastErrorAgo = new Date().getTime() - lastErrorFoundTime;
+                        const lastErrorHours = lastErrorAgo / 1000 / 60 / 60;
+                        console.log('Last error found ' + roundToTwoDecimals(lastErrorHours) + 'hours ago');
+
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
+                            lastErrorFoundTime = new Date().getTime();
                             fuzzingFoundError = true;
                             console.log(JSON.stringify(result.query));
                             console.log(
