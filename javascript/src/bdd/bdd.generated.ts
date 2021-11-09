@@ -23,4 +23,4 @@ export const resolveInput = (input: StateResolveFunctionInput<any>) => {
         stateResolveFunctionByIndex,
         input
     );
-}
+};
