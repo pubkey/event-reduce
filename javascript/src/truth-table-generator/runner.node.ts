@@ -231,6 +231,7 @@ async function run() {
         case 'optimize-bdd':
             (async function optimizeBdd() {
                 console.log('read table..');
+                let lastBetterFoundTime = new Date().getTime();
                 const truthTable: TruthTable = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
                 );
@@ -253,6 +254,11 @@ async function run() {
                     truthTable,
                     iterations: 10000000,
                     afterBddCreation: (bdd: RootNode) => {
+
+                        const lastBetterAgo = new Date().getTime() - lastBetterFoundTime;
+                        const lastBetterHours = lastBetterAgo / 1000 / 60 / 60;
+                        console.log('Last better bdd found ' + roundToTwoDecimals(lastBetterHours) + 'hours ago');
+
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
                         if (currentBest) {
                             console.log(
@@ -273,6 +279,7 @@ async function run() {
                     onBetterBdd: async (res: OptimisationResult) => {
                         console.log('#'.repeat(100));
                         console.log('## found better bdd ##');
+                        lastBetterFoundTime = new Date().getTime();
                         currentBest = res.bdd;
                         const bddMinimalString = bddToMinimalString(currentBest);
                         const quality = QUALITY_BY_BDD_CACHE.get(currentBest);
