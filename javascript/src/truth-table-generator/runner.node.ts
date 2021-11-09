@@ -127,13 +127,7 @@ async function run() {
                     while (!fuzzingFoundError) {
                         fuzzingCount++;
                         console.log('#'.repeat(20));
-                        console.log('#'.repeat(20));
-                        console.log('#'.repeat(20));
                         console.log('run fuzzing() #' + fuzzingCount);
-                        console.log('#'.repeat(20));
-                        console.log('#'.repeat(20));
-                        console.log('#'.repeat(20));
-
 
                         //                    const indexOfRunAgain = orderedActionList.indexOf('runFullQueryAgain');
                         //                      const map: StateActionIdMap = new Map();
