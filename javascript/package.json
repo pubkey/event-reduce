@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "1.4.1",
+  "version": "2.0.0",
   "description": "javascript implementation of the event-reduce algorithm",
   "license": "MIT",
   "main": "./dist/lib/index.js",

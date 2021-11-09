@@ -15,13 +15,17 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mergeSets = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.tryToFillPreviousDoc = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
+exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.tryToFillPreviousDoc = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
 exports.UNKNOWN_VALUE = 'UNKNOWN';
 function lastOfArray(ar) {
     return ar[ar.length - 1];
@@ -124,12 +128,35 @@ function cloneMap(map) {
     return ret;
 }
 exports.cloneMap = cloneMap;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+function flatClone(obj) {
+    return Object.assign({}, obj);
+}
+exports.flatClone = flatClone;
+function ensureNotFalsy(obj) {
+    if (!obj) {
+        throw new Error('ensureNotFalsy() is falsy');
+    }
+    return obj;
+}
+exports.ensureNotFalsy = ensureNotFalsy;
 function mergeSets(sets) {
     var ret = new Set();
     sets.forEach(function (set) {
-        ret = new Set(__spreadArray(__spreadArray([], __read(ret)), __read(set)));
+        ret = new Set(__spreadArray(__spreadArray([], __read(ret), false), __read(set), false));
     });
     return ret;
 }
 exports.mergeSets = mergeSets;
+/**
+ * @link https://stackoverflow.com/a/12830454/3443137
+ */
+function roundToTwoDecimals(num) {
+    return parseFloat(num.toFixed(2));
+}
+exports.roundToTwoDecimals = roundToTwoDecimals;
 //# sourceMappingURL=util.js.map

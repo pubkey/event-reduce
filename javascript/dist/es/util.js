@@ -14,10 +14,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 export var UNKNOWN_VALUE = 'UNKNOWN';
 export function lastOfArray(ar) {
@@ -111,11 +115,31 @@ export function cloneMap(map) {
     });
     return ret;
 }
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+export function flatClone(obj) {
+    return Object.assign({}, obj);
+}
+export function ensureNotFalsy(obj) {
+    if (!obj) {
+        throw new Error('ensureNotFalsy() is falsy');
+    }
+    return obj;
+}
 export function mergeSets(sets) {
     var ret = new Set();
     sets.forEach(function (set) {
-        ret = new Set(__spreadArray(__spreadArray([], __read(ret)), __read(set)));
+        ret = new Set(__spreadArray(__spreadArray([], __read(ret), false), __read(set), false));
     });
     return ret;
+}
+/**
+ * @link https://stackoverflow.com/a/12830454/3443137
+ */
+export function roundToTwoDecimals(num) {
+    return parseFloat(num.toFixed(2));
 }
 //# sourceMappingURL=util.js.map

@@ -6,6 +6,8 @@ export declare const removeFirstItem: ActionFunction<any>;
 export declare const removeLastItem: ActionFunction<any>;
 export declare const removeFirstInsertLast: ActionFunction<any>;
 export declare const removeLastInsertFirst: ActionFunction<any>;
+export declare const removeFirstInsertFirst: ActionFunction<any>;
+export declare const removeLastInsertLast: ActionFunction<any>;
 export declare const removeExisting: ActionFunction<any>;
 export declare const replaceExisting: ActionFunction<any>;
 /**

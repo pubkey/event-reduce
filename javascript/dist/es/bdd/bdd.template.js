@@ -1,6 +1,14 @@
 import { minimalStringToSimpleBdd, resolveWithSimpleBdd } from 'binary-decision-diagram';
 import { stateResolveFunctionByIndex } from '../states';
 export var minimalBddString = '${minimalBddString}';
-export var simpleBdd = minimalStringToSimpleBdd(minimalBddString);
-export var resolveInput = function (input) { return resolveWithSimpleBdd(simpleBdd, stateResolveFunctionByIndex, input); };
+var simpleBdd;
+export function getSimpleBdd() {
+    if (!simpleBdd) {
+        simpleBdd = minimalStringToSimpleBdd(minimalBddString);
+    }
+    return simpleBdd;
+}
+export var resolveInput = function (input) {
+    return resolveWithSimpleBdd(getSimpleBdd(), stateResolveFunctionByIndex, input);
+};
 //# sourceMappingURL=bdd.template.js.map

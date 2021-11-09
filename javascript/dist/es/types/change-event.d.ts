@@ -1,6 +1,10 @@
 import type { WriteOperation, UNKNOWN } from './index';
 export interface ChangeEventBase {
     operation: WriteOperation;
+    /**
+     * document id,
+     * value of the primary key.
+     */
     id: string;
 }
 export interface ChangeEventInsert<DocType> extends ChangeEventBase {

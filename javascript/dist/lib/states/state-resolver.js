@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
+exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
 var object_path_1 = __importDefault(require("object-path"));
 var util_1 = require("../util");
 var hasLimit = function (input) {
@@ -40,7 +40,7 @@ var previousUnknown = function (input) {
 };
 exports.previousUnknown = previousUnknown;
 var wasLimitReached = function (input) {
-    return exports.hasLimit(input) && input.previousResults.length >= input.queryParams.limit;
+    return (0, exports.hasLimit)(input) && input.previousResults.length >= input.queryParams.limit;
 };
 exports.wasLimitReached = wasLimitReached;
 var sortParamsChanged = function (input) {
@@ -83,6 +83,26 @@ var wasInResult = function (input) {
     }
 };
 exports.wasInResult = wasInResult;
+var wasFirst = function (input) {
+    var first = input.previousResults[0];
+    if (first && first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+exports.wasFirst = wasFirst;
+var wasLast = function (input) {
+    var last = (0, util_1.lastOfArray)(input.previousResults);
+    if (last && last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+exports.wasLast = wasLast;
 var wasSortedBeforeFirst = function (input) {
     var prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
@@ -91,6 +111,15 @@ var wasSortedBeforeFirst = function (input) {
     var first = input.previousResults[0];
     if (!first) {
         return false;
+    }
+    /**
+     * If the changed document is the same as the first,
+     * we cannot sort-compare them, because it might end in a non-deterministic
+     * sort order. Because both document could be equal.
+     * So instead we have to return true.
+     */
+    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
     var comp = input.queryParams.sortComparator(prev, first);
     return comp < 0;
@@ -101,9 +130,12 @@ var wasSortedAfterLast = function (input) {
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
     }
-    var last = util_1.lastOfArray(input.previousResults);
+    var last = (0, util_1.lastOfArray)(input.previousResults);
     if (!last) {
         return false;
+    }
+    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
     var comp = input.queryParams.sortComparator(prev, last);
     return comp > 0;
@@ -118,6 +150,9 @@ var isSortedBeforeFirst = function (input) {
     if (!first) {
         return false;
     }
+    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
+    }
     var comp = input.queryParams.sortComparator(doc, first);
     return comp < 0;
 };
@@ -127,9 +162,12 @@ var isSortedAfterLast = function (input) {
     if (!doc) {
         return false;
     }
-    var last = util_1.lastOfArray(input.previousResults);
+    var last = (0, util_1.lastOfArray)(input.previousResults);
     if (!last) {
         return false;
+    }
+    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+        return true;
     }
     var comp = input.queryParams.sortComparator(doc, last);
     return comp > 0;
