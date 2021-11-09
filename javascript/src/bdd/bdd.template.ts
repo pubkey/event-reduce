@@ -9,9 +9,18 @@ import { stateResolveFunctionByIndex } from '../states';
 
 export const minimalBddString = '${minimalBddString}';
 
-export const simpleBdd: SimpleBdd = minimalStringToSimpleBdd(minimalBddString);
-export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveWithSimpleBdd(
-    simpleBdd,
-    stateResolveFunctionByIndex,
-    input
-);
+let simpleBdd: SimpleBdd | undefined;
+export function getSimpleBdd() {
+    if (!simpleBdd) {
+        simpleBdd = minimalStringToSimpleBdd(minimalBddString);
+    }
+    return simpleBdd;
+}
+
+export const resolveInput = (input: StateResolveFunctionInput<any>) => {
+    return resolveWithSimpleBdd(
+        getSimpleBdd(),
+        stateResolveFunctionByIndex,
+        input
+    );
+}

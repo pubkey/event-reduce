@@ -19,7 +19,7 @@ import {
 } from '../../src/truth-table-generator/util';
 import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
 import { StateActionIdMap, Human } from '../../src/truth-table-generator/types';
-import { simpleBdd } from '../../src/bdd/bdd.generated';
+import { getSimpleBdd } from '../../src/bdd/bdd.generated';
 import {
     StateResolveFunctionInput,
     QueryParams,
@@ -66,7 +66,7 @@ describe('generated-stuff.test.ts', () => {
             const resolvers = getResolverFunctions();
             for (const [key, value] of truthTable.entries()) {
                 const bddValue = resolveWithSimpleBdd(
-                    simpleBdd,
+                    getSimpleBdd(),
                     resolvers,
                     key
                 );
