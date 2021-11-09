@@ -7,7 +7,7 @@ import {
 import type { StateResolveFunctionInput } from '../types';
 import { stateResolveFunctionByIndex } from '../states';
 
-export const minimalBddString = '14a0b2c4d/e,f*g5h1i+j6k-l.m)n(onj:pjk:qik:rhg:sjd:tid:ujg:vnf:wna:xnc:yig:znk:{nl:|nm:}nz9~uj8yk8¡xv8¢jk8£wn8¤yj8¥bg8¦cf8§dk8¨n}7©n{7ªgr7«fj7¬¡|7­£{7®an7¯cn7°nz7±jl7²¥g7³¦|7´§n7µnl7¶an6·®©6¸cv6¹¯v6ºnz5»¨°5¼¶{5½·­5¾¸|5¿¹¬5À¼b4Á½g4Â¿ª4Ã¾b4Ä³²4Åµ¥4Ænh4Çpj3Èqk3Éº»3Êa±3ËÀÁ3ÌÃÂ3Ís~3Ît3Ïn´3ÐÎÈ2ÑËÊ2ÒÌa2Ó¢k2ÔÆe2Õyk2ÖÅ±2×Äa2ØÆj2Ùhe2Úie2ÛÉÇ1ÜÒÐ1ÝÑÍ1ÞÏÓ1ßnj1àØj1áÔi1â°j1ã×Õ1äÖ¤1åni1æÙi1çÜÝ0è¬­0éáà0êãä0ëæØ0ìÜã/íÛâ/îçê/ï|n/ðÞ´/ñáæ/òßå/óéë/ô¬|.õ°|.öè|.÷«o.øìï.ùíï.úîï.ûðn.üñn.ýòn.þón.ÿÚn.Āôn-āõn-Ăö÷-ăøn-Ąùn-ąúû-Ćün-ćýn-Ĉþÿ-ĉĂā,ĊąĄ,ċĈć,ČĀĉ+čăĊ+ĎĆċ+ďĎč)ďČ(';
+export const minimalBddString = '14a,b1c+d5e0f/g2h.i4j*k-l)m(n6ocm:pah:qcf:rbd:sae:tnh:unf:vnd:wad:xme:yan:zcd:{bg:|ck:}nk:~mj:mh:¡mi:¢mk:£ml:¤mn:¥mc9¦mo9§¤m9¨m¢9©rd8ªvn8«zk8¬xm8­zn8®nk8¯fk8°¡~8±¤m8²¡j8³m¤7´¡m7µ~m7¶sp7·xm7¸m7¹©r7ºyt7»¬7¼yh7½dn7¾®m7¿eh7Àm¨7Á°¤7Â°£7Ã±7Ä²¤7Åm¢7Æ¡~6Ç´µ6Èxm6É·¸6Êm¥5Ëmc5Ìm¦5ÍÆ£5ÎÇÂ5ÏÈ5ÐÉ»5Ñjm5Òm¢5ÓÀÅ5ÔÊb4Õnb4Ömb4×Ëb4Øcb4ÙÌg4Ú³g4ÛÍ{4ÜÎ¹4ÝÏ{4ÞÐ¹4ßÂd4à»d4áÑ{4â¾½4ã¾d4äÙá3åes3ækc3çÛÜ3ès¶3éq«3êÝÞ3ësº3ìuª3íáâ3îf®3ï|n3ðÒÓ3ñ}n3òÔa2óÕa2ôÖa2õÖn2ö×a2÷Øa2øäå2ùfæ2úÚs2ûf|2üçè2ýé|2þêë2ÿßw2Ā«|2āà¼2Ăíe2ăîï2Ąã¿2ą¯k2Ćòc1ćóc1Ĉôc1ĉõn1Ċöc1ċ÷c1Čmn1čøù1Ďúû1ďüý1Đþì1đÿĀ1Ēā­1ēĂă1ĔĄą1ĕðñ1ĖÅn1ėĈĉ0ĘďĐ0ęđĒ0Ěēm0ěĔg0ĜÂÃ0ĝĆć/ĞĊċ/ğďđ/ĠčĎ/ġ§¤/ĢĘę/ģĚě/ĤĕĖ/ĥĈm.Ħĝm.ħėm.ĨĞm.ĩČm.Īğ£.īĠġ.ĬĢ£.ĭģm.ĮĤ£.įÂ£.İÁ¤.ıĜ£.ĲÄ¤.ĳÅ£.ĴĥĦ-ĵħĨ-Ķĩm-ķĪī-ĸĬĭ-ĹĮm-ĺįİ-ĻıĲ-ļĳ¤-ĽĵĶ,ľĸĹ,ĿĻļ,ŀĴĽ+Łķľ+łĺĿ+ŃŀŁ)Ńł(';
 
 let simpleBdd: SimpleBdd | undefined;
 export function getSimpleBdd() {
