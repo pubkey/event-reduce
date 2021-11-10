@@ -17,7 +17,7 @@ var bdd_generated_1 = require("./bdd/bdd.generated");
 __exportStar(require("./states"), exports);
 __exportStar(require("./util"), exports);
 function calculateActionFromMap(stateSetToActionMap, input) {
-    var stateSet = states_1.getStateSet(input);
+    var stateSet = (0, states_1.getStateSet)(input);
     var actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return {
@@ -34,7 +34,7 @@ function calculateActionFromMap(stateSetToActionMap, input) {
 }
 exports.calculateActionFromMap = calculateActionFromMap;
 function calculateActionName(input) {
-    var resolvedActionId = bdd_generated_1.resolveInput(input);
+    var resolvedActionId = (0, bdd_generated_1.resolveInput)(input);
     return actions_1.orderedActionList[resolvedActionId];
 }
 exports.calculateActionName = calculateActionName;

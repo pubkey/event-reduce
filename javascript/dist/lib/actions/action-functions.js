@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
+exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertLast = exports.removeFirstInsertFirst = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
 var array_push_at_sort_position_1 = require("array-push-at-sort-position");
 var doNothing = function (_input) { };
 exports.doNothing = doNothing;
@@ -33,15 +33,25 @@ var removeLastItem = function (input) {
 };
 exports.removeLastItem = removeLastItem;
 var removeFirstInsertLast = function (input) {
-    exports.removeFirstItem(input);
-    exports.insertLast(input);
+    (0, exports.removeFirstItem)(input);
+    (0, exports.insertLast)(input);
 };
 exports.removeFirstInsertLast = removeFirstInsertLast;
 var removeLastInsertFirst = function (input) {
-    exports.removeLastItem(input);
-    exports.insertFirst(input);
+    (0, exports.removeLastItem)(input);
+    (0, exports.insertFirst)(input);
 };
 exports.removeLastInsertFirst = removeLastInsertFirst;
+var removeFirstInsertFirst = function (input) {
+    (0, exports.removeFirstItem)(input);
+    (0, exports.insertFirst)(input);
+};
+exports.removeFirstInsertFirst = removeFirstInsertFirst;
+var removeLastInsertLast = function (input) {
+    (0, exports.removeLastItem)(input);
+    (0, exports.insertLast)(input);
+};
+exports.removeLastInsertLast = removeLastInsertLast;
 var removeExisting = function (input) {
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(input.changeEvent.id);
@@ -96,16 +106,34 @@ var alwaysWrong = function (input) {
 };
 exports.alwaysWrong = alwaysWrong;
 var insertAtSortPosition = function (input) {
+    var docId = input.changeEvent.id;
     var doc = input.changeEvent.doc;
     if (input.keyDocumentMap) {
-        input.keyDocumentMap.set(input.changeEvent.id, doc);
+        if (input.keyDocumentMap.has(docId)) {
+            /**
+             * If document is already in results,
+             * we cannot add it again because it would throw on non-deterministic ordering.
+             */
+            return;
+        }
+        input.keyDocumentMap.set(docId, doc);
     }
-    array_push_at_sort_position_1.pushAtSortPosition(input.previousResults, doc, input.queryParams.sortComparator, true);
+    else {
+        var isDocInResults = input.previousResults.find(function (d) { return d[input.queryParams.primaryKey] === docId; });
+        /**
+         * If document is already in results,
+         * we cannot add it again because it would throw on non-deterministic ordering.
+         */
+        if (isDocInResults) {
+            return;
+        }
+    }
+    (0, array_push_at_sort_position_1.pushAtSortPosition)(input.previousResults, doc, input.queryParams.sortComparator, true);
 };
 exports.insertAtSortPosition = insertAtSortPosition;
 var removeExistingAndInsertAtSortPosition = function (input) {
-    exports.removeExisting(input);
-    exports.insertAtSortPosition(input);
+    (0, exports.removeExisting)(input);
+    (0, exports.insertAtSortPosition)(input);
 };
 exports.removeExistingAndInsertAtSortPosition = removeExistingAndInsertAtSortPosition;
 var runFullQueryAgain = function (_input) {

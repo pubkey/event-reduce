@@ -1,4 +1,4 @@
-import { doNothing, insertFirst, insertLast, removeFirstItem, removeLastItem, removeFirstInsertLast, removeLastInsertFirst, removeExisting, replaceExisting, alwaysWrong, insertAtSortPosition, removeExistingAndInsertAtSortPosition, runFullQueryAgain, unknownAction } from './action-functions';
+import { doNothing, insertFirst, insertLast, removeFirstItem, removeLastItem, removeFirstInsertLast, removeLastInsertFirst, removeExisting, replaceExisting, alwaysWrong, insertAtSortPosition, removeExistingAndInsertAtSortPosition, runFullQueryAgain, unknownAction, removeFirstInsertFirst, removeLastInsertLast } from './action-functions';
 /**
  * all actions ordered by performance-cost
  * cheapest first
@@ -12,6 +12,8 @@ export var orderedActionList = [
     'removeLastItem',
     'removeFirstInsertLast',
     'removeLastInsertFirst',
+    'removeFirstInsertFirst',
+    'removeLastInsertLast',
     'removeExisting',
     'replaceExisting',
     'alwaysWrong',
@@ -28,6 +30,8 @@ export var actionFunctions = {
     removeLastItem: removeLastItem,
     removeFirstInsertLast: removeFirstInsertLast,
     removeLastInsertFirst: removeLastInsertFirst,
+    removeFirstInsertFirst: removeFirstInsertFirst,
+    removeLastInsertLast: removeLastInsertLast,
     removeExisting: removeExisting,
     replaceExisting: replaceExisting,
     alwaysWrong: alwaysWrong,

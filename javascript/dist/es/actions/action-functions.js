@@ -32,6 +32,14 @@ export var removeLastInsertFirst = function (input) {
     removeLastItem(input);
     insertFirst(input);
 };
+export var removeFirstInsertFirst = function (input) {
+    removeFirstItem(input);
+    insertFirst(input);
+};
+export var removeLastInsertLast = function (input) {
+    removeLastItem(input);
+    insertLast(input);
+};
 export var removeExisting = function (input) {
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(input.changeEvent.id);
@@ -83,9 +91,27 @@ export var alwaysWrong = function (input) {
     }
 };
 export var insertAtSortPosition = function (input) {
+    var docId = input.changeEvent.id;
     var doc = input.changeEvent.doc;
     if (input.keyDocumentMap) {
-        input.keyDocumentMap.set(input.changeEvent.id, doc);
+        if (input.keyDocumentMap.has(docId)) {
+            /**
+             * If document is already in results,
+             * we cannot add it again because it would throw on non-deterministic ordering.
+             */
+            return;
+        }
+        input.keyDocumentMap.set(docId, doc);
+    }
+    else {
+        var isDocInResults = input.previousResults.find(function (d) { return d[input.queryParams.primaryKey] === docId; });
+        /**
+         * If document is already in results,
+         * we cannot add it again because it would throw on non-deterministic ordering.
+         */
+        if (isDocInResults) {
+            return;
+        }
     }
     pushAtSortPosition(input.previousResults, doc, input.queryParams.sortComparator, true);
 };

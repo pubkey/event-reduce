@@ -9,6 +9,8 @@ export declare const previousUnknown: StateResolveFunction<any>;
 export declare const wasLimitReached: StateResolveFunction<any>;
 export declare const sortParamsChanged: StateResolveFunction<any>;
 export declare const wasInResult: StateResolveFunction<any>;
+export declare const wasFirst: StateResolveFunction<any>;
+export declare const wasLast: StateResolveFunction<any>;
 export declare const wasSortedBeforeFirst: StateResolveFunction<any>;
 export declare const wasSortedAfterLast: StateResolveFunction<any>;
 export declare const isSortedBeforeFirst: StateResolveFunction<any>;

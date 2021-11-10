@@ -17,6 +17,8 @@ exports.orderedStateList = [
     'wasResultsEmpty',
     'previousUnknown',
     'wasLimitReached',
+    'wasFirst',
+    'wasLast',
     'sortParamsChanged',
     'wasInResult',
     'wasSortedBeforeFirst',
@@ -36,6 +38,8 @@ exports.stateResolveFunctions = {
     wasResultsEmpty: state_resolver_1.wasResultsEmpty,
     previousUnknown: state_resolver_1.previousUnknown,
     wasLimitReached: state_resolver_1.wasLimitReached,
+    wasFirst: state_resolver_1.wasFirst,
+    wasLast: state_resolver_1.wasLast,
     sortParamsChanged: state_resolver_1.sortParamsChanged,
     wasInResult: state_resolver_1.wasInResult,
     wasSortedBeforeFirst: state_resolver_1.wasSortedBeforeFirst,
@@ -55,14 +59,16 @@ exports.stateResolveFunctionByIndex = {
     6: state_resolver_1.wasResultsEmpty,
     7: state_resolver_1.previousUnknown,
     8: state_resolver_1.wasLimitReached,
-    9: state_resolver_1.sortParamsChanged,
-    10: state_resolver_1.wasInResult,
-    11: state_resolver_1.wasSortedBeforeFirst,
-    12: state_resolver_1.wasSortedAfterLast,
-    13: state_resolver_1.isSortedBeforeFirst,
-    14: state_resolver_1.isSortedAfterLast,
-    15: state_resolver_1.wasMatching,
-    16: state_resolver_1.doesMatchNow
+    9: state_resolver_1.wasFirst,
+    10: state_resolver_1.wasLast,
+    11: state_resolver_1.sortParamsChanged,
+    12: state_resolver_1.wasInResult,
+    13: state_resolver_1.wasSortedBeforeFirst,
+    14: state_resolver_1.wasSortedAfterLast,
+    15: state_resolver_1.isSortedBeforeFirst,
+    16: state_resolver_1.isSortedAfterLast,
+    17: state_resolver_1.wasMatching,
+    18: state_resolver_1.doesMatchNow
 };
 function resolveState(stateName, input) {
     var fn = exports.stateResolveFunctions[stateName];

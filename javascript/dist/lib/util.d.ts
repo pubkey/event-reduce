@@ -1,4 +1,4 @@
-import type { StateResolveFunctionInput, UNKNOWN, MongoQuery } from './types';
+import type { StateResolveFunctionInput, UNKNOWN, MongoQuery, DeepReadonlyObject } from './types';
 export declare const UNKNOWN_VALUE: UNKNOWN;
 export declare function lastOfArray<T>(ar: T[]): T;
 /**
@@ -30,4 +30,15 @@ export declare function objectToMap<K, V>(object: {
     [k: string]: V;
 }): Map<K, V>;
 export declare function cloneMap<K, V>(map: Map<K, V>): Map<K, V>;
+/**
+ * does a flat copy on the objects,
+ * is about 3 times faster then using deepClone
+ * @link https://jsperf.com/object-rest-spread-vs-clone/2
+ */
+export declare function flatClone<T>(obj: T | DeepReadonlyObject<T>): T;
+export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
 export declare function mergeSets<T>(sets: Set<T>[]): Set<T>;
+/**
+ * @link https://stackoverflow.com/a/12830454/3443137
+ */
+export declare function roundToTwoDecimals(num: number): number;
