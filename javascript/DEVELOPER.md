@@ -23,7 +23,7 @@ If not, it adapts the truth table to ensure that the errored query now works.
 Run this until it no longer logs that it has found errors. I had let this run about one month.
 
 To let it run on a server, use this command so you can exit the terminal and it still runs:
-`nohup npm run iterative-fuzzing &`
+`nohup npm run iterative-fuzzing &> iterative-fuzzing.out &`
 
 ### optimize bdd
 
@@ -35,4 +35,4 @@ As soon as we find a better bdd, it is written to the generated files.
 Run this until it no longer finds a better bdd. I had let this run about one week.
 
 To let it run on a server, use this command so you can exit the terminal and it still runs:
-`nohup npm run optimize-bdd &`
+`nohup npm run optimize-bdd &> optimize-bdd.out &`
