@@ -342,7 +342,7 @@ export function sortParamChanged(): ChangeEvent<Human>[] {
             previous: { _id: '6eu7byz49iq9', name: 'Eugenia', gender: 'f', age: 16 },
             id: '6eu7byz49iq9'
         }
-    ]
+    ];
 }
 
 let CACHE: ChangeEvent<Human>[][];
