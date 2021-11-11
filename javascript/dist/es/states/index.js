@@ -1,4 +1,5 @@
 import { hasLimit, isFindOne, hasSkip, wasResultsEmpty, isDelete, isInsert, isUpdate, previousUnknown, wasLimitReached, sortParamsChanged, wasInResult, wasFirst, wasLast, wasSortedBeforeFirst, wasSortedAfterLast, isSortedBeforeFirst, isSortedAfterLast, wasMatching, doesMatchNow } from './state-resolver';
+export * from './state-resolver';
 /**
  * all states ordered by performance-cost
  * cheapest first
