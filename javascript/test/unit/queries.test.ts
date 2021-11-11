@@ -1,7 +1,10 @@
 import * as assert from 'assert';
 import {
-    getQueryVariations, SELECTOR_VARIATIONS,
-    SKIP_VARIATIONS, LIMIT_VARIATIONS, SORT_VARIATION
+    getQueryVariations,
+    SELECTOR_VARIATIONS,
+    SKIP_VARIATIONS,
+    LIMIT_VARIATIONS,
+    SORT_VARIATION
 } from '../../src/truth-table-generator/queries';
 
 describe('queries-state.test.ts', () => {

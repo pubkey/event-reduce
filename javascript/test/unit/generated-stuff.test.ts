@@ -169,7 +169,6 @@ describe('generated-stuff.test.ts', () => {
             });
 
             for (const procedure of procedures) {
-
                 // clear queries
                 useQueries.forEach(useQuery => {
                     useQuery.keyDocumentMap.clear();

@@ -29,6 +29,8 @@ import {
     doesMatchNow
 } from './state-resolver';
 
+export * from './state-resolver';
+
 /**
  * all states ordered by performance-cost
  * cheapest first

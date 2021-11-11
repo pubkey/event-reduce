@@ -1,4 +1,7 @@
-import { randomBoolean, randomNumber } from 'async-test-util';
+import {
+    randomBoolean,
+    randomNumber
+} from 'async-test-util';
 
 import type {
     MongoQuery
@@ -37,6 +40,14 @@ export const SELECTOR_VARIATIONS: Partial<MongoQuery>[] = [
         selector: {
             age: {
                 $gt: 10
+            }
+        }
+    },
+    // find 20%
+    {
+        selector: {
+            age: {
+                $gt: 20
             }
         }
     },

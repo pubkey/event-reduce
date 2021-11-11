@@ -1,8 +1,13 @@
 import * as assert from 'assert';
-import { createBddFromTruthTable, fillTruthTable } from 'binary-decision-diagram';
+import {
+    createBddFromTruthTable,
+    fillTruthTable
+} from 'binary-decision-diagram';
 
 import {
-    measurePerformanceOfStateFunctions, countFunctionUsages, getQualityOfBdd
+    measurePerformanceOfStateFunctions,
+    countFunctionUsages,
+    getQualityOfBdd
 } from '../../src/truth-table-generator/calculate-bdd-quality';
 import {
     orderedStateList

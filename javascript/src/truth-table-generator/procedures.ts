@@ -179,6 +179,9 @@ export function insertFiveSorted(): ChangeEvent<Human>[] {
         }
     ];
 }
+
+
+
 export function insertFiveSortedThenRemoveSorted(): ChangeEvent<Human>[] {
     const inserts = insertFiveSorted();
     const ret: ChangeEvent<Human>[] = inserts.slice();
@@ -319,6 +322,29 @@ export function oneThatWasCrashing(): ChangeEvent<Human>[] {
     ];
 }
 
+export function sortParamChanged(): ChangeEvent<Human>[] {
+    return [
+        {
+            operation: 'INSERT',
+            doc: { _id: '6eu7byz49iq9', name: 'Eugenia', gender: 'f', age: 16 },
+            previous: null,
+            id: '6eu7byz49iq9'
+        },
+        {
+            operation: 'INSERT',
+            doc: { _id: 's90j6hhznefj', name: 'Freeman', gender: 'f', age: 25 },
+            previous: null,
+            id: 's90j6hhznefj'
+        },
+        {
+            operation: 'UPDATE',
+            doc: { _id: '6eu7byz49iq9', name: 'Eugenia', gender: 'f', age: 50 },
+            previous: { _id: '6eu7byz49iq9', name: 'Eugenia', gender: 'f', age: 16 },
+            id: '6eu7byz49iq9'
+        }
+    ]
+}
+
 let CACHE: ChangeEvent<Human>[][];
 export function getTestProcedures(): Procedure[] {
     if (!CACHE) {
@@ -328,6 +354,7 @@ export function getTestProcedures(): Procedure[] {
         ret.push(insertFiveThenChangeAgeOfOne());
         ret.push(insertFiveSortedThenRemoveSorted());
         ret.push(oneThatWasCrashing());
+        ret.push(sortParamChanged());
         CACHE = ret;
     }
     return CACHE;
