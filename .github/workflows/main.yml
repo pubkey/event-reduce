@@ -42,7 +42,7 @@ jobs:
           npm run build
 
       - name: javascript tests
-        uses: GabrielBB/xvfb-action@v1.5
+        uses: GabrielBB/xvfb-action@v1.6
         with:
           working-directory: ./javascript
           run: npm run test
