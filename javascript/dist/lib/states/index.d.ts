@@ -1,5 +1,6 @@
 import { ResolverFunctions } from 'binary-decision-diagram';
 import type { StateName, StateResolveFunction, StateSet, StateResolveFunctionInput } from '../types';
+export * from './state-resolver';
 /**
  * all states ordered by performance-cost
  * cheapest first

@@ -1,6 +1,6 @@
 import { minimalStringToSimpleBdd, resolveWithSimpleBdd } from 'binary-decision-diagram';
 import { stateResolveFunctionByIndex } from '../states';
-export var minimalBddString = '14a2b0c/d,e+f5g1h.i4j*k-l)m(n6ocf3pbf3qaf3rbn3scn3tkn3unb5viu0wpr0xgn0yfn0zdn0{en0|kn0}lh0~in0jm0¡iv+¢k|+£pw+¤gx+¥fy+¦dz+§e{+¨l}+©i~+ªj+«kt,¬kn,­§n,®¢n,¯en,°hk,±¨k,²ªm,³§o:´¯«:µ¦h:¶§f:·¯¬:¸m¡:¹­m:º¤q:»¤n:¼¦£:½§s:¾¯t:¿¤f:Àgn:Á¦¥:Â¦n:Ã§n:Ä¯n:Åm°:Æm±:Çml:Èm©:Ém²:Êmn:Ë¤§1Ì¦¯1Í¿³1Îµ´1Ï¿¶1Ðµ·1Ñ»½1ÒÂ¾1ÓÀÃ1ÔÂÄ1Õmn-ÖÈ¸-×ÍÑ-ØÎÒ-ÙÈÊ-ÚÉÊ-ÛÆn-ÜÏÓ-ÝÐÔ-ÞÅÊ-ßÆÊ-àÇÊ-ám­9âÖn9ãÉm9äß¹9åÉ®9æmn9çmÞ9èàm9éám6êâæ6ëåã6ìäç6íéÕ/îêÙ/ïëÚ/ðìÛ/ñº¿/ò×Ü/ó¼Á/ôØÝ/õèà/öËÌ2÷¥ó2ø¢ô2ùîð7úñò7û÷ø7üÈß7ýüí*þàm*ÿýÉ8Āùï8āúû8ĂÿĀ)ăöā)Ąþõ)ąĂă4ąĄ.';
+export var minimalBddString = '14a2b0c/d,e+f5g1h.i4j*k-l)m(n6oin-pjn-qng-rfn-smn-thn-ukn-vln-wga:xdb:yec:zek:{na:|nb:}nc:~mo:mp:¡sv:¢gf:£gr:¤df:¥dt:¦er:§eu:¨st:©nf:ªqr:«nt:¬nr:­em:®nk:¯ms:°su:±nm:²mi:³mj:´mn:µmt:¶mu:·mv:¸gn0¹dn0ºen0»w{0¼£¬0½x|0¾y}0¿~´0À¯0Á¡¨0Â¢©0Ãfn0Ä£ª0Å¤n0Æ¥«0Ç¦¬0È­±0Ékn0Ê²´0Ë³m0Ì·µ0Í»Â3Î½Å3Ï¾Ç3Ðz§3Ñ®n3ÒÍ¼7ÓÎÆ7Ô¿Á7ÕÂÄ7ÖÅÆ7×nÈ7Ønµ7ÙÊÌ7Úmº9ÛÙ×9ÜËm9ÝËÉ9ÞmØ9ß¶±9àm¶9ámn9â·m9ãÚs/äás/åÛÔ/æÒÕ/çÝÀ/èÏÇ/éß°/êá¯/ëâ·/ìåç8íÞÜ8îæÃ8ïèÉ8ðàm8ñéê8òÙË8ó¶m8ô¸¹2õºe2öîÖ2÷ï§2øãm6ùô¹6úõe6ûäm6üìí6ýöÓ6þ÷Ð6ÿñð6ĀnÑ6āøù4Ăüý4ăĂā*Ąþú*ąëm*Ćÿû*ćĀn*ĈăĆ,ĉĄć,Ċòó,ċĈĉ1ČċĊ(čą·(Čč.';
 var simpleBdd;
 export function getSimpleBdd() {
     if (!simpleBdd) {

@@ -14,7 +14,8 @@ import {
     wasSortedBeforeFirst,
     sortParamsChanged,
     wasLimitReached,
-    wasMatching
+    wasMatching,
+    isSortedBeforeFirst
 } from '../../src/states/state-resolver';
 import { randomHuman } from '../../src/truth-table-generator/data-generator';
 import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
@@ -184,6 +185,86 @@ describe('states.test.ts', () => {
 
             const ok = wasSortedBeforeFirst(input);
             assert.strictEqual(ok, false);
+        });
+        it('should be true', () => {
+            const previousResults: Human[] = [{
+                _id: 's90j6hhznefj',
+                name: 'Freeman',
+                gender: 'f',
+                age: 25
+            }];
+            const updateDocId = '6eu7byz49iq9';
+            const input: StateResolveFunctionInput<Human> = {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: {
+                        _id: updateDocId,
+                        name: 'Eugenia',
+                        gender: 'f',
+                        age: 50
+                    },
+                    previous: {
+                        _id: updateDocId,
+                        name: 'Eugenia',
+                        gender: 'f',
+                        age: 16
+                    },
+                    id: updateDocId
+                },
+                previousResults,
+                queryParams: getQueryParamsByMongoQuery({
+                    selector: {
+                        age: {
+                            $gt: 20
+                        }
+                    },
+                    sort: ['_id']
+                })
+            };
+
+            const ok = wasSortedBeforeFirst(input);
+            assert.ok(ok);
+        });
+    });
+    describe('isSortedBeforeFirst()', () => {
+        it('should be true', () => {
+            const previousResults: Human[] = [{
+                _id: 's90j6hhznefj',
+                name: 'Freeman',
+                gender: 'f',
+                age: 25
+            }];
+            const updateDocId = '6eu7byz49iq9';
+            const input: StateResolveFunctionInput<Human> = {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: {
+                        _id: updateDocId,
+                        name: 'Eugenia',
+                        gender: 'f',
+                        age: 50
+                    },
+                    previous: {
+                        _id: updateDocId,
+                        name: 'Eugenia',
+                        gender: 'f',
+                        age: 16
+                    },
+                    id: updateDocId
+                },
+                previousResults,
+                queryParams: getQueryParamsByMongoQuery({
+                    selector: {
+                        age: {
+                            $gt: 20
+                        }
+                    },
+                    sort: ['_id']
+                })
+            };
+
+            const ok = isSortedBeforeFirst(input);
+            assert.ok(ok);
         });
     });
     describe('.wasInResult()', () => {
