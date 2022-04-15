@@ -66,7 +66,7 @@ export class NeDbImplementation implements DatabaseImplementation<MongoQuery> {
         }
         await this.col.loadDatabase();
 
-        await new Promise(res => {
+        await new Promise<void>(res => {
             this.col.ensureIndex({ fieldName: '_id' }, function (_err) {
                 res();
             });
@@ -122,12 +122,12 @@ export class NeDbImplementation implements DatabaseImplementation<MongoQuery> {
 
         switch (changeEvent.operation) {
             case 'INSERT':
-                await new Promise(res => {
+                await new Promise<void>(res => {
                     this.col.insert(changeEvent.doc, () => res());
                 });
                 break;
             case 'UPDATE':
-                await new Promise(res => {
+                await new Promise<void>(res => {
                     this.col.update(
                         {
                             _id: changeEvent.id
@@ -138,7 +138,7 @@ export class NeDbImplementation implements DatabaseImplementation<MongoQuery> {
                 });
                 break;
             case 'DELETE':
-                await new Promise(res => {
+                await new Promise<void>(res => {
                     this.col.remove(
                         {
                             _id: changeEvent.id
