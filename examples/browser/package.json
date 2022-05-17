@@ -43,7 +43,7 @@
         "concurrently": "7.2.0",
         "css-loader": "5.2.7",
         "less": "4.1.2",
-        "less-loader": "7.3.0",
+        "less-loader": "10.2.0",
         "local-web-server": "5.2.0",
         "style-loader": "2.0.0",
         "testcafe": "1.18.6",
