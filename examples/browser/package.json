@@ -44,7 +44,7 @@
         "css-loader": "5.2.7",
         "less": "4.1.2",
         "less-loader": "7.3.0",
-        "local-web-server": "5.2.0",
+        "local-web-server": "5.2.1",
         "style-loader": "2.0.0",
         "testcafe": "1.19.0",
         "ts-loader": "8.4.0",
