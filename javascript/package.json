@@ -43,7 +43,7 @@
     "deep-equal": "2.1.0",
     "faker": "5.5.3",
     "minimongo": "6.8.3",
-    "mocha": "10.1.0",
+    "mocha": "10.2.0",
     "pouchdb-selector-core": "7.3.1",
     "read-last-lines": "1.8.0",
     "rimraf": "3.0.2",
