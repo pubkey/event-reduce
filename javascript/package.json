@@ -34,7 +34,7 @@
     "@types/deep-equal": "1.0.1",
     "@types/faker": "5.5.9",
     "@types/mocha": "10.0.1",
-    "@types/node": "18.11.16",
+    "@types/node": "18.11.18",
     "array-shuffle": "3.0.0",
     "assert": "2.0.0",
     "async-test-util": "2.0.0",
