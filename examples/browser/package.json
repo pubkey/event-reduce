@@ -46,7 +46,7 @@
         "less-loader": "7.3.0",
         "local-web-server": "5.2.1",
         "style-loader": "2.0.0",
-        "testcafe": "2.1.0",
+        "testcafe": "2.2.0",
         "ts-loader": "8.4.0",
         "ts-node": "10.9.1",
         "tslint": "6.1.3",
