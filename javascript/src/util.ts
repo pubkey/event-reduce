@@ -149,7 +149,8 @@ export function roundToTwoDecimals(num: number): number {
 export function isObject(value: null) {
     const type = typeof value;
     return value !== null && (type === 'object' || type === 'function');
-};
+}
+
 export function getProperty(object: any, path: string | string[], value?: any) {
     if (Array.isArray(path)) {
         path = path.join('.');
