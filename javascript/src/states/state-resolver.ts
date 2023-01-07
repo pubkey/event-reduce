@@ -1,7 +1,5 @@
-import objectPath from 'object-path';
-
 import type { StateResolveFunction } from '../types';
-import { lastOfArray, UNKNOWN_VALUE } from '../util';
+import { getProperty, lastOfArray, UNKNOWN_VALUE } from '../util';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
@@ -52,8 +50,8 @@ export const sortParamsChanged: StateResolveFunction<any> = (input) => {
 
     for (let i = 0; i < sortFields.length; i++) {
         const field = sortFields[i];
-        const beforeData = objectPath.get(prev, field);
-        const afterData = objectPath.get(doc, field);
+        const beforeData = getProperty(prev, field);
+        const afterData = getProperty(doc, field);
         if (beforeData !== afterData) {
             return true;
         }

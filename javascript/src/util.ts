@@ -144,3 +144,57 @@ export function mergeSets<T>(sets: Set<T>[]): Set<T> {
 export function roundToTwoDecimals(num: number): number {
     return parseFloat(num.toFixed(2));
 }
+
+
+export function isObject(value: null) {
+    const type = typeof value;
+    return value !== null && (type === 'object' || type === 'function');
+};
+export function getProperty(object: any, path: string | string[], value?: any) {
+    if (Array.isArray(path)) {
+        path = path.join('.');
+    }
+
+    if (!isObject(object as any) || typeof path !== 'string') {
+        return value === undefined ? object : value;
+    }
+
+    const pathArray = path.split('.');
+    if (pathArray.length === 0) {
+        return value;
+    }
+
+    for (let index = 0; index < pathArray.length; index++) {
+        const key = pathArray[index];
+
+        if (isStringIndex(object as any, key as any)) {
+            object = index === pathArray.length - 1 ? undefined : null;
+        } else {
+            object = (object as any)[key];
+        }
+
+        if (object === undefined || object === null) {
+            // `object` is either `undefined` or `null` so we want to stop the loop, and
+            // if this is not the last bit of the path, and
+            // if it didn't return `undefined`
+            // it would return `null` if `object` is `null`
+            // but we want `get({foo: null}, 'foo.bar')` to equal `undefined`, or the supplied value, not `null`
+            if (index !== pathArray.length - 1) {
+                return value;
+            }
+
+            break;
+        }
+    }
+
+    return object === undefined ? value : object;
+}
+
+function isStringIndex(object: any[], key: string) {
+    if (typeof key !== 'number' && Array.isArray(object)) {
+        const index = Number.parseInt(key, 10);
+        return Number.isInteger(index) && object[index] === object[key as any];
+    }
+
+    return false;
+}
