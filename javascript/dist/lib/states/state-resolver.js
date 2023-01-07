@@ -1,10 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
-var object_path_1 = __importDefault(require("object-path"));
 var util_1 = require("../util");
 var hasLimit = function (input) {
     return !!input.queryParams.limit;
@@ -55,8 +51,8 @@ var sortParamsChanged = function (input) {
     }
     for (var i = 0; i < sortFields.length; i++) {
         var field = sortFields[i];
-        var beforeData = object_path_1.default.get(prev, field);
-        var afterData = object_path_1.default.get(doc, field);
+        var beforeData = (0, util_1.getProperty)(prev, field);
+        var afterData = (0, util_1.getProperty)(doc, field);
         if (beforeData !== afterData) {
             return true;
         }

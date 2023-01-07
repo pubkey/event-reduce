@@ -42,3 +42,5 @@ export declare function mergeSets<T>(sets: Set<T>[]): Set<T>;
  * @link https://stackoverflow.com/a/12830454/3443137
  */
 export declare function roundToTwoDecimals(num: number): number;
+export declare function isObject(value: null): boolean;
+export declare function getProperty(object: any, path: string | string[], value?: any): any;

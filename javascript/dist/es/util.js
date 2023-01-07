@@ -142,4 +142,48 @@ export function mergeSets(sets) {
 export function roundToTwoDecimals(num) {
     return parseFloat(num.toFixed(2));
 }
+export function isObject(value) {
+    var type = typeof value;
+    return value !== null && (type === 'object' || type === 'function');
+}
+export function getProperty(object, path, value) {
+    if (Array.isArray(path)) {
+        path = path.join('.');
+    }
+    if (!isObject(object) || typeof path !== 'string') {
+        return value === undefined ? object : value;
+    }
+    var pathArray = path.split('.');
+    if (pathArray.length === 0) {
+        return value;
+    }
+    for (var index = 0; index < pathArray.length; index++) {
+        var key = pathArray[index];
+        if (isStringIndex(object, key)) {
+            object = index === pathArray.length - 1 ? undefined : null;
+        }
+        else {
+            object = object[key];
+        }
+        if (object === undefined || object === null) {
+            // `object` is either `undefined` or `null` so we want to stop the loop, and
+            // if this is not the last bit of the path, and
+            // if it didn't return `undefined`
+            // it would return `null` if `object` is `null`
+            // but we want `get({foo: null}, 'foo.bar')` to equal `undefined`, or the supplied value, not `null`
+            if (index !== pathArray.length - 1) {
+                return value;
+            }
+            break;
+        }
+    }
+    return object === undefined ? value : object;
+}
+function isStringIndex(object, key) {
+    if (typeof key !== 'number' && Array.isArray(object)) {
+        var index = Number.parseInt(key, 10);
+        return Number.isInteger(index) && object[index] === object[key];
+    }
+    return false;
+}
 //# sourceMappingURL=util.js.map

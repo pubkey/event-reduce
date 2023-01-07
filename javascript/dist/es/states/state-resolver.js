@@ -1,5 +1,4 @@
-import objectPath from 'object-path';
-import { lastOfArray, UNKNOWN_VALUE } from '../util';
+import { getProperty, lastOfArray, UNKNOWN_VALUE } from '../util';
 export var hasLimit = function (input) {
     return !!input.queryParams.limit;
 };
@@ -41,8 +40,8 @@ export var sortParamsChanged = function (input) {
     }
     for (var i = 0; i < sortFields.length; i++) {
         var field = sortFields[i];
-        var beforeData = objectPath.get(prev, field);
-        var afterData = objectPath.get(doc, field);
+        var beforeData = getProperty(prev, field);
+        var afterData = getProperty(doc, field);
         if (beforeData !== afterData) {
             return true;
         }
