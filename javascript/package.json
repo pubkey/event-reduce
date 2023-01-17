@@ -59,6 +59,6 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "2.0.0",
-    "binary-decision-diagram": "2.0.0"
+    "binary-decision-diagram": "2.0.1"
   }
 }
