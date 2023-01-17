@@ -1,46 +1,58 @@
-import { pushAtSortPosition } from 'array-push-at-sort-position';
-export const doNothing = (_input) => { };
-export const insertFirst = (input) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertLast = exports.removeFirstInsertFirst = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
+const array_push_at_sort_position_1 = require("array-push-at-sort-position");
+const doNothing = (_input) => { };
+exports.doNothing = doNothing;
+const insertFirst = (input) => {
     input.previousResults.unshift(input.changeEvent.doc);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.set(input.changeEvent.id, input.changeEvent.doc);
     }
 };
-export const insertLast = (input) => {
+exports.insertFirst = insertFirst;
+const insertLast = (input) => {
     input.previousResults.push(input.changeEvent.doc);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.set(input.changeEvent.id, input.changeEvent.doc);
     }
 };
-export const removeFirstItem = (input) => {
+exports.insertLast = insertLast;
+const removeFirstItem = (input) => {
     const first = input.previousResults.shift();
     if (input.keyDocumentMap && first) {
         input.keyDocumentMap.delete(first[input.queryParams.primaryKey]);
     }
 };
-export const removeLastItem = (input) => {
+exports.removeFirstItem = removeFirstItem;
+const removeLastItem = (input) => {
     const last = input.previousResults.pop();
     if (input.keyDocumentMap && last) {
         input.keyDocumentMap.delete(last[input.queryParams.primaryKey]);
     }
 };
-export const removeFirstInsertLast = (input) => {
-    removeFirstItem(input);
-    insertLast(input);
+exports.removeLastItem = removeLastItem;
+const removeFirstInsertLast = (input) => {
+    (0, exports.removeFirstItem)(input);
+    (0, exports.insertLast)(input);
 };
-export const removeLastInsertFirst = (input) => {
-    removeLastItem(input);
-    insertFirst(input);
+exports.removeFirstInsertLast = removeFirstInsertLast;
+const removeLastInsertFirst = (input) => {
+    (0, exports.removeLastItem)(input);
+    (0, exports.insertFirst)(input);
 };
-export const removeFirstInsertFirst = (input) => {
-    removeFirstItem(input);
-    insertFirst(input);
+exports.removeLastInsertFirst = removeLastInsertFirst;
+const removeFirstInsertFirst = (input) => {
+    (0, exports.removeFirstItem)(input);
+    (0, exports.insertFirst)(input);
 };
-export const removeLastInsertLast = (input) => {
-    removeLastItem(input);
-    insertLast(input);
+exports.removeFirstInsertFirst = removeFirstInsertFirst;
+const removeLastInsertLast = (input) => {
+    (0, exports.removeLastItem)(input);
+    (0, exports.insertLast)(input);
 };
-export const removeExisting = (input) => {
+exports.removeLastInsertLast = removeLastInsertLast;
+const removeExisting = (input) => {
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(input.changeEvent.id);
     }
@@ -57,7 +69,8 @@ export const removeExisting = (input) => {
         }
     }
 };
-export const replaceExisting = (input) => {
+exports.removeExisting = removeExisting;
+const replaceExisting = (input) => {
     // find index of document
     const doc = input.changeEvent.doc;
     const primary = input.queryParams.primaryKey;
@@ -74,12 +87,13 @@ export const replaceExisting = (input) => {
         }
     }
 };
+exports.replaceExisting = replaceExisting;
 /**
  * this function always returns wrong results
  * it must be later optimised out
  * otherwise there is something broken
  */
-export const alwaysWrong = (input) => {
+const alwaysWrong = (input) => {
     const wrongHuman = {
         _id: 'wrongHuman' + new Date().getTime()
     };
@@ -90,7 +104,8 @@ export const alwaysWrong = (input) => {
         input.keyDocumentMap.set(wrongHuman._id, wrongHuman);
     }
 };
-export const insertAtSortPosition = (input) => {
+exports.alwaysWrong = alwaysWrong;
+const insertAtSortPosition = (input) => {
     const docId = input.changeEvent.id;
     const doc = input.changeEvent.doc;
     if (input.keyDocumentMap) {
@@ -113,16 +128,20 @@ export const insertAtSortPosition = (input) => {
             return;
         }
     }
-    pushAtSortPosition(input.previousResults, doc, input.queryParams.sortComparator, true);
+    (0, array_push_at_sort_position_1.pushAtSortPosition)(input.previousResults, doc, input.queryParams.sortComparator, true);
 };
-export const removeExistingAndInsertAtSortPosition = (input) => {
-    removeExisting(input);
-    insertAtSortPosition(input);
+exports.insertAtSortPosition = insertAtSortPosition;
+const removeExistingAndInsertAtSortPosition = (input) => {
+    (0, exports.removeExisting)(input);
+    (0, exports.insertAtSortPosition)(input);
 };
-export const runFullQueryAgain = (_input) => {
+exports.removeExistingAndInsertAtSortPosition = removeExistingAndInsertAtSortPosition;
+const runFullQueryAgain = (_input) => {
     throw new Error('Action runFullQueryAgain must be implemented by yourself');
 };
-export const unknownAction = (_input) => {
+exports.runFullQueryAgain = runFullQueryAgain;
+const unknownAction = (_input) => {
     throw new Error('Action unknownAction should never be called');
 };
+exports.unknownAction = unknownAction;
 //# sourceMappingURL=action-functions.js.map
