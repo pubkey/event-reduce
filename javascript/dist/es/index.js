@@ -4,27 +4,27 @@ import { resolveInput } from './bdd/bdd.generated';
 export * from './states';
 export * from './util';
 export function calculateActionFromMap(stateSetToActionMap, input) {
-    var stateSet = getStateSet(input);
-    var actionName = stateSetToActionMap.get(stateSet);
+    const stateSet = getStateSet(input);
+    const actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return {
             action: 'runFullQueryAgain',
-            stateSet: stateSet
+            stateSet
         };
     }
     else {
         return {
             action: actionName,
-            stateSet: stateSet
+            stateSet
         };
     }
 }
 export function calculateActionName(input) {
-    var resolvedActionId = resolveInput(input);
+    const resolvedActionId = resolveInput(input);
     return orderedActionList[resolvedActionId];
 }
 export function calculateActionFunction(input) {
-    var actionName = calculateActionName(input);
+    const actionName = calculateActionName(input);
     return actionFunctions[actionName];
 }
 /**
@@ -33,12 +33,12 @@ export function calculateActionFunction(input) {
  * @returns the new results
  */
 export function runAction(action, queryParams, changeEvent, previousResults, keyDocumentMap) {
-    var fn = actionFunctions[action];
+    const fn = actionFunctions[action];
     fn({
-        queryParams: queryParams,
-        changeEvent: changeEvent,
-        previousResults: previousResults,
-        keyDocumentMap: keyDocumentMap
+        queryParams,
+        changeEvent,
+        previousResults,
+        keyDocumentMap
     });
     return previousResults;
 }

@@ -1,8 +1,14 @@
 {
   "name": "event-reduce-js",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "javascript implementation of the event-reduce algorithm",
   "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/es/index.js",
+      "default": "./dist/lib/index.js"
+    }
+  },
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
@@ -17,7 +23,7 @@
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
     "transpile": "tsc -p ./ && echo '# transpile es5 (require) sucess!'",
-    "transpile:es": "tsc -p ./ --target ES5 --module ES6 --outDir ./dist/es && echo '# transpile es (modules) sucess!'",
+    "transpile:es": "tsc -p ./ --target ES2017 --module ES6 --outDir ./dist/es && echo '# transpile es (modules) sucess!'",
     "transpile:removegen": "rimraf -r ./dist/lib/truth-table-generator && rimraf -r ./dist/es/truth-table-generator",
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es && npm run transpile:removegen",
     "dry": "npm pack --dry-run",
@@ -53,6 +59,6 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "2.0.0",
-    "binary-decision-diagram": "1.4.0"
+    "binary-decision-diagram": "2.0.0"
   }
 }

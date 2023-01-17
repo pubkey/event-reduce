@@ -13,7 +13,7 @@
         "declaration": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
-        "target": "es5",
+        "target": "ES2017",
         "outDir": "./dist/lib",
         "lib": [
             "es7",

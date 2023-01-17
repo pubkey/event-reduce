@@ -1,29 +1,4 @@
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-export var UNKNOWN_VALUE = 'UNKNOWN';
+export const UNKNOWN_VALUE = 'UNKNOWN';
 export function lastOfArray(ar) {
     return ar[ar.length - 1];
 }
@@ -34,7 +9,7 @@ export function randomOfArray(items) {
     return items[Math.floor(Math.random() * items.length)];
 }
 export function shuffleArray(arr) {
-    return arr.slice().sort(function () { return (Math.random() - 0.5); });
+    return arr.slice().sort(() => (Math.random() - 0.5));
 }
 /**
  * if the previous doc-data is unknown,
@@ -42,18 +17,18 @@ export function shuffleArray(arr) {
  * @mutate the changeEvent of input
  */
 export function tryToFillPreviousDoc(input) {
-    var prev = input.changeEvent.previous;
+    const prev = input.changeEvent.previous;
     if (prev === UNKNOWN_VALUE) {
-        var id_1 = input.changeEvent.id;
-        var primary_1 = input.queryParams.primaryKey;
+        const id = input.changeEvent.id;
+        const primary = input.queryParams.primaryKey;
         if (input.keyDocumentMap) {
-            var doc = input.keyDocumentMap.get(id_1);
+            const doc = input.keyDocumentMap.get(id);
             if (doc) {
                 input.changeEvent.previous = doc;
             }
         }
         else {
-            var found = input.previousResults.find(function (item) { return item[primary_1] === id_1; });
+            const found = input.previousResults.find(item => item[primary] === id);
             if (found) {
                 input.changeEvent.previous = found;
             }
@@ -78,9 +53,9 @@ export function getSortFieldsOfQuery(query) {
         // if no sort-order is set, use the primary key
         return ['_id'];
     }
-    return query.sort.map(function (maybeArray) {
+    return query.sort.map(maybeArray => {
         if (Array.isArray(maybeArray)) {
-            return maybeArray[0].map(function (field) { return normalizeSortField(field); });
+            return maybeArray[0].map(field => normalizeSortField(field));
         }
         else {
             return normalizeSortField(maybeArray);
@@ -94,23 +69,22 @@ export function replaceCharAt(str, index, replacement) {
     return str.substr(0, index) + replacement + str.substr(index + replacement.length);
 }
 export function mapToObject(map) {
-    var ret = {};
-    map.forEach(function (value, key) {
+    const ret = {};
+    map.forEach((value, key) => {
         ret[key] = value;
     });
     return ret;
 }
 export function objectToMap(object) {
-    var ret = new Map();
-    Object.entries(object).forEach(function (_a) {
-        var _b = __read(_a, 2), k = _b[0], v = _b[1];
+    const ret = new Map();
+    Object.entries(object).forEach(([k, v]) => {
         ret.set(k, v);
     });
     return ret;
 }
 export function cloneMap(map) {
-    var ret = new Map();
-    map.forEach(function (value, key) {
+    const ret = new Map();
+    map.forEach((value, key) => {
         ret[key] = value;
     });
     return ret;
@@ -130,9 +104,9 @@ export function ensureNotFalsy(obj) {
     return obj;
 }
 export function mergeSets(sets) {
-    var ret = new Set();
-    sets.forEach(function (set) {
-        ret = new Set(__spreadArray(__spreadArray([], __read(ret), false), __read(set), false));
+    let ret = new Set();
+    sets.forEach(set => {
+        ret = new Set([...ret, ...set]);
     });
     return ret;
 }
@@ -143,7 +117,7 @@ export function roundToTwoDecimals(num) {
     return parseFloat(num.toFixed(2));
 }
 export function isObject(value) {
-    var type = typeof value;
+    const type = typeof value;
     return value !== null && (type === 'object' || type === 'function');
 }
 export function getProperty(object, path, value) {
@@ -153,12 +127,12 @@ export function getProperty(object, path, value) {
     if (!isObject(object) || typeof path !== 'string') {
         return value === undefined ? object : value;
     }
-    var pathArray = path.split('.');
+    const pathArray = path.split('.');
     if (pathArray.length === 0) {
         return value;
     }
-    for (var index = 0; index < pathArray.length; index++) {
-        var key = pathArray[index];
+    for (let index = 0; index < pathArray.length; index++) {
+        const key = pathArray[index];
         if (isStringIndex(object, key)) {
             object = index === pathArray.length - 1 ? undefined : null;
         }
@@ -181,7 +155,7 @@ export function getProperty(object, path, value) {
 }
 function isStringIndex(object, key) {
     if (typeof key !== 'number' && Array.isArray(object)) {
-        var index = Number.parseInt(key, 10);
+        const index = Number.parseInt(key, 10);
         return Number.isInteger(index) && object[index] === object[key];
     }
     return false;

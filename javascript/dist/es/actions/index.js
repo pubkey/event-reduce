@@ -4,7 +4,7 @@ import { doNothing, insertFirst, insertLast, removeFirstItem, removeLastItem, re
  * cheapest first
  * TODO run tests on which is really the fastest
  */
-export var orderedActionList = [
+export const orderedActionList = [
     'doNothing',
     'insertFirst',
     'insertLast',
@@ -22,22 +22,22 @@ export var orderedActionList = [
     'runFullQueryAgain',
     'unknownAction'
 ];
-export var actionFunctions = {
-    doNothing: doNothing,
-    insertFirst: insertFirst,
-    insertLast: insertLast,
-    removeFirstItem: removeFirstItem,
-    removeLastItem: removeLastItem,
-    removeFirstInsertLast: removeFirstInsertLast,
-    removeLastInsertFirst: removeLastInsertFirst,
-    removeFirstInsertFirst: removeFirstInsertFirst,
-    removeLastInsertLast: removeLastInsertLast,
-    removeExisting: removeExisting,
-    replaceExisting: replaceExisting,
-    alwaysWrong: alwaysWrong,
-    insertAtSortPosition: insertAtSortPosition,
-    removeExistingAndInsertAtSortPosition: removeExistingAndInsertAtSortPosition,
-    runFullQueryAgain: runFullQueryAgain,
-    unknownAction: unknownAction
+export const actionFunctions = {
+    doNothing,
+    insertFirst,
+    insertLast,
+    removeFirstItem,
+    removeLastItem,
+    removeFirstInsertLast,
+    removeLastInsertFirst,
+    removeFirstInsertFirst,
+    removeLastInsertLast,
+    removeExisting,
+    replaceExisting,
+    alwaysWrong,
+    insertAtSortPosition,
+    removeExistingAndInsertAtSortPosition,
+    runFullQueryAgain,
+    unknownAction
 };
 //# sourceMappingURL=index.js.map
