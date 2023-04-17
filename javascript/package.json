@@ -50,7 +50,7 @@
     "faker": "5.5.3",
     "minimongo": "6.8.3",
     "mocha": "10.2.0",
-    "pouchdb-selector-core": "8.0.0",
+    "pouchdb-selector-core": "8.0.1",
     "read-last-lines": "1.8.0",
     "rimraf": "3.0.2",
     "ts-node": "10.9.1",
