@@ -156,7 +156,7 @@ export const insertAtSortPosition: ActionFunction<any> = (input) => {
         input.previousResults,
         doc,
         input.queryParams.sortComparator,
-        true
+        0
     );
 };
 

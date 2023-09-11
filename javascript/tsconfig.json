@@ -8,7 +8,6 @@
         "strict": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
-        "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true,
         "declaration": true,
         "moduleResolution": "node",
