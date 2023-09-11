@@ -58,7 +58,7 @@
     "typescript": "4.7.4"
   },
   "dependencies": {
-    "array-push-at-sort-position": "2.0.0",
+    "array-push-at-sort-position": "3.0.0",
     "binary-decision-diagram": "2.0.1"
   }
 }
