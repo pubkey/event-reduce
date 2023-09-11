@@ -41,7 +41,7 @@ import {
  */
 export function sortObject<T>(obj: T): T {
     return Object
-        .entries(obj)
+        .entries(obj as any)
         .sort()
         .reduce((_sortedObj, [k, v]) => ({
             ..._sortedObj,
