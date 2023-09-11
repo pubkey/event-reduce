@@ -113,7 +113,7 @@ export const insertAtSortPosition = (input) => {
             return;
         }
     }
-    pushAtSortPosition(input.previousResults, doc, input.queryParams.sortComparator, true);
+    pushAtSortPosition(input.previousResults, doc, input.queryParams.sortComparator, 0);
 };
 export const removeExistingAndInsertAtSortPosition = (input) => {
     removeExisting(input);

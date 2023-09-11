@@ -22,4 +22,4 @@ export interface ChangeEventDelete<DocType> extends ChangeEventBase {
     doc: null;
     previous: DocType | UNKNOWN;
 }
-export declare type ChangeEvent<DocType> = ChangeEventInsert<DocType> | ChangeEventUpdate<DocType> | ChangeEventDelete<DocType>;
+export type ChangeEvent<DocType> = ChangeEventInsert<DocType> | ChangeEventUpdate<DocType> | ChangeEventDelete<DocType>;

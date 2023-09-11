@@ -1,12 +1,12 @@
 import { ChangeEvent } from './change-event';
 export * from './change-event';
 export * from './mongo';
-export declare type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
-export declare type UNKNOWN = 'UNKNOWN';
-export declare type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
-export declare type ActionName = 'doNothing' | 'insertFirst' | 'insertLast' | 'removeFirstItem' | 'removeLastItem' | 'removeFirstInsertLast' | 'removeLastInsertFirst' | 'removeFirstInsertFirst' | 'removeLastInsertLast' | 'removeExisting' | 'replaceExisting' | 'alwaysWrong' | // this should be optimised out by later steps
+export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
+export type UNKNOWN = 'UNKNOWN';
+export type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
+export type ActionName = 'doNothing' | 'insertFirst' | 'insertLast' | 'removeFirstItem' | 'removeLastItem' | 'removeFirstInsertLast' | 'removeLastInsertFirst' | 'removeFirstInsertFirst' | 'removeLastInsertLast' | 'removeExisting' | 'replaceExisting' | 'alwaysWrong' | // this should be optimised out by later steps
 'insertAtSortPosition' | 'removeExistingAndInsertAtSortPosition' | 'runFullQueryAgain' | 'unknownAction';
-export declare type StateName = 'hasLimit' | 'isFindOne' | 'hasSkip' | 'isDelete' | 'isInsert' | 'isUpdate' | 'wasResultsEmpty' | 'previousUnknown' | 'wasLimitReached' | 'sortParamsChanged' | 'wasInResult' | 'wasFirst' | 'wasLast' | 'wasSortedBeforeFirst' | 'wasSortedAfterLast' | 'isSortedAfterLast' | 'isSortedBeforeFirst' | 'wasMatching' | 'doesMatchNow';
+export type StateName = 'hasLimit' | 'isFindOne' | 'hasSkip' | 'isDelete' | 'isInsert' | 'isUpdate' | 'wasResultsEmpty' | 'previousUnknown' | 'wasLimitReached' | 'sortParamsChanged' | 'wasInResult' | 'wasFirst' | 'wasLast' | 'wasSortedBeforeFirst' | 'wasSortedAfterLast' | 'isSortedAfterLast' | 'isSortedBeforeFirst' | 'wasMatching' | 'doesMatchNow';
 export interface QueryParams<DocType> {
     primaryKey: string;
     sortFields: string[];
@@ -15,14 +15,14 @@ export interface QueryParams<DocType> {
     queryMatcher: QueryMatcher<DocType>;
     sortComparator: DeterministicSortComparator<DocType>;
 }
-export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;
+export type QueryMatcher<DocType> = (doc: DocType) => boolean;
 /**
  * To have a deterministic sorting, we cannot return 0,
  * we only return 1 or -1.
  * This ensures that we always end with the same output array, no mather of the
  * pre-sorting of the input array.
  */
-export declare type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;
+export type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;
 /**
  * A map contains a stateSet as key and an ActionName as value
  * State-sets that are not in the Map have 'runFullQueryAgain' as value
@@ -31,27 +31,27 @@ export declare type DeterministicSortComparator<DocType> = (a: DocType, b: DocTy
  * like '010110110111...'
  * where the first '0' means that the first state (hasLimit) is false
  */
-export declare type StateSet = string;
-export declare type StateSetToActionMap = Map<StateSet, ActionName>;
+export type StateSet = string;
+export type StateSetToActionMap = Map<StateSet, ActionName>;
 export interface StateResolveFunctionInput<DocType> {
     queryParams: QueryParams<DocType>;
     changeEvent: ChangeEvent<DocType>;
     previousResults: DocType[];
     keyDocumentMap?: ResultKeyDocumentMap<DocType>;
 }
-export declare type StateResolveFunction<DocType> = (input: StateResolveFunctionInput<DocType>) => boolean;
-export declare type ActionFunctionInput<DocType> = StateResolveFunctionInput<DocType>;
+export type StateResolveFunction<DocType> = (input: StateResolveFunctionInput<DocType>) => boolean;
+export type ActionFunctionInput<DocType> = StateResolveFunctionInput<DocType>;
 /**
  * for performance-reasons,
  * action-function mutate the input
  */
-export declare type ActionFunction<DocType> = (input: ActionFunctionInput<DocType>) => void;
+export type ActionFunction<DocType> = (input: ActionFunctionInput<DocType>) => void;
 /**
  * @link https://stackoverflow.com/a/49670389/3443137
  */
-declare type DeepReadonly<T> = T extends (infer R)[] ? DeepReadonlyArray<R> : T extends Function ? T : T extends object ? DeepReadonlyObject<T> : T;
+type DeepReadonly<T> = T extends (infer R)[] ? DeepReadonlyArray<R> : T extends Function ? T : T extends object ? DeepReadonlyObject<T> : T;
 interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
 }
-export declare type DeepReadonlyObject<T> = {
+export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
