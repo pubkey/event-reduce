@@ -41,7 +41,7 @@
     "devDependencies": {
         "@babel/polyfill": "7.12.1",
         "@types/faker": "5.5.9",
-        "concurrently": "7.6.0",
+        "concurrently": "8.2.1",
         "css-loader": "5.2.7",
         "less": "4.2.0",
         "less-loader": "7.3.0",
