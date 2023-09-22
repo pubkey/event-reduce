@@ -37,7 +37,7 @@
   },
   "author": "pubkey",
   "devDependencies": {
-    "@types/deep-equal": "1.0.1",
+    "@types/deep-equal": "1.0.2",
     "@types/faker": "5.5.9",
     "@types/mocha": "10.0.1",
     "@types/node": "18.17.17",
