@@ -1,7 +1,18 @@
 {
   "name": "event-reduce-js",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "javascript implementation of the event-reduce algorithm https://pubkey.github.io/event-reduce/",
+  "keywords": [
+    "event-reduce",
+    "database",
+    "query",
+    "mongodb",
+    "nosql",
+    "no-sql",
+    "performance",
+    "optimization",
+    "bdd"
+  ],
   "license": "MIT",
   "exports": {
     ".": {
