@@ -128,7 +128,7 @@ const insertAtSortPosition = (input) => {
             return;
         }
     }
-    (0, array_push_at_sort_position_1.pushAtSortPosition)(input.previousResults, doc, input.queryParams.sortComparator, true);
+    (0, array_push_at_sort_position_1.pushAtSortPosition)(input.previousResults, doc, input.queryParams.sortComparator, 0);
 };
 exports.insertAtSortPosition = insertAtSortPosition;
 const removeExistingAndInsertAtSortPosition = (input) => {
