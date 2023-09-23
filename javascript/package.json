@@ -1,7 +1,7 @@
 {
   "name": "event-reduce-js",
-  "version": "3.1.0",
-  "description": "javascript implementation of the event-reduce algorithm",
+  "version": "3.1.1",
+  "description": "javascript implementation of the event-reduce algorithm https://pubkey.github.io/event-reduce/",
   "license": "MIT",
   "exports": {
     ".": {
