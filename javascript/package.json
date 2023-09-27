@@ -50,7 +50,7 @@
   "devDependencies": {
     "@types/deep-equal": "1.0.2",
     "@types/faker": "5.5.9",
-    "@types/mocha": "10.0.1",
+    "@types/mocha": "10.0.2",
     "@types/node": "18.18.0",
     "array-shuffle": "3.0.0",
     "assert": "2.1.0",
