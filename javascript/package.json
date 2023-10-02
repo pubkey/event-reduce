@@ -51,7 +51,7 @@
     "@types/deep-equal": "1.0.2",
     "@types/faker": "5.5.9",
     "@types/mocha": "10.0.2",
-    "@types/node": "18.18.1",
+    "@types/node": "18.18.3",
     "array-shuffle": "3.0.0",
     "assert": "2.1.0",
     "async-test-util": "2.1.1",
