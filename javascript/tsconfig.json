@@ -1,19 +1,20 @@
 {
     "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2022",
         "removeComments": false,
         "preserveConstEnums": true,
         "sourceMap": true,
         "strictNullChecks": true,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "strict": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "downlevelIteration": true,
-        "declaration": true,
-        "moduleResolution": "node",
         "esModuleInterop": true,
-        "target": "ES2017",
-        "outDir": "./dist/lib",
+        "declaration": true,
+        "outDir": "./dist",
         "lib": [
             "es7",
             "dom"
@@ -24,7 +25,8 @@
         "tabSize": 2
     },
     "include": [
-        "src"
+        "src",
+        "test"
     ],
     "exclude": [
         "node_modules",

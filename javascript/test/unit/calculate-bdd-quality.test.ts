@@ -8,21 +8,21 @@ import {
     measurePerformanceOfStateFunctions,
     countFunctionUsages,
     getQualityOfBdd
-} from '../../src/truth-table-generator/calculate-bdd-quality';
+} from '../../src/truth-table-generator/calculate-bdd-quality.js';
 import {
     orderedStateList
-} from '../../src/states';
-import { StateActionIdMap } from '../../src/truth-table-generator/types';
-import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
-import { readJsonFile } from '../../src/truth-table-generator/util';
-import { objectToMap } from '../../src';
-import { orderedActionList } from '../../src/actions';
+} from '../../src/states/index.js';
+import { StateActionIdMap } from '../../src/truth-table-generator/types.js';
+import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config.js';
+import { readJsonFile } from '../../src/truth-table-generator/util.js';
+import { objectToMap } from '../../src/index.js';
+import { orderedActionList } from '../../src/actions/index.js';
 import {
     DEFAULT_EXAMPLE_QUERY
-} from '../../src/truth-table-generator/queries';
+} from '../../src/truth-table-generator/queries.js';
 import {
     insertFiveSorted
-} from '../../src/truth-table-generator/procedures';
+} from '../../src/truth-table-generator/procedures.js';
 
 describe('calculate-bdd-quality.test.ts', () => {
     const unknownValueActionId: number = 42;

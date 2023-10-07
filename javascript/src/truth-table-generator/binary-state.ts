@@ -48,7 +48,7 @@ export function oppositeBinary(i: string): string {
 }
 
 export function stateSetToObject(stateSet: StateSet): any {
-    const ret = {};
+    const ret: any = {};
     let i = 0;
     orderedStateList.forEach(s => {
         ret[s] = stateSet[i];

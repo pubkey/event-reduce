@@ -14,16 +14,12 @@
     "bdd"
   ],
   "license": "MIT",
-  "exports": {
-    ".": {
-      "import": "./dist/es/index.js",
-      "default": "./dist/lib/index.js"
-    }
+  "type": "module",
+  "exports": "./dist/src/index.js",
+  "engines": {
+    "node": ">=16"
   },
-  "main": "./dist/lib/index.js",
-  "jsnext:main": "./dist/es/index.js",
-  "module": "./dist/es/index.js",
-  "types": "./dist/es/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -33,10 +29,9 @@
     "prepublish": "npm run build",
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
-    "transpile": "tsc -p ./ --module commonjs && echo '# transpile es5 (require) sucess!'",
-    "transpile:es": "tsc -p ./ --outDir ./dist/es && echo '# transpile es (modules) sucess!'",
+    "transpile": "tsc -p ./ && echo '# transpile es (modules) sucess!'",
     "transpile:removegen": "rimraf -r ./dist/lib/truth-table-generator && rimraf -r ./dist/es/truth-table-generator",
-    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es && npm run transpile:removegen",
+    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:removegen",
     "dry": "npm pack --dry-run",
     "test": "mocha -r ts-node/register test/unit/index.test.ts --timeout 50000 --bail",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
@@ -59,7 +54,7 @@
     "clone": "2.1.2",
     "deep-equal": "2.2.2",
     "faker": "5.5.3",
-    "minimongo": "6.8.3",
+    "minimongo": "6.15.1",
     "mocha": "10.2.0",
     "pouchdb-selector-core": "8.0.1",
     "read-last-lines": "1.8.0",

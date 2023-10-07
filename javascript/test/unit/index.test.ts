@@ -1,12 +1,12 @@
 console.log('### starting unit-tests ###');
-import './minimongo.test';
-import './actions.test';
-import './states.test';
-import './binary-state.test';
-import './queries.test';
-import './fuzzing.test';
-import './calculate-bdd-quality.test';
-import './truth-table-generator.test';
+import './minimongo.test.js';
+import './actions.test.js';
+import './states.test.js';
+import './binary-state.test.js';
+import './queries.test.js';
+import './fuzzing.test.js';
+import './calculate-bdd-quality.test.js';
+import './truth-table-generator.test.js';
 
 // should be last
-import './generated-stuff.test';
+import './generated-stuff.test.js';

@@ -5,11 +5,11 @@ import {
     decimalToPaddedBinary,
     binaryToDecimal,
     LAST_STATE_SET
-} from '../../src/truth-table-generator/binary-state';
+} from '../../src/truth-table-generator/binary-state.js';
 import {
     orderedStateList
-} from '../../src/states';
-import { StateSet } from '../../src/types';
+} from '../../src/states/index.js';
+import { StateSet } from '../../src/types/index.js';
 
 
 describe('binary-state.test.ts', () => {

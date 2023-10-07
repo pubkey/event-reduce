@@ -34,7 +34,7 @@ export function randomHuman(partial?: Partial<Human>): Human {
   };
   if (partial) {
     Object.entries(partial).forEach(([k, v]) => {
-      ret[k] = v;
+      (ret as any)[k] = v;
     });
   }
 
@@ -59,7 +59,7 @@ export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
   const field = fakerDatatype.number({ min: 1, max: 3 });
-  keyToChangeFn[field](cloned);
+  (keyToChangeFn as any)[field](cloned);
 
   return cloned;
 }
@@ -84,7 +84,7 @@ export function randomChangeEvent(
   const randomOp = randomOfArray(ops);
 
   const operation = allDocs.length === 0 ? 'INSERT' : randomOp;
-  let ret;
+  let ret: any;
   switch (operation) {
     case 'INSERT':
       const newDoc = randomHuman();

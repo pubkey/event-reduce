@@ -5,11 +5,11 @@ import {
 import {
     compileDocumentSelector,
     compileSort
-} from 'minimongo/src/selector';
+} from 'minimongo/lib/selector.js';
 export {
     compileDocumentSelector,
     compileSort
-} from 'minimongo/src/selector';
+} from 'minimongo/lib/selector.js';
 import {
     randomString
 } from 'async-test-util';

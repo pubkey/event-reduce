@@ -4,9 +4,9 @@ import {
     stateResolveFunctions,
     getStateSet,
     stateResolveFunctionByIndex
-} from '../../src/states';
-import { getExampleStateResolveFunctionInput } from '../helper/input';
-import { StateResolveFunctionInput } from '../../src/types';
+} from '../../src/states/index.js';
+import { getExampleStateResolveFunctionInput } from '../helper/input.js';
+import { StateResolveFunctionInput } from '../../src/types/index.js';
 import { clone } from 'async-test-util';
 import {
     wasSortedAfterLast,
@@ -16,10 +16,10 @@ import {
     wasLimitReached,
     wasMatching,
     isSortedBeforeFirst
-} from '../../src/states/state-resolver';
-import { randomHuman } from '../../src/truth-table-generator/data-generator';
-import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
-import { Human } from '../../src/truth-table-generator/types';
+} from '../../src/states/state-resolver.js';
+import { randomHuman } from '../../src/truth-table-generator/data-generator.js';
+import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper.js';
+import { Human } from '../../src/truth-table-generator/types.js';
 
 describe('states.test.ts', () => {
     describe('basic', () => {

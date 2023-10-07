@@ -2,16 +2,16 @@ import * as assert from 'assert';
 
 import {
     randomHuman, randomHumans
-} from '../../src/truth-table-generator/data-generator';
+} from '../../src/truth-table-generator/data-generator.js';
 
 import {
     getMinimongoCollection,
     minimongoUpsert,
     minimongoFind,
     compileSort
-} from '../../src/truth-table-generator/minimongo-helper';
+} from '../../src/truth-table-generator/minimongo-helper.js';
 import { clone } from 'async-test-util';
-import { MongoQuery } from '../../src';
+import { MongoQuery } from '../../src/index.js';
 
 /**
  * sometimes we think stuff is wrong with minimongo

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 
-import { fuzzing } from '../../src/truth-table-generator/fuzzing';
-import { orderedActionList } from '../../src/actions';
-import { StateActionIdMap } from '../../src/truth-table-generator/types';
+import { fuzzing } from '../../src/truth-table-generator/fuzzing.js';
+import { orderedActionList } from '../../src/actions/index.js';
+import { StateActionIdMap } from '../../src/truth-table-generator/types.js';
 
 describe('fuzzing.test.ts', () => {
 
