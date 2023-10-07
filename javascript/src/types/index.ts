@@ -1,6 +1,6 @@
-import { ChangeEvent } from './change-event';
-export * from './change-event';
-export * from './mongo';
+import { ChangeEvent } from './change-event.js';
+export * from './change-event.js';
+export * from './mongo.js';
 
 export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
 export type UNKNOWN = 'UNKNOWN';

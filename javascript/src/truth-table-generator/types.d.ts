@@ -1,4 +1,4 @@
-import type { ChangeEvent, StateSet } from '../types';
+import type { ChangeEvent, StateSet } from '../types/index.js';
 
 export interface Human {
     _id: string; // primary

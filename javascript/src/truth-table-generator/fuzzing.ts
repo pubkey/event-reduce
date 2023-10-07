@@ -4,23 +4,23 @@ import type {
     ChangeEvent,
     ActionName,
     MongoQuery
-} from '../types';
+} from '../types/index.js';
 import type {
     Procedure,
     StateActionIdMap,
     Human
-} from './types';
-import { randomQuery } from './queries';
-import { getRandomChangeEvents } from './data-generator';
+} from './types.js';
+import { randomQuery } from './queries.js';
+import { getRandomChangeEvents } from './data-generator.js';
 import {
     getMinimongoCollection,
     getQueryParamsByMongoQuery,
     minimongoFind,
     applyChangeEvent
-} from './minimongo-helper';
-import { getStateSet } from '../states';
-import { doesActionWork } from '.';
-import { orderedActionList } from '../actions';
+} from './minimongo-helper.js';
+import { getStateSet } from '../states/index.js';
+import { orderedActionList } from '../actions/index.js';
+import { doesActionWork } from './index.js';
 
 export type FuzzingReturn = {
     ok: boolean,

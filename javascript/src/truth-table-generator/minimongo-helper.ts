@@ -14,14 +14,14 @@ import {
     randomString
 } from 'async-test-util';
 
-import type { Human } from './types';
+import type { Human } from './types.js';
 import type {
     ChangeEvent,
     QueryParams,
     MongoQuery,
     DeterministicSortComparator
-} from '../types';
-import { getSortFieldsOfQuery } from '../util';
+} from '../types/index.js';
+import { getSortFieldsOfQuery } from '../util.js';
 
 export function getMinimongoCollection<DocType = Human>(): MinimongoCollection<DocType> {
     const db: MemoryDb = new MemoryDb();

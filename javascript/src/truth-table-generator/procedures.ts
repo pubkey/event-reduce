@@ -1,14 +1,14 @@
 import Faker, { datatype as fakerDatatype } from 'faker';
 
-import type { ChangeEvent } from '../types';
-import type { Human, Procedure } from './types';
+import type { ChangeEvent } from '../types/index.js';
+import type { Human, Procedure } from './types.js';
 import {
     randomHumans,
     randomChangeHuman
-} from './data-generator';
-import { UNKNOWN_VALUE } from './config';
-import { compileSort } from './minimongo-helper';
-import { ensureNotFalsy, flatClone } from '../util';
+} from './data-generator.js';
+import { UNKNOWN_VALUE } from './config.js';
+import { compileSort } from './minimongo-helper.js';
+import { ensureNotFalsy, flatClone } from '../util.js';
 
 export function insertChangeAndCleanup(
     unknownPrevious: boolean = false

@@ -7,17 +7,17 @@ import {
 import type {
   Human,
   Procedure
-} from './types';
+} from './types.js';
 import type {
   ChangeEvent
-} from '../../src/types';
+} from '../../src/types/index.js';
 import {
   getMinimongoCollection,
   minimongoFind,
   applyChangeEvent
-} from './minimongo-helper';
-import { UNKNOWN_VALUE } from './config';
-import { randomOfArray } from '../util';
+} from './minimongo-helper.js';
+import { UNKNOWN_VALUE } from './config.js';
+import { randomOfArray } from '../util.js';
 
 /**
  * Set a seed to ensure we create deterministic and testable

@@ -1,7 +1,7 @@
 import type {
     ActionName,
     ActionFunction
-} from '../types';
+} from '../types/index.js';
 
 import {
     doNothing,
@@ -20,7 +20,7 @@ import {
     unknownAction,
     removeFirstInsertFirst,
     removeLastInsertLast
-} from './action-functions';
+} from './action-functions.js';
 
 /**
  * all actions ordered by performance-cost

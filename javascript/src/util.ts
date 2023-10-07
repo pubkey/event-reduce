@@ -3,7 +3,7 @@ import type {
     UNKNOWN,
     MongoQuery,
     DeepReadonlyObject
-} from './types';
+} from './types/index.js';
 
 export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 

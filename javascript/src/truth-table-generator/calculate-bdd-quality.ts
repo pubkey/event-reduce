@@ -14,22 +14,22 @@ import type {
     QueryParams,
     StateName,
     ActionFunctionInput
-} from '../types';
+} from '../types/index.js';
 import {
     orderedStateList,
     stateResolveFunctions,
     stateResolveFunctionByIndex
-} from '../states';
+} from '../states/index.js';
 import {
     getMinimongoCollection,
     minimongoUpsert,
     minimongoFind,
     getQueryParamsByMongoQuery,
     applyChangeEvent
-} from './minimongo-helper';
-import { randomHuman } from './data-generator';
-import { Human, Procedure } from './types';
-import { flatClone, shuffleArray } from '../util';
+} from './minimongo-helper.js';
+import { randomHuman } from './data-generator.js';
+import type { Human, Procedure } from './types.d.ts';
+import { flatClone, shuffleArray } from '../util.js';
 
 export type PerformanceMeasurement = {
     [k in StateName]: number // avg runtime in ms

@@ -1,5 +1,5 @@
-import type { StateSet } from '../types';
-import { orderedStateList } from '../states';
+import type { StateSet } from '../types/index.js';
+import { orderedStateList } from '../states/index.js';
 
 export const STATE_SET_LENGTH = orderedStateList.length;
 export const FIRST_STATE_SET: StateSet = new Array(STATE_SET_LENGTH).fill(0).map(() => '0').join('');

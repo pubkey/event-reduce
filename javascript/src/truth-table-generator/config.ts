@@ -1,5 +1,5 @@
 import * as path from 'path';
-import type { UNKNOWN } from '../types';
+import type { UNKNOWN } from '../types/index.js';
 
 export const OUTPUT_FOLDER_PATH = path.join(
     __dirname,
