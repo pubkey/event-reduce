@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import Faker from 'faker';
+import { faker } from '@faker-js/faker';
 import {
     createBddFromTruthTable,
     TruthTable,
@@ -110,7 +110,7 @@ async function run() {
                  * When we restart the generating processes,
                  * we do not want up to run with the same dataset again.
                  */
-                Faker.seed(new Date().getTime());
+                faker.seed(new Date().getTime());
 
                 const truthTable: StateActionIdMap = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)

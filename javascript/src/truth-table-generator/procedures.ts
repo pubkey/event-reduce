@@ -1,4 +1,4 @@
-import Faker, { datatype as fakerDatatype } from 'faker';
+import { faker } from '@faker-js/faker';
 
 import type { ChangeEvent } from '../types/index.js';
 import type { Human, Procedure } from './types.js';
@@ -27,7 +27,7 @@ export function insertChangeAndCleanup(
         ret.push(insertEvent);
 
         // do a random update
-        const updateDoc = Faker.random.arrayElement(docs);
+        const updateDoc = faker.helpers.arrayElement(docs);
         const after = randomChangeHuman(updateDoc);
 
         docs = docs.filter(d => d._id !== updateDoc._id);
@@ -43,7 +43,7 @@ export function insertChangeAndCleanup(
     });
 
     // update all to big age
-    const shuffled = Faker.helpers.shuffle(docs);
+    const shuffled = faker.helpers.shuffle(docs);
     while (shuffled.length > 0) {
         const changeMe = shuffled.pop() as Human;
         const changeMeAfter = randomChangeHuman(changeMe);
@@ -51,7 +51,7 @@ export function insertChangeAndCleanup(
         docs = docs.filter(d => d._id !== changeMe._id);
         docs.push(changeMeAfter);
 
-        changeMeAfter.age = 1000 + fakerDatatype.number({
+        changeMeAfter.age = 1000 + faker.number.int({
             min: 10,
             max: 100
         });
@@ -65,7 +65,7 @@ export function insertChangeAndCleanup(
     }
 
     // cleanup
-    const shuffled2 = Faker.helpers.shuffle(docs);
+    const shuffled2 = faker.helpers.shuffle(docs);
     while (shuffled2.length > 0) {
         const deleteMe = shuffled2.pop() as Human;
         const deleteEvent: ChangeEvent<Human> = {
