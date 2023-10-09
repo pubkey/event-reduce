@@ -63,7 +63,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
-    "array-push-at-sort-position": "3.0.0",
-    "binary-decision-diagram": "3.0.3"
+    "array-push-at-sort-position": "4.0.1",
+    "binary-decision-diagram": "3.0.5"
   }
 }
