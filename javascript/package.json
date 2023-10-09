@@ -70,6 +70,6 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "4.0.1",
-    "binary-decision-diagram": "2.0.1"
+    "binary-decision-diagram": "3.0.5"
   }
 }
