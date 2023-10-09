@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 
 import {
-    randomHuman, randomHumans
+    randomHuman,
+    randomHumans
 } from '../../src/truth-table-generator/data-generator.js';
 
 import {
@@ -38,7 +39,7 @@ describe('minimongo.test.ts', () => {
             collection,
             query
         );
-        assert.ok(results[0].age < results[1].age);
+        assert.ok(results[0].age <= results[1].age);
 
         // change one
         const changeHuman = clone(results[2]);
@@ -83,6 +84,7 @@ describe('minimongo.test.ts', () => {
             collection,
             query
         );
+
         assert.deepStrictEqual(sortedDocs, results);
     });
 });

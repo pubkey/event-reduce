@@ -24,7 +24,7 @@ faker.seed(2345);
 
 export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {
-    _id: faker.number.int(10) + '',
+    _id: (faker.number.int(1000) + '').padStart(5, '0'),
     name: faker.person.firstName().toLowerCase(),
     gender: faker.datatype.boolean() ? 'f' : 'm',
     age: faker.number.int({ min: 1, max: 100 })

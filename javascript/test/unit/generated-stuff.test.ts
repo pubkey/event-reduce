@@ -37,7 +37,7 @@ import { randomHuman } from '../../src/truth-table-generator/data-generator.js';
 import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index.js';
 import { getQueryVariations } from '../../src/truth-table-generator/queries.js';
 import { getTestProcedures, oneThatWasCrashing } from '../../src/truth-table-generator/procedures.js';
-import deepEqual = require('deep-equal');
+import deepEqual from 'deep-equal';
 import { orderedActionList } from '../../src/actions/index.js';
 
 

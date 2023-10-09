@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "moduleResolution": "node",
         "target": "ES2022",
         "removeComments": false,
         "preserveConstEnums": true,
@@ -14,7 +13,8 @@
         "downlevelIteration": true,
         "esModuleInterop": true,
         "declaration": true,
-        "outDir": "./dist",
+        "resolveJsonModule": true,
+        "outDir": "./dist/cjs",
         "lib": [
             "es7",
             "dom"

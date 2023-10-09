@@ -2,3 +2,5 @@
 perf.md
 tsconfig.json
 tslint.json
+dist/esm/test/
+dist/cjs/test/

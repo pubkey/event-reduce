@@ -14,26 +14,36 @@
     "bdd"
   ],
   "license": "MIT",
-  "type": "module",
-  "exports": "./dist/src/index.js",
-  "engines": {
-    "node": ">=16"
-  },
-  "types": "./dist/src/index.d.ts",
   "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/pubkey/event-reduce"
   },
+  "exports": {
+    ".": {
+      "default": {
+        "types": "./dist/esm/src/index.d.ts",
+        "import": "./dist/esm/src/index.js",
+        "default": "./dist/cjs/src/index.es5.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/cjs/src/index.es5.js",
+  "module": "./dist/esm/src/index.js",
+  "engines": {
+    "node": ">=16"
+  },
+  "types": "./dist/esm/src/index.d.ts",
   "scripts": {
     "prepublish": "npm run build",
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
-    "transpile": "tsc -p ./ && echo '# transpile es (modules) sucess!'",
-    "transpile:removegen": "rimraf -r ./dist/src/truth-table-generator",
-    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:removegen",
+    "transpile": "tsc -p ./ --module commonjs && echo '# transpile es5 (require) sucess!'",
+    "transpile:es": "tsc -p ./ --outDir ./dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/src/package.json && echo '# transpile esm (modules) sucess!'",
+    "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es",
     "dry": "npm pack --dry-run",
-    "test": "npm run build && mocha ./dist/test/unit/index.test.js --timeout 40000 --bail",
+    "test": "npm run build && mocha ./dist/cjs/test/unit/index.test.js --timeout 40000 --bail",
     "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-truth-table": "ts-node-esm ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
     "test-fuzzing": "ts-node ./src/truth-table-generator/runner.node.ts fuzzing",
