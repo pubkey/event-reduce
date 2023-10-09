@@ -8,7 +8,7 @@
         "test": "concurrently \"npm run serve\" \"sleep 4 && npm run test:e2e\" --kill-others --success first",
         "mongo": "bash mongodb.bash",
         "serve": "ws -p 8888 -d dist/",
-        "build": "webpack --config webpack.prod.js && cp ./index.html ./dist/index.html"
+        "build": "webpack --config webpack.js && cp ./index.html ./dist/index.html"
     },
     "repository": {
         "type": "git",
@@ -35,7 +35,7 @@
         "pouchdb-find": "8.0.1",
         "rxjs": "7.8.1",
         "stream": "0.0.2",
-        "webpack": "4.47.0",
+        "webpack": "5.88.2",
         "webpack-cli": "4.10.0"
     },
     "devDependencies": {

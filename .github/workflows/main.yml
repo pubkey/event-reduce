@@ -55,7 +55,7 @@ jobs:
           npm run build
 
       - name: test examples
-        uses: GabrielBB/xvfb-action@v1
+        uses: GabrielBB/xvfb-action@v1.6
         with:
           working-directory: ./examples/browser
           run: npm run test
