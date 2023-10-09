@@ -1,0 +1,10 @@
+import { MinimongoCollection } from 'minimongo';
+export { compileDocumentSelector, compileSort } from 'minimongo/lib/selector.js';
+import type { Human } from './types.js';
+import type { ChangeEvent, QueryParams, MongoQuery } from '../types/index.js';
+export declare function getMinimongoCollection<DocType = Human>(): MinimongoCollection<DocType>;
+export declare function minimongoUpsert<DocType>(collection: MinimongoCollection<DocType>, doc: DocType): Promise<void>;
+export declare function minimongoRemove<DocType>(collection: MinimongoCollection<DocType>, id: string): Promise<void>;
+export declare function minimongoFind<DocType>(collection: MinimongoCollection<DocType>, query: MongoQuery): Promise<DocType[]>;
+export declare function applyChangeEvent<DocType>(collection: MinimongoCollection<DocType>, changeEvent: ChangeEvent<DocType>): Promise<void>;
+export declare function getQueryParamsByMongoQuery<DocType>(query: MongoQuery<DocType>): QueryParams<DocType>;

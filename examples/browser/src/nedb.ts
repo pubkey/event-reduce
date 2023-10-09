@@ -6,7 +6,7 @@ import {
 export {
     compileDocumentSelector,
     compileSort
-} from 'minimongo/src/selector';
+} from 'minimongo/lib/selector';
 import {
     ChangeEvent,
     QueryParams

@@ -11,11 +11,11 @@ import {
 import {
     compileDocumentSelector,
     compileSort
-} from 'minimongo/src/selector';
+} from 'minimongo/lib/selector';
 export {
     compileDocumentSelector,
     compileSort
-} from 'minimongo/src/selector';
+} from 'minimongo/lib/selector';
 import {
     ChangeEvent,
     getSortFieldsOfQuery,
@@ -38,9 +38,14 @@ export async function getMinimongoCollection(storage: 'indexeddb' | 'memory'): P
             }, err => rej(err));
         });
         const col: MinimongoCollection = await new Promise(res => {
-            db.addCollection('docs', () => {
-                res(db['docs']);
-            });
+            db.addCollection('docs',
+                () => {
+                    res(db['docs']);
+                },
+                err => {
+                    console.error('Could not create minimongo collection');
+                }
+            );
         });
         return col;
     }

@@ -63,7 +63,7 @@
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "deep-equal": "2.2.2",
-    "minimongo": "6.15.1",
+    "minimongo": "6.16.0",
     "mocha": "10.2.0",
     "pouchdb-selector-core": "8.0.1",
     "read-last-lines": "1.8.0",
