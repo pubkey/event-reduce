@@ -1,40 +1,37 @@
-import Faker from 'faker';
+import { faker } from '@faker-js/faker';
 
-import {
-  datatype as fakerDatatype
-} from 'faker';
 
 import type {
   Human,
   Procedure
-} from './types';
+} from './types.js';
 import type {
   ChangeEvent
-} from '../../src/types';
+} from '../../src/types/index.js';
 import {
   getMinimongoCollection,
   minimongoFind,
   applyChangeEvent
-} from './minimongo-helper';
-import { UNKNOWN_VALUE } from './config';
-import { randomOfArray } from '../util';
+} from './minimongo-helper.js';
+import { UNKNOWN_VALUE } from './config.js';
+import { randomOfArray } from '../util.js';
 
 /**
  * Set a seed to ensure we create deterministic and testable
  * test data.
  */
-Faker.seed(2345);
+faker.seed(2345);
 
 export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {
-    _id: Faker.random.alphaNumeric(10),
-    name: Faker.name.firstName().toLowerCase(),
-    gender: fakerDatatype.boolean() ? 'f' : 'm',
-    age: fakerDatatype.number({ min: 1, max: 100 })
+    _id: (faker.number.int(1000) + '').padStart(5, '0'),
+    name: faker.person.firstName().toLowerCase(),
+    gender: faker.datatype.boolean() ? 'f' : 'm',
+    age: faker.number.int({ min: 1, max: 100 })
   };
   if (partial) {
     Object.entries(partial).forEach(([k, v]) => {
-      ret[k] = v;
+      (ret as any)[k] = v;
     });
   }
 
@@ -50,16 +47,16 @@ export function randomHumans(amount = 0, partial?: Partial<Human>): Human[] {
 
 
 const keyToChangeFn = {
-  1: (i: Human) => i.name = Faker.name.firstName().toLowerCase(),
-  2: (i: Human) => i.gender = fakerDatatype.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = fakerDatatype.number({ min: 1, max: 100 })
+  1: (i: Human) => i.name = faker.person.firstName().toLowerCase(),
+  2: (i: Human) => i.gender = faker.datatype.boolean() ? 'f' : 'm',
+  3: (i: Human) => i.age = faker.number.int({ min: 1, max: 100 })
 };
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = fakerDatatype.number({ min: 1, max: 3 });
-  keyToChangeFn[field](cloned);
+  const field = faker.number.int({ min: 1, max: 3 });
+  (keyToChangeFn as any)[field](cloned);
 
   return cloned;
 }
@@ -84,7 +81,7 @@ export function randomChangeEvent(
   const randomOp = randomOfArray(ops);
 
   const operation = allDocs.length === 0 ? 'INSERT' : randomOp;
-  let ret;
+  let ret: any;
   switch (operation) {
     case 'INSERT':
       const newDoc = randomHuman();
@@ -96,7 +93,7 @@ export function randomChangeEvent(
       };
       break;
     case 'UPDATE':
-      const oldDoc = Faker.random.arrayElement(allDocs);
+      const oldDoc = faker.helpers.arrayElement(allDocs);
       const changedDoc = randomChangeHuman(oldDoc);
       ret = {
         operation,
@@ -106,7 +103,7 @@ export function randomChangeEvent(
       };
       break;
     case 'DELETE':
-      const docToDelete: Human = Faker.random.arrayElement(allDocs);
+      const docToDelete: Human = faker.helpers.arrayElement(allDocs);
       ret = {
         operation,
         id: docToDelete._id,
@@ -117,7 +114,7 @@ export function randomChangeEvent(
   }
 
   // randomly set previous to UNKNOWN
-  if (ret.previous && fakerDatatype.boolean()) {
+  if (ret.previous && faker.datatype.boolean()) {
     ret.previous = UNKNOWN_VALUE;
   }
 

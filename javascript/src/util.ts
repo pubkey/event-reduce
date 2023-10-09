@@ -3,7 +3,7 @@ import type {
     UNKNOWN,
     MongoQuery,
     DeepReadonlyObject
-} from './types';
+} from './types/index.js';
 
 export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 
@@ -40,7 +40,7 @@ export function tryToFillPreviousDoc<DocType>(
                 input.changeEvent.previous = doc;
             }
         } else {
-            const found = input.previousResults.find(item => item[primary] === id);
+            const found = input.previousResults.find(item => (item as any)[primary] === id);
             if (found) {
                 input.changeEvent.previous = found;
             }
@@ -68,7 +68,7 @@ export function getSortFieldsOfQuery(query: MongoQuery): string[] {
     }
     return query.sort.map(maybeArray => {
         if (Array.isArray(maybeArray)) {
-            return maybeArray[0].map(field => normalizeSortField(field));
+            return maybeArray[0].map((field: any) => normalizeSortField(field));
         } else {
             return normalizeSortField(maybeArray);
         }
@@ -85,7 +85,7 @@ export function replaceCharAt(str: string, index: number, replacement: string) {
 export function mapToObject<K, V>(map: Map<K, V>): {
     [k: string]: V
 } {
-    const ret = {};
+    const ret: any = {};
     map.forEach(
         (value: V, key: K) => {
             ret[key as any] = value;
@@ -105,7 +105,7 @@ export function objectToMap<K, V>(object: {
 }
 
 export function cloneMap<K, V>(map: Map<K, V>): Map<K, V> {
-    const ret = new Map();
+    const ret: any = new Map();
     map.forEach(
         (value: V, key: K) => {
             ret[key as any] = value;

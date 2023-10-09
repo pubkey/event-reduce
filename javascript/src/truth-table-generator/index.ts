@@ -4,22 +4,22 @@ import type {
     StateActionIdMap,
     Procedure,
     Human
-} from './types';
+} from './types.js';
 import type {
     QueryParams,
     ActionName,
     ActionFunctionInput,
     MongoQuery
-} from '../types';
+} from '../types/index.js';
 import {
     getMinimongoCollection,
     minimongoFind,
     applyChangeEvent,
     getQueryParamsByMongoQuery
-} from './minimongo-helper';
-import { runAction } from '../';
-import { orderedActionList } from '../actions';
-import { getStateSet } from '../states';
+} from './minimongo-helper.js';
+import { runAction } from '../index.js';
+import { orderedActionList } from '../actions/index.js';
+import { getStateSet } from '../states/index.js';
 
 export interface GenerateTruthTableInput {
     queries: MongoQuery[];

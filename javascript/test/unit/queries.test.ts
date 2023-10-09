@@ -5,7 +5,7 @@ import {
     SKIP_VARIATIONS,
     LIMIT_VARIATIONS,
     SORT_VARIATION
-} from '../../src/truth-table-generator/queries';
+} from '../../src/truth-table-generator/queries.js';
 
 describe('queries-state.test.ts', () => {
     it('should have all query variations', () => {

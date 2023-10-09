@@ -1,7 +1,7 @@
 import type {
     WriteOperation,
     UNKNOWN
-} from './index';
+} from './index.js';
 
 export interface ChangeEventBase {
     operation: WriteOperation;

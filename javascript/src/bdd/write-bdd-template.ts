@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
+import path from 'path';
 
 export const BDD_TEMPLATE_LOCATION = path.join(
     __dirname,

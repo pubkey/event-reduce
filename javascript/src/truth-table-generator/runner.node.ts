@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import Faker from 'faker';
+import { faker } from '@faker-js/faker';
 import {
     createBddFromTruthTable,
     TruthTable,
@@ -10,30 +10,30 @@ import {
     RootNode
 } from 'binary-decision-diagram';
 
-import type { StateActionIdMap } from './types';
+import type { StateActionIdMap } from './types.js';
 import {
     OUTPUT_FOLDER_PATH,
     OUTPUT_TRUTH_TABLE_PATH
-} from './config';
-import { getQueryVariations } from './queries';
-import { getTestProcedures } from './procedures';
-import { generateTruthTable } from './';
+} from './config.js';
+import { getQueryVariations } from './queries.js';
+import { getTestProcedures } from './procedures.js';
+import { generateTruthTable } from './index.js';
 import {
     mapToObject,
     objectToMap,
     roundToTwoDecimals
-} from '../util';
+} from '../util.js';
 import {
     readJsonFile,
     writeJsonFile
-} from './util';
-import { fuzzing } from './fuzzing';
-import { writeBddTemplate } from '../bdd/write-bdd-template';
+} from './util.js';
+import { fuzzing } from './fuzzing.js';
+import { writeBddTemplate } from '../bdd/write-bdd-template.js';
 import {
     measurePerformanceOfStateFunctions,
     getBetterBdd,
     QUALITY_BY_BDD_CACHE
-} from './calculate-bdd-quality';
+} from './calculate-bdd-quality.js';
 
 /**
  * sort object attributes
@@ -110,7 +110,7 @@ async function run() {
                  * When we restart the generating processes,
                  * we do not want up to run with the same dataset again.
                  */
-                Faker.seed(new Date().getTime());
+                faker.seed(new Date().getTime());
 
                 const truthTable: StateActionIdMap = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)

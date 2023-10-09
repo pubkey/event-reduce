@@ -4,8 +4,8 @@ import {
     resolveWithSimpleBdd
 } from 'binary-decision-diagram';
 
-import type { StateResolveFunctionInput } from '../types';
-import { stateResolveFunctionByIndex } from '../states';
+import type { StateResolveFunctionInput } from '../types/index.js';
+import { stateResolveFunctionByIndex } from '../states/index.js';
 
 export const minimalBddString = '${minimalBddString}';
 

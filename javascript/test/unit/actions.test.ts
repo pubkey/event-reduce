@@ -2,17 +2,17 @@ import * as assert from 'assert';
 import {
     orderedActionList,
     actionFunctions
-} from '../../src/actions';
+} from '../../src/actions/index.js';
 import {
     ActionFunction,
     ActionName,
     ActionFunctionInput,
     ResultKeyDocumentMap
-} from '../../src/types';
-import { randomChangeEvent, randomHuman, randomHumans } from '../../src/truth-table-generator/data-generator';
-import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper';
-import { Human } from '../../src/truth-table-generator/types';
-import { insertFirst, insertLast, removeExisting, insertAtSortPosition } from '../../src/actions/action-functions';
+} from '../../src/types/index.js';
+import { randomChangeEvent, randomHuman, randomHumans } from '../../src/truth-table-generator/data-generator.js';
+import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper.js';
+import { Human } from '../../src/truth-table-generator/types.js';
+import { insertFirst, insertLast, removeExisting, insertAtSortPosition } from '../../src/actions/action-functions.js';
 
 export function docsToMap<DocType>(
     primary: string,
@@ -20,7 +20,7 @@ export function docsToMap<DocType>(
 ): ResultKeyDocumentMap<DocType> {
     const map: ResultKeyDocumentMap<DocType> = new Map();
     docs.forEach(doc => {
-        map.set(doc[primary], doc);
+        map.set((doc as any)[primary], doc);
     });
     return map;
 }
@@ -48,7 +48,7 @@ export function runCheckedAction<DocType = any>(
 
     // ensure correct all docs are also in key-doc-map
     input.previousResults.forEach(doc => {
-        const mapDoc = (input.keyDocumentMap as ResultKeyDocumentMap<DocType>).get(doc[primary]);
+        const mapDoc = (input.keyDocumentMap as ResultKeyDocumentMap<DocType>).get((doc as any)[primary]);
         assert.ok(mapDoc);
         assert.deepStrictEqual(doc, mapDoc);
     });

@@ -1,16 +1,15 @@
 import * as assert from 'assert';
 
-import { Human } from '../../src/truth-table-generator/types';
-import { clone } from 'async-test-util';
-import { oneThatWasCrashing } from '../../src/truth-table-generator/procedures';
-import { generateTruthTable } from '../../src/truth-table-generator';
+import { Human } from '../../src/truth-table-generator/types.js';
+import { oneThatWasCrashing } from '../../src/truth-table-generator/procedures.js';
+import { generateTruthTable } from '../../src/truth-table-generator/index.js';
 import {
     getMinimongoCollection,
     minimongoFind, applyChangeEvent,
     getQueryParamsByMongoQuery
-} from '../../src/truth-table-generator/minimongo-helper';
-import { StateResolveFunctionInput, MongoQuery } from '../../src/types';
-import { calculateActionFromMap } from '../../src';
+} from '../../src/truth-table-generator/minimongo-helper.js';
+import { StateResolveFunctionInput, MongoQuery } from '../../src/types/index.js';
+import { calculateActionFromMap } from '../../src/index.js';
 
 /**
  * sometimes we think stuff is wrong with minimongo

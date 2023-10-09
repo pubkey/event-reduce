@@ -10,35 +10,35 @@ import {
 import {
     orderedStateList,
     stateResolveFunctions
-} from '../../src/states';
+} from '../../src/states/index.js';
 import {
     objectToMap
-} from '../../src/util';
+} from '../../src/util.js';
 import {
     readJsonFile
-} from '../../src/truth-table-generator/util';
-import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config';
-import { StateActionIdMap, Human } from '../../src/truth-table-generator/types';
-import { getSimpleBdd } from '../../src/bdd/bdd.generated';
+} from '../../src/truth-table-generator/util.js';
+import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config.js';
+import { StateActionIdMap, Human } from '../../src/truth-table-generator/types.js';
+import { getSimpleBdd } from '../../src/bdd/bdd.generated.js';
 import {
     StateResolveFunctionInput,
     QueryParams,
     MongoQuery,
     ChangeEvent
-} from '../../src/types';
+} from '../../src/types/index.js';
 import {
     getQueryParamsByMongoQuery,
     getMinimongoCollection,
     applyChangeEvent,
     minimongoFind,
     minimongoUpsert
-} from '../../src/truth-table-generator/minimongo-helper';
-import { randomHuman } from '../../src/truth-table-generator/data-generator';
-import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index';
-import { getQueryVariations } from '../../src/truth-table-generator/queries';
-import { getTestProcedures, oneThatWasCrashing } from '../../src/truth-table-generator/procedures';
-import deepEqual = require('deep-equal');
-import { orderedActionList } from '../../src/actions';
+} from '../../src/truth-table-generator/minimongo-helper.js';
+import { randomHuman } from '../../src/truth-table-generator/data-generator.js';
+import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index.js';
+import { getQueryVariations } from '../../src/truth-table-generator/queries.js';
+import { getTestProcedures, oneThatWasCrashing } from '../../src/truth-table-generator/procedures.js';
+import deepEqual from 'deep-equal';
+import { orderedActionList } from '../../src/actions/index.js';
 
 
 describe('generated-stuff.test.ts', () => {
@@ -113,7 +113,7 @@ describe('generated-stuff.test.ts', () => {
             const sortedResolvers = {};
             orderedStateList.forEach((stateName, index) => {
                 const fn = stateResolveFunctions[stateName];
-                sortedResolvers[index] = (i: any) => {
+                (sortedResolvers as any)[index] = (i: any) => {
                     const ret = fn(i);
                     // console.log('resolve: ' + index + ' returned ' + ret);
                     return ret;

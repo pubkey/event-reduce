@@ -1,3 +1,5 @@
 /node_modules
 /src/logic-generator/logic-map-output/
 *.out
+/dist/cjs/test/
+/dist/esm/test/
