@@ -1,5 +1,9 @@
-import * as path from 'path';
 import type { UNKNOWN } from '../types/index.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 export const OUTPUT_FOLDER_PATH = path.join(
     __dirname,
