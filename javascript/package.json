@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "javascript implementation of the event-reduce algorithm https://pubkey.github.io/event-reduce/",
   "keywords": [
     "event-reduce",
@@ -53,8 +53,8 @@
   },
   "author": "pubkey",
   "devDependencies": {
-    "@types/deep-equal": "1.0.2",
     "@faker-js/faker": "8.2.0",
+    "@types/deep-equal": "1.0.2",
     "@types/mocha": "10.0.2",
     "@types/node": "18.18.5",
     "array-shuffle": "3.0.0",
@@ -74,6 +74,6 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "4.0.1",
-    "binary-decision-diagram": "3.0.5"
+    "binary-decision-diagram": "3.0.6"
   }
 }
