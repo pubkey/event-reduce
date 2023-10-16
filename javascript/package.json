@@ -40,7 +40,7 @@
     "lint": "tslint --project .",
     "lint:fix": "tslint --project . --fix",
     "transpile": "tsc -p ./ --module commonjs && echo '# transpile es5 (require) sucess!'",
-    "transpile:es": "tsc -p ./ --outDir ./dist/esm && echo '{ \"type\": \"module\" }' > dist/esm/src/package.json && echo '# transpile esm (modules) sucess!'",
+    "transpile:es": "tsc -p ./ --outDir ./dist/esm && echo '{ \"type\": \"module\", \"sideEffects\": false }' > dist/esm/src/package.json && echo '# transpile esm (modules) sucess!'",
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es",
     "dry": "npm pack --dry-run",
     "test": "npm run build && mocha ./dist/cjs/test/unit/index.test.js --timeout 40000 --bail",
