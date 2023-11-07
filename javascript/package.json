@@ -54,7 +54,7 @@
   "author": "pubkey",
   "devDependencies": {
     "@faker-js/faker": "8.2.0",
-    "@types/deep-equal": "1.0.3",
+    "@types/deep-equal": "1.0.4",
     "@types/mocha": "10.0.3",
     "@types/node": "20.8.10",
     "array-shuffle": "3.0.0",
