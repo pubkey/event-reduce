@@ -62,7 +62,7 @@
     "async-test-util": "2.2.1",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
-    "deep-equal": "2.2.2",
+    "deep-equal": "2.2.3",
     "minimongo": "6.16.0",
     "mocha": "10.2.0",
     "pouchdb-selector-core": "8.0.1",
