@@ -303,7 +303,7 @@ describe('generated-stuff.test.ts', () => {
         });
     });
 
-    it.only('should insertFirst in specific update case', async () => {
+    it('should insertFirst in specific update case', async () => {
         type Doc = {
             _id: string;
             location: string;
