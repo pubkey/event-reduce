@@ -302,4 +302,83 @@ describe('generated-stuff.test.ts', () => {
             assert.ok(resultFromMap.action !== 'runFullQueryAgain');
         });
     });
+
+    it.only('should insertFirst in specific update case', async () => {
+        type Doc = {
+            _id: string;
+            location: string;
+            lastMoved: number;
+        };
+        const collection = getMinimongoCollection<Doc>();
+
+        // Change two fields: location and lastMoved
+        //  so that the document now matches query, and should be first.
+        const originalDoc = {
+            _id: '3',
+            location: 'archive',
+            lastMoved: 300,
+        };
+        const updatedDoc = {
+            _id: '3',
+            location: 'inbox',
+            lastMoved: 50,
+        }
+
+        const startResult: Doc[] = [
+            {
+                _id: '1',
+                location: 'inbox',
+                lastMoved: 100,
+            },
+            {
+                _id: '2',
+                location: 'inbox',
+                lastMoved: 200,
+            },
+            originalDoc,
+        ];
+
+        const changeEvent: ChangeEvent<Doc> = {
+            operation: 'UPDATE',
+            id: '3',
+            doc: updatedDoc,
+            previous: originalDoc,
+        };
+        const query: MongoQuery = {
+            selector: {
+                location: 'inbox',
+            },
+            sort: ['lastMoved', '_id'],
+            limit: 10,
+        };
+        await Promise.all(
+          startResult.map(doc => minimongoUpsert(collection, doc))
+        );
+        const previousResults = await minimongoFind(collection, query);
+        const keyDocumentMap = new Map();
+        previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
+
+        const input: StateResolveFunctionInput<Doc> = {
+            previousResults,
+            queryParams: getQueryParamsByMongoQuery(query),
+            keyDocumentMap,
+            changeEvent
+        };
+
+        // Right now, this incorrectly returns insertLast, when it should be an insertFirst
+        const actionName = calculateActionName(input);
+        const actualResultsFromMap = runAction(
+            actionName,
+            getQueryParamsByMongoQuery(query),
+            changeEvent,
+            previousResults,
+            keyDocumentMap
+        );
+
+        await minimongoUpsert(collection, updatedDoc)
+        const expectedResults = await minimongoFind(collection, query);
+
+        assert.deepEqual(actualResultsFromMap, expectedResults);
+    });
 });
+
