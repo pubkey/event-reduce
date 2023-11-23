@@ -22,7 +22,7 @@ function mingoCollectionCreator() {
             }
         },
         getQueryParams(query) {
-            const queryInstance = new mingo_1.Query(query);
+            const queryInstance = new mingo_1.Query(query.selector);
             return {
                 primaryKey: '_id',
                 skip: query.skip ? query.skip : undefined,
@@ -33,7 +33,10 @@ function mingoCollectionCreator() {
             };
         },
         query(query) {
-            const queryInstance = new mingo_1.Query(query);
+            console.log('------------ ' + data.length);
+            console.dir(query);
+            console.dir(data);
+            const queryInstance = new mingo_1.Query(query.selector);
             const queryParams = this.getQueryParams(query);
             const skip = query.skip ? query.skip : 0;
             const limit = query.limit ? query.limit : Infinity;
@@ -41,6 +44,7 @@ function mingoCollectionCreator() {
             let rows = data
                 .filter(d => queryInstance.test(d))
                 .sort(queryParams.sortComparator);
+            console.dir(rows);
             rows = rows.slice(skip, skipPlusLimit);
             return rows;
         }
@@ -58,16 +62,18 @@ function getMingoSortComparator(query) {
         sortParts.push({
             key,
             direction: direction,
-            getValueFn: (key) => {
-                return (obj) => (0, util_3.getProperty)(obj, key);
-            }
+            getValueFn: (obj) => (0, util_3.getProperty)(obj, key)
         });
     });
+    console.log('get sor compar');
+    console.dir(sortParts);
     const fun = (a, b) => {
         for (let i = 0; i < sortParts.length; ++i) {
             const sortPart = sortParts[i];
             const valueA = sortPart.getValueFn(a);
             const valueB = sortPart.getValueFn(b);
+            console.log('.................');
+            console.dir({ valueA, valueB });
             if (valueA !== valueB) {
                 const ret = sortPart.direction === 'asc' ? (0, util_2.compare)(valueA, valueB) : (0, util_2.compare)(valueB, valueA);
                 return ret;

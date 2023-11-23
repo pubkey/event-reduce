@@ -1,5 +1,5 @@
 import { getSortFieldsOfQuery } from '../../util';
-import { Query } from "mingo";
+import { Query } from 'mingo';
 import { compare as mingoSortComparator } from 'mingo/util';
 import { getProperty } from '../../util';
 export function mingoCollectionCreator() {
@@ -19,7 +19,7 @@ export function mingoCollectionCreator() {
             }
         },
         getQueryParams(query) {
-            const queryInstance = new Query(query);
+            const queryInstance = new Query(query.selector);
             return {
                 primaryKey: '_id',
                 skip: query.skip ? query.skip : undefined,
@@ -30,7 +30,10 @@ export function mingoCollectionCreator() {
             };
         },
         query(query) {
-            const queryInstance = new Query(query);
+            console.log('------------ ' + data.length);
+            console.dir(query);
+            console.dir(data);
+            const queryInstance = new Query(query.selector);
             const queryParams = this.getQueryParams(query);
             const skip = query.skip ? query.skip : 0;
             const limit = query.limit ? query.limit : Infinity;
@@ -38,6 +41,7 @@ export function mingoCollectionCreator() {
             let rows = data
                 .filter(d => queryInstance.test(d))
                 .sort(queryParams.sortComparator);
+            console.dir(rows);
             rows = rows.slice(skip, skipPlusLimit);
             return rows;
         }
@@ -54,16 +58,18 @@ export function getMingoSortComparator(query) {
         sortParts.push({
             key,
             direction: direction,
-            getValueFn: (key) => {
-                return (obj) => getProperty(obj, key);
-            }
+            getValueFn: (obj) => getProperty(obj, key)
         });
     });
+    console.log('get sor compar');
+    console.dir(sortParts);
     const fun = (a, b) => {
         for (let i = 0; i < sortParts.length; ++i) {
             const sortPart = sortParts[i];
             const valueA = sortPart.getValueFn(a);
             const valueB = sortPart.getValueFn(b);
+            console.log('.................');
+            console.dir({ valueA, valueB });
             if (valueA !== valueB) {
                 const ret = sortPart.direction === 'asc' ? mingoSortComparator(valueA, valueB) : mingoSortComparator(valueB, valueA);
                 return ret;
