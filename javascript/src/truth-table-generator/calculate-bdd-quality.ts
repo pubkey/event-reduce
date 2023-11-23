@@ -200,7 +200,7 @@ export async function countFunctionUsages(
             const resultsBefore: Map<MongoQuery, Human[]> = new Map();
 
             queries.forEach(query => {
-                const res = collection.query(query)
+                const res = collection.query(query);
                 resultsBefore.set(query, res);
             });
 

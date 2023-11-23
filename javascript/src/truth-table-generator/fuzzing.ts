@@ -65,7 +65,7 @@ export async function fuzzing(
         queries.forEach(query => {
             const res = collection.query(query);
             resultsBefore.set(query, res);
-        })
+        });
 
         await applyChangeEvent(
             collection,

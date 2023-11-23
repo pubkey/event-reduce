@@ -2,13 +2,13 @@ import { Collection, CollectionCreator } from '.';
 import { DeterministicSortComparator, MongoQuery } from '../../types';
 import { getSortFieldsOfQuery } from '../../util';
 import { Human } from '../types';
-import { Query } from "mingo";
+import { Query } from 'mingo';
 import {
     compare as mingoSortComparator
 } from 'mingo/util';
 import {
     getProperty
-} from '../../util'
+} from '../../util';
 
 
 export function mingoCollectionCreator(): Collection {
@@ -47,7 +47,7 @@ export function mingoCollectionCreator(): Collection {
 
             let rows = data
                 .filter(d => queryInstance.test(d))
-                .sort(queryParams.sortComparator)
+                .sort(queryParams.sortComparator);
             rows = rows.slice(skip, skipPlusLimit);
             return rows;
         }

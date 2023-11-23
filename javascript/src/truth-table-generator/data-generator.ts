@@ -44,7 +44,7 @@ const keyToChangeFn = {
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = randomNumber(1,3);
+  const field = randomNumber(1, 3);
   (keyToChangeFn as any)[field](cloned);
 
   return cloned;
