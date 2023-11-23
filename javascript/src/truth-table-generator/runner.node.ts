@@ -268,6 +268,7 @@ async function run() {
                     onBetterBdd: async (res: OptimisationResult) => {
                         console.log('#'.repeat(100));
                         console.log('## Yeah! found better bdd ##');
+                        process.exit(); // TODO write to file
                         lastBetterFoundTime = new Date().getTime();
                         currentBest = res.bdd;
                         const bddMinimalString = bddToMinimalString(currentBest);
