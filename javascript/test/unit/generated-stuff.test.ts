@@ -304,5 +304,88 @@ describe('generated-stuff.test.ts', () => {
 
             assert.ok(resultFromMap.action !== 'runFullQueryAgain');
         });
+
+        it('should insertFirst in specific update case', async () => {
+            type Doc = {
+                _id: string;
+                location: string;
+                lastMoved: number;
+            };
+            const collection = mingoCollectionCreator();
+
+            // Change two fields: location and lastMoved
+            //  so that the document now matches query, and should be first.
+            const originalDoc = {
+                _id: '3',
+                location: 'archive',
+                lastMoved: 300,
+            };
+            const updatedDoc = {
+                _id: '3',
+                location: 'inbox',
+                lastMoved: 50,
+            }
+
+            const startResult: Doc[] = [
+                {
+                    _id: '1',
+                    location: 'inbox',
+                    lastMoved: 100,
+                },
+                {
+                    _id: '2',
+                    location: 'inbox',
+                    lastMoved: 200,
+                },
+                originalDoc,
+            ];
+
+            const changeEvent: ChangeEvent<Doc> = {
+                operation: 'UPDATE',
+                id: '3',
+                doc: updatedDoc,
+                previous: originalDoc,
+            };
+            const query: MongoQuery = {
+                selector: {
+                    location: 'inbox',
+                },
+                sort: ['lastMoved', '_id'],
+                limit: 10,
+            };
+            await Promise.all(
+                startResult.map(doc => collection.upsert(doc))
+            );
+            const previousResults = await collection.query(query);
+            const keyDocumentMap = new Map();
+            previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
+
+            const input: StateResolveFunctionInput<Doc> = {
+                previousResults,
+                queryParams: collection.getQueryParams(query),
+                keyDocumentMap,
+                changeEvent
+            };
+
+            // Right now, this incorrectly returns insertLast, when it should be an insertFirst
+            const actionName = calculateActionName(input);
+            console.log('actionName: ' + actionName);
+            console.log('getStateSet:');
+            console.dir(getStateSet(input));
+            logStateSet(getStateSet(input));
+            assert.strictEqual(actionName, 'insertFirst');
+            const actualResultsFromMap = runAction(
+                actionName,
+                collection.getQueryParams(query),
+                changeEvent,
+                previousResults,
+                keyDocumentMap
+            );
+
+            await collection.upsert(updatedDoc)
+            const expectedResults = await collection.query(query);
+
+            assert.deepEqual(actualResultsFromMap, expectedResults);
+        });
     });
 });
