@@ -40,17 +40,22 @@ export function randomHumans(amount = 0, partial?: Partial<Human>): Human[] {
 }
 
 
-const keyToChangeFn = {
-  1: (i: Human) => i.name = randomString(10),
-  2: (i: Human) => i.gender = randomBoolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = randomNumber(1, HUMAN_MAX_AGE)
+export const mutateFieldFunctions: { [k: string]: (i: Human) => void } = {
+  name: (i: Human) => i.name = randomString(10),
+  gender: (i: Human) => i.gender = randomBoolean() ? 'f' : 'm',
+  age: (i: Human) => i.age = randomNumber(1, HUMAN_MAX_AGE)
 };
+const changeableFields = Object.keys(mutateFieldFunctions);
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = randomNumber(1, 3);
-  (keyToChangeFn as any)[field](cloned);
+  // mutate up to all 3 random fields or no field at all
+  const amountOfFieldChanges = randomNumber(0, changeableFields.length);
+  new Array(amountOfFieldChanges).fill(0).forEach(() => {
+    const field = randomOfArray(changeableFields);
+    mutateFieldFunctions[field](cloned);
+  });
 
   return cloned;
 }

@@ -34,11 +34,11 @@ const pseudoCollection = mingoCollectionCreator();
  *
  * returns ok:true if no problem was found
  */
-export async function fuzzing(
+export function fuzzing(
     table: StateActionIdMap,
     queriesAmount: number = 30,
     eventsAmount: number = 100
-): Promise<FuzzingReturn> {
+): FuzzingReturn {
     let amountOfHandled = 0;
     let amountOfOptimized = 0;
 
