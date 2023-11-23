@@ -115,6 +115,7 @@ async function run() {
                     );
                 }
                 let truthTable: StateActionIdMap = loadTruthTable();
+                const startTruthTableEntries = truthTable.size;
 
                 while (true) {
                     let fuzzingFoundError = false;
@@ -123,6 +124,10 @@ async function run() {
                         fuzzingCount++;
                         console.log('#'.repeat(20));
                         console.log('run fuzzing() #' + fuzzingCount);
+                        console.dir({
+                            startTruthTableEntries,
+                            currentTruthTableEntries: truthTable.size
+                        });
 
                         /**
                          * Here we read in the truth table at each iteration.
@@ -132,6 +137,8 @@ async function run() {
                          * In the beginning of the fuzzing it might be overwrite each other multiple times
                          * but at later points it will less likely find new state-sets and in total
                          * we can test more random event-query spaces at the same time.
+                         * Also the operating system will anyway in-memory cache the truth-table.json file
+                         * and serve it very fast.
                          */
                         truthTable = loadTruthTable();
 

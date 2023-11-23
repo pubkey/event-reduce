@@ -47,9 +47,17 @@
     "dev": "mocha -r tsx/register test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-truth-table": "tsx ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
     "test-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts fuzzing",
-    "iterative-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing",
     "create-bdd": "tsx ./src/truth-table-generator/runner.node.ts create-bdd",
-    "optimize-bdd": "tsx ./src/truth-table-generator/runner.node.ts optimize-bdd"
+    "optimize-bdd": "tsx ./src/truth-table-generator/runner.node.ts optimize-bdd",
+    "iterative-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing",
+    "fuzzing-parallel": "npm-run-all --parallel iterative-fuzzing:*",
+    "iterative-fuzzing:1": "npm run iterative-fuzzing",
+    "iterative-fuzzing:2": "npm run iterative-fuzzing",
+    "iterative-fuzzing:3": "npm run iterative-fuzzing",
+    "iterative-fuzzing:4": "npm run iterative-fuzzing",
+    "iterative-fuzzing:5": "npm run iterative-fuzzing",
+    "iterative-fuzzing:6": "npm run iterative-fuzzing",
+    "iterative-fuzzing:7": "npm run iterative-fuzzing"
   },
   "author": "pubkey",
   "devDependencies": {
@@ -64,6 +72,7 @@
     "deep-equal": "2.2.3",
     "mingo": "6.4.9",
     "mocha": "10.2.0",
+    "npm-run-all": "4.1.5",
     "pouchdb-selector-core": "8.0.1",
     "read-last-lines": "1.8.0",
     "rimraf": "3.0.2",
