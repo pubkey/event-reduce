@@ -31,7 +31,7 @@ import { writeBddTemplate } from '../bdd/write-bdd-template.js';
 import {
     measurePerformanceOfStateFunctions,
     getBetterBdd,
-    QUALITY_BY_BDD_CACHE
+    getQualityOfBdd
 } from './calculate-bdd-quality.js';
 
 /**
@@ -239,6 +239,16 @@ async function run() {
                 console.log('state function performance:');
                 console.dir(perfMeasurement);
 
+
+                function getQuality(bdd: RootNode) {
+                    return getQualityOfBdd(
+                        bdd,
+                        perfMeasurement,
+                        getQueryVariations(),
+                        getTestProcedures()
+                    );
+                }
+
                 await optimizeBruteForce({
                     truthTable,
                     iterations: 10000000,
@@ -252,12 +262,15 @@ async function run() {
                         if (currentBest) {
                             console.log(
                                 'current best bdd has ' + currentBest.countNodes() + ' nodes ' +
-                                'and a quality of ' + QUALITY_BY_BDD_CACHE.get(currentBest)
+                                'and a quality of ' + getQuality(currentBest) + ' ' +
+                                'while newly tested one has quality of ' + getQuality(bdd)
                             );
+                        } else {
+                            currentBest = bdd;
                         }
                     },
-                    compareResults: async (a: RootNode, b: RootNode) => {
-                        const betterOne = await getBetterBdd(
+                    compareResults: (a: RootNode, b: RootNode) => {
+                        const betterOne = getBetterBdd(
                             a, b,
                             perfMeasurement,
                             getQueryVariations(),
@@ -268,14 +281,14 @@ async function run() {
                     onBetterBdd: async (res: OptimisationResult) => {
                         console.log('#'.repeat(100));
                         console.log('## Yeah! found better bdd ##');
-                        process.exit(); // TODO write to file
                         lastBetterFoundTime = new Date().getTime();
-                        currentBest = res.bdd;
                         const bddMinimalString = bddToMinimalString(currentBest);
-                        const quality = QUALITY_BY_BDD_CACHE.get(currentBest);
+                        const quality = getQuality(currentBest);
                         console.log('nodes: ' + currentBest.countNodes());
-                        console.log('quality: ' + quality);
+                        console.log('quality(new): ' + quality);
+                        console.log('quality(old): ' + getQuality(currentBest));
                         console.log('new string: ' + bddMinimalString);
+                        currentBest = res.bdd;
 
                         writeBddTemplate(
                             bddMinimalString

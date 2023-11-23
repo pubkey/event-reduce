@@ -173,11 +173,11 @@ export type FunctionUsageCount = {
 
 const pseudoCollection = mingoCollectionCreator();
 
-export async function countFunctionUsages(
+export function countFunctionUsages(
     bdd: RootNode,
     queries: MongoQuery[],
     procedures: Procedure[]
-): Promise<FunctionUsageCount> {
+): FunctionUsageCount {
     const ret: FunctionUsageCount = {} as any;
     orderedStateList.forEach(stateName => ret[stateName] = 0);
 
@@ -210,7 +210,7 @@ export async function countFunctionUsages(
                 resultsBefore.set(query, res);
             });
 
-            await applyChangeEvent(
+            applyChangeEvent(
                 collection,
                 changeEvent
             );
@@ -241,14 +241,14 @@ export async function countFunctionUsages(
  * the higher the better
  */
 export const QUALITY_BY_BDD_CACHE: WeakMap<RootNode, number> = new WeakMap();
-export async function getQualityOfBdd(
+export function getQualityOfBdd(
     bdd: RootNode,
     perfMeasurement: PerformanceMeasurement,
     queries: MongoQuery[],
     procedures: Procedure[]
-): Promise<number> {
+): number {
     if (!QUALITY_BY_BDD_CACHE.has(bdd)) {
-        const usageCount = await countFunctionUsages(bdd, queries, procedures);
+        const usageCount = countFunctionUsages(bdd, queries, procedures);
         let totalTime = 0;
         Object.entries(usageCount).forEach(entry => {
             const stateName: StateName = entry[0] as StateName;

@@ -1,12 +1,14 @@
 import {
     randomBoolean,
-    randomNumber
+    randomNumber,
+    randomString
 } from 'async-test-util';
 
 import type {
     MongoQuery
 } from '../types/index.js';
 import { randomOfArray } from '../util.js';
+import { HUMAN_MAX_AGE } from './data-generator.js';
 
 export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {
     selector: {},
@@ -35,19 +37,11 @@ export const SELECTOR_VARIATIONS: Partial<MongoQuery>[] = [
             gender: 'm'
         }
     },
-    // find 10%
-    {
-        selector: {
-            age: {
-                $gt: 10
-            }
-        }
-    },
     // find 20%
     {
         selector: {
             age: {
-                $gt: 20
+                $gt: Math.ceil(HUMAN_MAX_AGE * 0.2)
             }
         }
     },
@@ -55,10 +49,13 @@ export const SELECTOR_VARIATIONS: Partial<MongoQuery>[] = [
     {
         selector: {
             age: {
-                $gt: 90
+                $gt: Math.ceil(HUMAN_MAX_AGE * 0.9)
             }
         }
-    }
+    },
+    /**
+     * Multiple operators
+     */
 ];
 
 export const SKIP_VARIATIONS: { skip: number | undefined }[] = [
@@ -172,17 +169,49 @@ export function getQueryVariations(): MongoQuery[] {
     return QUERY_VARIATIONS_CACHE;
 }
 
+export function randomOperation() {
+    return randomOfArray([
+        '$gt',
+        '$gte',
+        '$eq',
+        '$lt',
+        '$lte'
+    ]);
+}
+
+export function randomSelector() {
+    const selector: any = {};
+    if (randomBoolean()) {
+        selector.age = {
+            [randomOperation()]: randomNumber(1, HUMAN_MAX_AGE)
+        };
+    }
+    if (randomBoolean()) {
+        selector.gender = {
+            [randomOperation()]: randomOfArray(['f', 'm', 'x'])
+        };
+    }
+    if (randomBoolean()) {
+        selector.name = {
+            [randomOperation()]: randomString(10)
+        };
+    }
+    return selector;
+}
+
+
 
 
 export function randomQuery(): MongoQuery {
-    const selector = randomOfArray(SELECTOR_VARIATIONS);
+    const selector = randomSelector();
     const skip = randomBoolean() ? randomNumber(1, 30) : undefined;
     const limit = randomBoolean() ? randomNumber(1, 30) : undefined;
     const sort = randomOfArray(SORT_VARIATION);
-    return {
-        selector: selector.selector,
+    const randomQuery = {
+        selector,
         skip,
         limit,
         sort: sort.sort
     };
+    return randomQuery;
 }
