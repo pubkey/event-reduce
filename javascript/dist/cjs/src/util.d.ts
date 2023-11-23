@@ -1,5 +1,4 @@
-import type { UNKNOWN, MongoQuery, DeepReadonlyObject } from './types/index.js';
-export declare const UNKNOWN_VALUE: UNKNOWN;
+import type { MongoQuery, DeepReadonlyObject } from './types/index.js';
 export declare function lastOfArray<T>(ar: T[]): T;
 /**
  * @link https://stackoverflow.com/a/5915122

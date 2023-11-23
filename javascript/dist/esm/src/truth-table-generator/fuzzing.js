@@ -18,7 +18,7 @@ export async function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
     const queries = new Array(queriesAmount)
         .fill(0)
         .map(() => randomQuery());
-    const procedure = await getRandomChangeEvents(eventsAmount);
+    const procedure = getRandomChangeEvents(eventsAmount);
     const queryParamsByQuery = new Map();
     const collection = mingoCollectionCreator();
     queries.forEach(query => {
@@ -33,7 +33,7 @@ export async function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
             const res = collection.query(query);
             resultsBefore.set(query, res);
         });
-        await applyChangeEvent(collection, changeEvent);
+        applyChangeEvent(collection, changeEvent);
         // get results after event
         const resultsAfter = new Map();
         queries.forEach(query => {

@@ -1,4 +1,3 @@
-import { UNKNOWN_VALUE } from './config.js';
 import { randomOfArray } from '../util.js';
 import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
@@ -77,10 +76,6 @@ export function randomChangeEvent(allDocs, favor) {
                 previous: docToDelete
             };
             break;
-    }
-    // randomly set previous to UNKNOWN
-    if (ret.previous && randomBoolean()) {
-        ret.previous = UNKNOWN_VALUE;
     }
     return ret;
 }

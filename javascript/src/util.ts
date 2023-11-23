@@ -1,11 +1,8 @@
 import type {
-    StateResolveFunctionInput,
-    UNKNOWN,
     MongoQuery,
     DeepReadonlyObject
 } from './types/index.js';
 
-export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];

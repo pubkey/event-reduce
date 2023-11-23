@@ -1,4 +1,3 @@
-export const UNKNOWN_VALUE = 'UNKNOWN';
 export function lastOfArray(ar) {
     return ar[ar.length - 1];
 }

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = void 0;
-const config_js_1 = require("./config.js");
 const util_js_1 = require("../util.js");
 const mingo_js_1 = require("./database/mingo.js");
 const index_js_1 = require("./database/index.js");
@@ -83,10 +82,6 @@ function randomChangeEvent(allDocs, favor) {
                 previous: docToDelete
             };
             break;
-    }
-    // randomly set previous to UNKNOWN
-    if (ret.previous && (0, async_test_util_1.randomBoolean)()) {
-        ret.previous = config_js_1.UNKNOWN_VALUE;
     }
     return ret;
 }

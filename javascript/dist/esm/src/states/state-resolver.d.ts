@@ -5,7 +5,6 @@ export declare const hasSkip: StateResolveFunction<any>;
 export declare const isDelete: StateResolveFunction<any>;
 export declare const isInsert: StateResolveFunction<any>;
 export declare const isUpdate: StateResolveFunction<any>;
-export declare const previousUnknown: StateResolveFunction<any>;
 export declare const wasLimitReached: StateResolveFunction<any>;
 export declare const sortParamsChanged: StateResolveFunction<any>;
 export declare const wasInResult: StateResolveFunction<any>;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
+exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
 const util_js_1 = require("../util.js");
 const hasLimit = (input) => {
     return !!input.queryParams.limit;
@@ -31,10 +31,6 @@ const isUpdate = (input) => {
     return input.changeEvent.operation === 'UPDATE';
 };
 exports.isUpdate = isUpdate;
-const previousUnknown = (input) => {
-    return input.changeEvent.previous === util_js_1.UNKNOWN_VALUE;
-};
-exports.previousUnknown = previousUnknown;
 const wasLimitReached = (input) => {
     return (0, exports.hasLimit)(input) && input.previousResults.length >= input.queryParams.limit;
 };
@@ -46,7 +42,7 @@ const sortParamsChanged = (input) => {
     if (!doc) {
         return false;
     }
-    if (!prev || prev === util_js_1.UNKNOWN_VALUE) {
+    if (!prev) {
         return true;
     }
     for (let i = 0; i < sortFields.length; i++) {
@@ -101,7 +97,7 @@ const wasLast = (input) => {
 exports.wasLast = wasLast;
 const wasSortedBeforeFirst = (input) => {
     const prev = input.changeEvent.previous;
-    if (!prev || prev === util_js_1.UNKNOWN_VALUE) {
+    if (!prev) {
         return false;
     }
     const first = input.previousResults[0];
@@ -123,7 +119,7 @@ const wasSortedBeforeFirst = (input) => {
 exports.wasSortedBeforeFirst = wasSortedBeforeFirst;
 const wasSortedAfterLast = (input) => {
     const prev = input.changeEvent.previous;
-    if (!prev || prev === util_js_1.UNKNOWN_VALUE) {
+    if (!prev) {
         return false;
     }
     const last = (0, util_js_1.lastOfArray)(input.previousResults);
@@ -171,7 +167,7 @@ const isSortedAfterLast = (input) => {
 exports.isSortedAfterLast = isSortedAfterLast;
 const wasMatching = (input) => {
     const prev = input.changeEvent.previous;
-    if (!prev || prev === util_js_1.UNKNOWN_VALUE) {
+    if (!prev) {
         return false;
     }
     return input.queryParams.queryMatcher(prev);

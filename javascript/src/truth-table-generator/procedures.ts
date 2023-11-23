@@ -4,13 +4,10 @@ import {
     randomHumans,
     randomChangeHuman
 } from './data-generator.js';
-import { UNKNOWN_VALUE } from './config.js';
 import { ensureNotFalsy, flatClone, randomOfArray, shuffleArray } from '../util.js';
 import { randomNumber } from 'async-test-util';
 
-export function insertChangeAndCleanup(
-    unknownPrevious: boolean = false
-): ChangeEvent<Human>[] {
+export function insertChangeAndCleanup(): ChangeEvent<Human>[] {
     const ret: ChangeEvent<Human>[] = [];
 
     let docs: Human[] = [];
@@ -72,11 +69,6 @@ export function insertChangeAndCleanup(
         ret.push(deleteEvent);
     }
 
-    if (unknownPrevious) {
-        ret
-            .filter(ev => ev.previous)
-            .forEach(ev => ev.previous = UNKNOWN_VALUE);
-    }
 
     return ret;
 }
@@ -310,7 +302,7 @@ export function getTestProcedures(): Procedure[] {
     if (!CACHE) {
         const ret: ChangeEvent<Human>[][] = [];
         ret.push(insertChangeAndCleanup());
-        ret.push(insertChangeAndCleanup(true));
+        ret.push(insertChangeAndCleanup());
         ret.push(insertFiveSortedThenRemoveSorted());
         ret.push(oneThatWasCrashing());
         ret.push(sortParamChanged());

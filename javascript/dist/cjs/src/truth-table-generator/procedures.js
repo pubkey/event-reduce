@@ -2,10 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTestProcedures = exports.sortParamChanged = exports.oneThatWasCrashing = exports.insertFiveSortedThenRemoveSorted = exports.insertFiveSorted = exports.insertChangeAndCleanup = void 0;
 const data_generator_js_1 = require("./data-generator.js");
-const config_js_1 = require("./config.js");
 const util_js_1 = require("../util.js");
 const async_test_util_1 = require("async-test-util");
-function insertChangeAndCleanup(unknownPrevious = false) {
+function insertChangeAndCleanup() {
     const ret = [];
     let docs = [];
     (0, data_generator_js_1.randomHumans)(5).forEach(h => {
@@ -57,11 +56,6 @@ function insertChangeAndCleanup(unknownPrevious = false) {
             id: deleteMe._id
         };
         ret.push(deleteEvent);
-    }
-    if (unknownPrevious) {
-        ret
-            .filter(ev => ev.previous)
-            .forEach(ev => ev.previous = config_js_1.UNKNOWN_VALUE);
     }
     return ret;
 }
@@ -293,7 +287,7 @@ function getTestProcedures() {
     if (!CACHE) {
         const ret = [];
         ret.push(insertChangeAndCleanup());
-        ret.push(insertChangeAndCleanup(true));
+        ret.push(insertChangeAndCleanup());
         ret.push(insertFiveSortedThenRemoveSorted());
         ret.push(oneThatWasCrashing());
         ret.push(sortParamChanged());

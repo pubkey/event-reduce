@@ -1,5 +1,5 @@
 import type { StateResolveFunction } from '../types/index.js';
-import { getProperty, lastOfArray, UNKNOWN_VALUE } from '../util.js';
+import { getProperty, lastOfArray } from '../util.js';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
@@ -29,9 +29,6 @@ export const isUpdate: StateResolveFunction<any> = (input) => {
     return input.changeEvent.operation === 'UPDATE';
 };
 
-export const previousUnknown: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.previous === UNKNOWN_VALUE;
-};
 
 export const wasLimitReached: StateResolveFunction<any> = (input) => {
     return hasLimit(input) && input.previousResults.length >= (input.queryParams.limit as number);
@@ -44,7 +41,7 @@ export const sortParamsChanged: StateResolveFunction<any> = (input) => {
     if (!doc) {
         return false;
     }
-    if (!prev || prev === UNKNOWN_VALUE) {
+    if (!prev) {
         return true;
     }
 
@@ -98,7 +95,7 @@ export const wasLast: StateResolveFunction<any> = (input) => {
 
 export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
     const prev = input.changeEvent.previous;
-    if (!prev || prev === UNKNOWN_VALUE) {
+    if (!prev) {
         return false;
     }
 
@@ -126,7 +123,7 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
 
 export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
     const prev = input.changeEvent.previous;
-    if (!prev || prev === UNKNOWN_VALUE) {
+    if (!prev) {
         return false;
     }
 
@@ -193,7 +190,7 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
 
 export const wasMatching: StateResolveFunction<any> = (input) => {
     const prev = input.changeEvent.previous;
-    if (!prev || prev === UNKNOWN_VALUE) {
+    if (!prev) {
         return false;
     }
     return input.queryParams.queryMatcher(

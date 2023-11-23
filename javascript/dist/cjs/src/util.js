@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProperty = exports.isObject = exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
-exports.UNKNOWN_VALUE = 'UNKNOWN';
+exports.getProperty = exports.isObject = exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = void 0;
 function lastOfArray(ar) {
     return ar[ar.length - 1];
 }

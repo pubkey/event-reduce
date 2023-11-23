@@ -1,4 +1,3 @@
-import type { UNKNOWN } from '../types/index.js';
 import path from 'path';
 
 export const OUTPUT_FOLDER_PATH = path.join(
@@ -20,7 +19,3 @@ export const FUZZING_PROCEDURES_PATH = path.join(
     OUTPUT_FOLDER_PATH,
     'procedures.json'
 ).replace('dist/cjs/', '');
-
-
-
-export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
