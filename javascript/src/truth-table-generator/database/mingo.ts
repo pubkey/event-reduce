@@ -39,12 +39,6 @@ export function mingoCollectionCreator(): Collection {
             };
         },
         query(query) {
-
-
-            console.log('------------ ' + data.length);
-            console.dir(query);
-            console.dir(data);
-
             const queryInstance = new Query(query.selector);
             const queryParams = this.getQueryParams(query);
             const skip = query.skip ? query.skip : 0;
@@ -54,6 +48,7 @@ export function mingoCollectionCreator(): Collection {
             let rows = data
                 .filter(d => queryInstance.test(d))
                 .sort(queryParams.sortComparator);
+
             rows = rows.slice(skip, skipPlusLimit);
             return rows;
         }
@@ -79,9 +74,7 @@ export function getMingoSortComparator<DocType>(
         sortParts.push({
             key,
             direction: direction,
-            getValueFn: (key: string) => {
-                return (obj: DocType) => getProperty(obj, key);
-            }
+            getValueFn: (obj: DocType) => getProperty(obj, key)
         });
     });
     const fun: DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => {
