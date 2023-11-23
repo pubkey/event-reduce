@@ -213,8 +213,8 @@ export function randomSelector() {
 
 export function randomQuery(): MongoQuery {
     const selector = randomSelector();
-    const skip = randomBoolean() ? randomNumber(1, 30) : undefined;
-    const limit = randomBoolean() ? randomNumber(1, 30) : undefined;
+    const skip = randomBoolean() ? randomNumber(1, 25) : undefined;
+    const limit = randomBoolean() ? randomNumber(1, 25) : undefined;
     const sort = randomOfArray(SORT_VARIATION);
     const randomQuery = {
         selector,
