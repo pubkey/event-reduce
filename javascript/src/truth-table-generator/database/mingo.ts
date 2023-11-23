@@ -28,7 +28,7 @@ export function mingoCollectionCreator(): Collection {
             }
         },
         getQueryParams(query) {
-            const queryInstance = new Query(query);
+            const queryInstance = new Query(query.selector);
             return {
                 primaryKey: '_id',
                 skip: query.skip ? query.skip : undefined,
@@ -39,7 +39,13 @@ export function mingoCollectionCreator(): Collection {
             };
         },
         query(query) {
-            const queryInstance = new Query(query);
+
+
+            console.log('------------ ' + data.length);
+            console.dir(query);
+            console.dir(data);
+
+            const queryInstance = new Query(query.selector);
             const queryParams = this.getQueryParams(query);
             const skip = query.skip ? query.skip : 0;
             const limit = query.limit ? query.limit : Infinity;
