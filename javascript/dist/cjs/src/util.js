@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProperty = exports.isObject = exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.tryToFillPreviousDoc = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
+exports.getProperty = exports.isObject = exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
 exports.UNKNOWN_VALUE = 'UNKNOWN';
 function lastOfArray(ar) {
     return ar[ar.length - 1];
@@ -17,31 +17,6 @@ function shuffleArray(arr) {
     return arr.slice().sort(() => (Math.random() - 0.5));
 }
 exports.shuffleArray = shuffleArray;
-/**
- * if the previous doc-data is unknown,
- * try to get it from previous results
- * @mutate the changeEvent of input
- */
-function tryToFillPreviousDoc(input) {
-    const prev = input.changeEvent.previous;
-    if (prev === exports.UNKNOWN_VALUE) {
-        const id = input.changeEvent.id;
-        const primary = input.queryParams.primaryKey;
-        if (input.keyDocumentMap) {
-            const doc = input.keyDocumentMap.get(id);
-            if (doc) {
-                input.changeEvent.previous = doc;
-            }
-        }
-        else {
-            const found = input.previousResults.find(item => item[primary] === id);
-            if (found) {
-                input.changeEvent.previous = found;
-            }
-        }
-    }
-}
-exports.tryToFillPreviousDoc = tryToFillPreviousDoc;
 /**
  * normalizes sort-field
  * in: '-age'

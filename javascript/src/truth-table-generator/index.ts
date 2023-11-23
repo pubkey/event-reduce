@@ -4,18 +4,18 @@ import type {
     StateActionIdMap,
     Procedure,
     Human
-} from './types.ts';
+} from './types.js';
 import type {
     QueryParams,
     ActionName,
     ActionFunctionInput,
     MongoQuery
-} from '../types/index.ts';
-import { runAction } from '../index.ts';
-import { orderedActionList } from '../actions/index.ts';
-import { getStateSet } from '../states/index.ts';
-import { mingoCollectionCreator } from './database/mingo.ts';
-import { applyChangeEvent } from './database/index.ts';
+} from '../types/index.js';
+import { runAction } from '../index.js';
+import { orderedActionList } from '../actions/index.js';
+import { getStateSet } from '../states/index.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 
 export interface GenerateTruthTableInput {
     queries: MongoQuery[];

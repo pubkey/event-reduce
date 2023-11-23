@@ -1,4 +1,4 @@
-import type { StateResolveFunctionInput, UNKNOWN, MongoQuery, DeepReadonlyObject } from './types/index.js';
+import type { UNKNOWN, MongoQuery, DeepReadonlyObject } from './types/index.js';
 export declare const UNKNOWN_VALUE: UNKNOWN;
 export declare function lastOfArray<T>(ar: T[]): T;
 /**
@@ -6,12 +6,6 @@ export declare function lastOfArray<T>(ar: T[]): T;
  */
 export declare function randomOfArray<T>(items: T[]): T;
 export declare function shuffleArray<T>(arr: T[]): T[];
-/**
- * if the previous doc-data is unknown,
- * try to get it from previous results
- * @mutate the changeEvent of input
- */
-export declare function tryToFillPreviousDoc<DocType>(input: StateResolveFunctionInput<DocType>): void;
 /**
  * normalizes sort-field
  * in: '-age'

@@ -18,8 +18,10 @@ import {
     isSortedBeforeFirst
 } from '../../src/states/state-resolver.js';
 import { randomHuman } from '../../src/truth-table-generator/data-generator.js';
-import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper.js';
 import { Human } from '../../src/truth-table-generator/types.js';
+import { mingoCollectionCreator } from '../../src/truth-table-generator/database/mingo.js';
+
+const pseudoCollection = mingoCollectionCreator();
 
 describe('states.test.ts', () => {
     describe('basic', () => {
@@ -78,7 +80,7 @@ describe('states.test.ts', () => {
                 previousResults: [
                     inResult
                 ],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -106,7 +108,7 @@ describe('states.test.ts', () => {
                 previousResults: [
                     inResult
                 ],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -127,7 +129,7 @@ describe('states.test.ts', () => {
                     id: newDoc._id
                 },
                 previousResults: new Array(5).fill(0).map(() => randomHuman()),
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id'],
                     limit: 5
@@ -146,7 +148,7 @@ describe('states.test.ts', () => {
                     id: newDoc._id
                 },
                 previousResults: new Array(1).fill(0).map(() => randomHuman()),
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id'],
                     limit: 5
@@ -176,7 +178,7 @@ describe('states.test.ts', () => {
                 previousResults: [
                     inResult
                 ],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id'],
                     limit: 5
@@ -212,7 +214,7 @@ describe('states.test.ts', () => {
                     id: updateDocId
                 },
                 previousResults,
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {
                         age: {
                             $gt: 20
@@ -253,7 +255,7 @@ describe('states.test.ts', () => {
                     id: updateDocId
                 },
                 previousResults,
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {
                         age: {
                             $gt: 20
@@ -285,7 +287,7 @@ describe('states.test.ts', () => {
                 previousResults: [
                     previous
                 ],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 }),
@@ -309,7 +311,7 @@ describe('states.test.ts', () => {
                 previousResults: [
                     previous
                 ],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -330,7 +332,7 @@ describe('states.test.ts', () => {
                     id: previous._id
                 },
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -353,7 +355,7 @@ describe('states.test.ts', () => {
                     id: previous._id
                 },
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -372,7 +374,7 @@ describe('states.test.ts', () => {
                     id: previous._id
                 },
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -392,7 +394,7 @@ describe('states.test.ts', () => {
                     id: previous._id
                 },
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['-age', '_id']
                 })
@@ -411,7 +413,7 @@ describe('states.test.ts', () => {
                     id: previous._id
                 },
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['-age', '_id']
                 })
@@ -433,7 +435,7 @@ describe('states.test.ts', () => {
                     id: previous._id
                 },
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {
                         age: {
                             $gt: 10

@@ -12,30 +12,6 @@ export function shuffleArray(arr) {
     return arr.slice().sort(() => (Math.random() - 0.5));
 }
 /**
- * if the previous doc-data is unknown,
- * try to get it from previous results
- * @mutate the changeEvent of input
- */
-export function tryToFillPreviousDoc(input) {
-    const prev = input.changeEvent.previous;
-    if (prev === UNKNOWN_VALUE) {
-        const id = input.changeEvent.id;
-        const primary = input.queryParams.primaryKey;
-        if (input.keyDocumentMap) {
-            const doc = input.keyDocumentMap.get(id);
-            if (doc) {
-                input.changeEvent.previous = doc;
-            }
-        }
-        else {
-            const found = input.previousResults.find(item => item[primary] === id);
-            if (found) {
-                input.changeEvent.previous = found;
-            }
-        }
-    }
-}
-/**
  * normalizes sort-field
  * in: '-age'
  * out: 'age'

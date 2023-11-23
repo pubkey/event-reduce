@@ -1,8 +1,7 @@
-import { faker } from '@faker-js/faker';
 import { randomHumans, randomChangeHuman } from './data-generator.js';
 import { UNKNOWN_VALUE } from './config.js';
-import { compileSort } from './minimongo-helper.js';
-import { ensureNotFalsy, flatClone } from '../util.js';
+import { ensureNotFalsy, flatClone, randomOfArray, shuffleArray } from '../util.js';
+import { randomNumber } from 'async-test-util';
 export function insertChangeAndCleanup(unknownPrevious = false) {
     const ret = [];
     let docs = [];
@@ -16,7 +15,7 @@ export function insertChangeAndCleanup(unknownPrevious = false) {
         docs.push(h);
         ret.push(insertEvent);
         // do a random update
-        const updateDoc = faker.helpers.arrayElement(docs);
+        const updateDoc = randomOfArray(docs);
         const after = randomChangeHuman(updateDoc);
         docs = docs.filter(d => d._id !== updateDoc._id);
         docs.push(after);
@@ -29,16 +28,13 @@ export function insertChangeAndCleanup(unknownPrevious = false) {
         ret.push(updateEvent);
     });
     // update all to big age
-    const shuffled = faker.helpers.shuffle(docs);
+    const shuffled = shuffleArray(docs);
     while (shuffled.length > 0) {
         const changeMe = shuffled.pop();
         const changeMeAfter = randomChangeHuman(changeMe);
         docs = docs.filter(d => d._id !== changeMe._id);
         docs.push(changeMeAfter);
-        changeMeAfter.age = 1000 + faker.number.int({
-            min: 10,
-            max: 100
-        });
+        changeMeAfter.age = 1000 + randomNumber(10, 100);
         const updateEvent = {
             operation: 'UPDATE',
             doc: changeMeAfter,
@@ -48,7 +44,7 @@ export function insertChangeAndCleanup(unknownPrevious = false) {
         ret.push(updateEvent);
     }
     // cleanup
-    const shuffled2 = faker.helpers.shuffle(docs);
+    const shuffled2 = shuffleArray(docs);
     while (shuffled2.length > 0) {
         const deleteMe = shuffled2.pop();
         const deleteEvent = {
@@ -64,37 +60,6 @@ export function insertChangeAndCleanup(unknownPrevious = false) {
             .filter(ev => ev.previous)
             .forEach(ev => ev.previous = UNKNOWN_VALUE);
     }
-    return ret;
-}
-export function insertFiveThenChangeAgeOfOne() {
-    const humans = randomHumans(5).sort(compileSort(['age']));
-    const ret = humans.map(human => {
-        const changeEvent = {
-            operation: 'INSERT',
-            id: human._id,
-            doc: human,
-            previous: null
-        };
-        return changeEvent;
-    });
-    const prevDoc = humans[3];
-    const changedDoc = flatClone(prevDoc);
-    changedDoc.age = 0;
-    const updateEvent = {
-        operation: 'UPDATE',
-        id: prevDoc._id,
-        doc: changedDoc,
-        previous: prevDoc
-    };
-    ret.push(updateEvent);
-    const deleteDoc = flatClone(changedDoc);
-    const deleteEvent = {
-        operation: 'DELETE',
-        id: deleteDoc._id,
-        doc: null,
-        previous: deleteDoc
-    };
-    ret.push(deleteEvent);
     return ret;
 }
 export function insertFiveSorted() {
@@ -321,7 +286,6 @@ export function getTestProcedures() {
         const ret = [];
         ret.push(insertChangeAndCleanup());
         ret.push(insertChangeAndCleanup(true));
-        ret.push(insertFiveThenChangeAgeOfOne());
         ret.push(insertFiveSortedThenRemoveSorted());
         ret.push(oneThatWasCrashing());
         ret.push(sortParamChanged());

@@ -1,5 +1,4 @@
 import { ChangeEvent, MongoQuery, QueryParams } from '../../types';
-import { Human } from '../types';
 
 /**
  * Abstract the database so that
@@ -9,10 +8,10 @@ export type CollectionCreator<DocType> = () => Collection;
 
 
 export interface Collection {
-    getQueryParams(query: MongoQuery<Human>): QueryParams<Human>;
-    upsert(doc: Human): void;
+    getQueryParams(query: MongoQuery<any>): QueryParams<any>;
+    upsert(doc: any): void;
     remove(docId: string): void;
-    query(query: MongoQuery): Human[];
+    query(query: MongoQuery): any[];
 }
 
 

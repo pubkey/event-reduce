@@ -4,19 +4,19 @@ import type {
     ChangeEvent,
     ActionName,
     MongoQuery
-} from '../types/index.ts';
+} from '../types/index.js';
 import type {
     Procedure,
     StateActionIdMap,
     Human
-} from './types.ts';
-import { randomQuery } from './queries.ts';
-import { getRandomChangeEvents } from './data-generator.ts';
-import { getStateSet } from '../states/index.ts';
-import { orderedActionList } from '../actions/index.ts';
-import { doesActionWork } from './index.ts';
-import { mingoCollectionCreator } from './database/mingo.ts';
-import { applyChangeEvent } from './database/index.ts';
+} from './types.js';
+import { randomQuery } from './queries.js';
+import { getRandomChangeEvents } from './data-generator.js';
+import { getStateSet } from '../states/index.js';
+import { orderedActionList } from '../actions/index.js';
+import { doesActionWork } from './index.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 
 export type FuzzingReturn = {
     ok: boolean,

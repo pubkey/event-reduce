@@ -4,9 +4,10 @@ exports.getQualityOfBdd = exports.QUALITY_BY_BDD_CACHE = exports.countFunctionUs
 const binary_decision_diagram_1 = require("binary-decision-diagram");
 const async_test_util_1 = require("async-test-util");
 const index_js_1 = require("../states/index.js");
-const minimongo_helper_js_1 = require("./minimongo-helper.js");
 const data_generator_js_1 = require("./data-generator.js");
 const util_js_1 = require("../util.js");
+const mingo_js_1 = require("./database/mingo.js");
+const index_js_2 = require("./database/index.js");
 // an 'average' query
 // used to measure performance
 const testQuery = {
@@ -31,13 +32,13 @@ const testQuery = {
 async function measurePerformanceOfStateFunctions(rounds = 1000) {
     const ret = {};
     index_js_1.orderedStateList.forEach(k => ret[k] = 0);
-    const collection = (0, minimongo_helper_js_1.getMinimongoCollection)();
-    await Promise.all(new Array(200).fill(0).map(() => (0, minimongo_helper_js_1.minimongoUpsert)(collection, (0, data_generator_js_1.randomHuman)())));
-    const previousResults = await (0, minimongo_helper_js_1.minimongoFind)(collection, testQuery);
+    const collection = (0, mingo_js_1.mingoCollectionCreator)();
+    await Promise.all(new Array(200).fill(0).map(() => collection.upsert((0, data_generator_js_1.randomHuman)())));
+    const previousResults = await collection.query(testQuery);
     const keyDocumentMap = new Map();
     previousResults.forEach(d => keyDocumentMap.set(d._id, d));
     const addDoc = (0, data_generator_js_1.randomHuman)();
-    const queryParams = (0, minimongo_helper_js_1.getQueryParamsByMongoQuery)(testQuery);
+    const queryParams = collection.getQueryParams(testQuery);
     const insertStateInput = {
         queryParams,
         changeEvent: {
@@ -114,6 +115,7 @@ async function getBetterBdd(a, b, perfMeasurement, queries, procedures) {
     }
 }
 exports.getBetterBdd = getBetterBdd;
+const pseudoCollection = (0, mingo_js_1.mingoCollectionCreator)();
 async function countFunctionUsages(bdd, queries, procedures) {
     const ret = {};
     index_js_1.orderedStateList.forEach(stateName => ret[stateName] = 0);
@@ -127,18 +129,18 @@ async function countFunctionUsages(bdd, queries, procedures) {
     });
     const queryParamsByQuery = new Map();
     queries.forEach(query => {
-        queryParamsByQuery.set(query, (0, minimongo_helper_js_1.getQueryParamsByMongoQuery)(query));
+        queryParamsByQuery.set(query, pseudoCollection.getQueryParams(query));
     });
     for (const procedure of procedures) {
-        const collection = (0, minimongo_helper_js_1.getMinimongoCollection)();
+        const collection = (0, mingo_js_1.mingoCollectionCreator)();
         for (const changeEvent of procedure) {
             // get previous results
             const resultsBefore = new Map();
-            await Promise.all(queries.map(query => {
-                return (0, minimongo_helper_js_1.minimongoFind)(collection, query)
-                    .then(res => resultsBefore.set(query, res));
-            }));
-            await (0, minimongo_helper_js_1.applyChangeEvent)(collection, changeEvent);
+            queries.forEach(query => {
+                const res = collection.query(query);
+                resultsBefore.set(query, res);
+            });
+            await (0, index_js_2.applyChangeEvent)(collection, changeEvent);
             for (const query of queries) {
                 const params = queryParamsByQuery.get(query);
                 const previousResults = resultsBefore.get(query);

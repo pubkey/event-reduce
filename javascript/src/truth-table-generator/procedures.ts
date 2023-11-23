@@ -1,11 +1,11 @@
-import type { ChangeEvent } from '../types/index.ts';
-import type { Human, Procedure } from './types.ts';
+import type { ChangeEvent } from '../types/index.js';
+import type { Human, Procedure } from './types.js';
 import {
     randomHumans,
     randomChangeHuman
-} from './data-generator.ts';
-import { UNKNOWN_VALUE } from './config.ts';
-import { ensureNotFalsy, flatClone, randomOfArray, shuffleArray } from '../util.ts';
+} from './data-generator.js';
+import { UNKNOWN_VALUE } from './config.js';
+import { ensureNotFalsy, flatClone, randomOfArray, shuffleArray } from '../util.js';
 import { randomNumber } from 'async-test-util';
 
 export function insertChangeAndCleanup(

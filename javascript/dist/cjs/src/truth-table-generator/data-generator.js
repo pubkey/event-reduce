@@ -1,21 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = void 0;
-const faker_1 = require("@faker-js/faker");
-const minimongo_helper_js_1 = require("./minimongo-helper.js");
 const config_js_1 = require("./config.js");
 const util_js_1 = require("../util.js");
-/**
- * Set a seed to ensure we create deterministic and testable
- * test data.
- */
-faker_1.faker.seed(2345);
+const mingo_js_1 = require("./database/mingo.js");
+const index_js_1 = require("./database/index.js");
+const async_test_util_1 = require("async-test-util");
 function randomHuman(partial) {
     const ret = {
-        _id: (faker_1.faker.number.int(1000) + '').padStart(5, '0'),
-        name: faker_1.faker.person.firstName().toLowerCase(),
-        gender: faker_1.faker.datatype.boolean() ? 'f' : 'm',
-        age: faker_1.faker.number.int({ min: 1, max: 100 })
+        _id: (0, async_test_util_1.randomString)(10),
+        name: (0, async_test_util_1.randomString)(10),
+        gender: (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
+        age: (0, async_test_util_1.randomNumber)(1, 100)
     };
     if (partial) {
         Object.entries(partial).forEach(([k, v]) => {
@@ -32,13 +28,13 @@ function randomHumans(amount = 0, partial) {
 }
 exports.randomHumans = randomHumans;
 const keyToChangeFn = {
-    1: (i) => i.name = faker_1.faker.person.firstName().toLowerCase(),
-    2: (i) => i.gender = faker_1.faker.datatype.boolean() ? 'f' : 'm',
-    3: (i) => i.age = faker_1.faker.number.int({ min: 1, max: 100 })
+    1: (i) => i.name = (0, async_test_util_1.randomString)(10),
+    2: (i) => i.gender = (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
+    3: (i) => i.age = (0, async_test_util_1.randomNumber)(1, 100)
 };
 function randomChangeHuman(input) {
     const cloned = Object.assign({}, input);
-    const field = faker_1.faker.number.int({ min: 1, max: 3 });
+    const field = (0, async_test_util_1.randomNumber)(1, 3);
     keyToChangeFn[field](cloned);
     return cloned;
 }
@@ -69,7 +65,7 @@ function randomChangeEvent(allDocs, favor) {
             };
             break;
         case 'UPDATE':
-            const oldDoc = faker_1.faker.helpers.arrayElement(allDocs);
+            const oldDoc = (0, util_js_1.randomOfArray)(allDocs);
             const changedDoc = randomChangeHuman(oldDoc);
             ret = {
                 operation,
@@ -79,7 +75,7 @@ function randomChangeEvent(allDocs, favor) {
             };
             break;
         case 'DELETE':
-            const docToDelete = faker_1.faker.helpers.arrayElement(allDocs);
+            const docToDelete = (0, util_js_1.randomOfArray)(allDocs);
             ret = {
                 operation,
                 id: docToDelete._id,
@@ -89,7 +85,7 @@ function randomChangeEvent(allDocs, favor) {
             break;
     }
     // randomly set previous to UNKNOWN
-    if (ret.previous && faker_1.faker.datatype.boolean()) {
+    if (ret.previous && (0, async_test_util_1.randomBoolean)()) {
         ret.previous = config_js_1.UNKNOWN_VALUE;
     }
     return ret;
@@ -98,7 +94,7 @@ exports.randomChangeEvent = randomChangeEvent;
 // ensure that the change-events get generated
 // before we even need them
 exports.randomEventsPrematureCalculation = {};
-async function getRandomChangeEvents(amount = 100) {
+function getRandomChangeEvents(amount = 100) {
     if (exports.randomEventsPrematureCalculation[amount]) {
         fillRandomEvents(amount);
         const ret = exports.randomEventsPrematureCalculation[amount];
@@ -112,23 +108,21 @@ async function getRandomChangeEvents(amount = 100) {
 }
 exports.getRandomChangeEvents = getRandomChangeEvents;
 function fillRandomEvents(amount) {
-    setTimeout(async () => {
-        const newEvents = await _getRandomChangeEvents(amount);
-        exports.randomEventsPrematureCalculation[amount] = newEvents;
-    }, 20);
+    const newEvents = _getRandomChangeEvents(amount);
+    exports.randomEventsPrematureCalculation[amount] = newEvents;
 }
 exports.fillRandomEvents = fillRandomEvents;
-async function _getRandomChangeEvents(amount = 100) {
+function _getRandomChangeEvents(amount = 100) {
     const ret = [];
     const half = Math.ceil(amount / 2);
-    const collection = (0, minimongo_helper_js_1.getMinimongoCollection)();
+    const collection = (0, mingo_js_1.mingoCollectionCreator)();
     let allDocs = [];
     // in the first half, we do more inserts
     while (ret.length < half) {
         const changeEvent = randomChangeEvent(allDocs, 'INSERT');
         ret.push(changeEvent);
-        await (0, minimongo_helper_js_1.applyChangeEvent)(collection, changeEvent);
-        allDocs = await (0, minimongo_helper_js_1.minimongoFind)(collection, {
+        (0, index_js_1.applyChangeEvent)(collection, changeEvent);
+        allDocs = collection.query({
             selector: {},
             sort: ['_id']
         });
@@ -137,8 +131,8 @@ async function _getRandomChangeEvents(amount = 100) {
     while (ret.length < amount) {
         const changeEvent = randomChangeEvent(allDocs, 'DELETE');
         ret.push(changeEvent);
-        await (0, minimongo_helper_js_1.applyChangeEvent)(collection, changeEvent);
-        allDocs = await (0, minimongo_helper_js_1.minimongoFind)(collection, {
+        (0, index_js_1.applyChangeEvent)(collection, changeEvent);
+        allDocs = collection.query({
             selector: {},
             sort: ['_id']
         });

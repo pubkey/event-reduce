@@ -2,7 +2,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 
-import type { ActionFunction } from '../types/index.ts';
+import type { ActionFunction } from '../types/index.js';
 
 export const doNothing: ActionFunction<any> = (_input) => { };
 

@@ -1,11 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTestProcedures = exports.sortParamChanged = exports.oneThatWasCrashing = exports.insertFiveSortedThenRemoveSorted = exports.insertFiveSorted = exports.insertFiveThenChangeAgeOfOne = exports.insertChangeAndCleanup = void 0;
-const faker_1 = require("@faker-js/faker");
+exports.getTestProcedures = exports.sortParamChanged = exports.oneThatWasCrashing = exports.insertFiveSortedThenRemoveSorted = exports.insertFiveSorted = exports.insertChangeAndCleanup = void 0;
 const data_generator_js_1 = require("./data-generator.js");
 const config_js_1 = require("./config.js");
-const minimongo_helper_js_1 = require("./minimongo-helper.js");
 const util_js_1 = require("../util.js");
+const async_test_util_1 = require("async-test-util");
 function insertChangeAndCleanup(unknownPrevious = false) {
     const ret = [];
     let docs = [];
@@ -19,7 +18,7 @@ function insertChangeAndCleanup(unknownPrevious = false) {
         docs.push(h);
         ret.push(insertEvent);
         // do a random update
-        const updateDoc = faker_1.faker.helpers.arrayElement(docs);
+        const updateDoc = (0, util_js_1.randomOfArray)(docs);
         const after = (0, data_generator_js_1.randomChangeHuman)(updateDoc);
         docs = docs.filter(d => d._id !== updateDoc._id);
         docs.push(after);
@@ -32,16 +31,13 @@ function insertChangeAndCleanup(unknownPrevious = false) {
         ret.push(updateEvent);
     });
     // update all to big age
-    const shuffled = faker_1.faker.helpers.shuffle(docs);
+    const shuffled = (0, util_js_1.shuffleArray)(docs);
     while (shuffled.length > 0) {
         const changeMe = shuffled.pop();
         const changeMeAfter = (0, data_generator_js_1.randomChangeHuman)(changeMe);
         docs = docs.filter(d => d._id !== changeMe._id);
         docs.push(changeMeAfter);
-        changeMeAfter.age = 1000 + faker_1.faker.number.int({
-            min: 10,
-            max: 100
-        });
+        changeMeAfter.age = 1000 + (0, async_test_util_1.randomNumber)(10, 100);
         const updateEvent = {
             operation: 'UPDATE',
             doc: changeMeAfter,
@@ -51,7 +47,7 @@ function insertChangeAndCleanup(unknownPrevious = false) {
         ret.push(updateEvent);
     }
     // cleanup
-    const shuffled2 = faker_1.faker.helpers.shuffle(docs);
+    const shuffled2 = (0, util_js_1.shuffleArray)(docs);
     while (shuffled2.length > 0) {
         const deleteMe = shuffled2.pop();
         const deleteEvent = {
@@ -70,38 +66,6 @@ function insertChangeAndCleanup(unknownPrevious = false) {
     return ret;
 }
 exports.insertChangeAndCleanup = insertChangeAndCleanup;
-function insertFiveThenChangeAgeOfOne() {
-    const humans = (0, data_generator_js_1.randomHumans)(5).sort((0, minimongo_helper_js_1.compileSort)(['age']));
-    const ret = humans.map(human => {
-        const changeEvent = {
-            operation: 'INSERT',
-            id: human._id,
-            doc: human,
-            previous: null
-        };
-        return changeEvent;
-    });
-    const prevDoc = humans[3];
-    const changedDoc = (0, util_js_1.flatClone)(prevDoc);
-    changedDoc.age = 0;
-    const updateEvent = {
-        operation: 'UPDATE',
-        id: prevDoc._id,
-        doc: changedDoc,
-        previous: prevDoc
-    };
-    ret.push(updateEvent);
-    const deleteDoc = (0, util_js_1.flatClone)(changedDoc);
-    const deleteEvent = {
-        operation: 'DELETE',
-        id: deleteDoc._id,
-        doc: null,
-        previous: deleteDoc
-    };
-    ret.push(deleteEvent);
-    return ret;
-}
-exports.insertFiveThenChangeAgeOfOne = insertFiveThenChangeAgeOfOne;
 function insertFiveSorted() {
     return [
         {
@@ -330,7 +294,6 @@ function getTestProcedures() {
         const ret = [];
         ret.push(insertChangeAndCleanup());
         ret.push(insertChangeAndCleanup(true));
-        ret.push(insertFiveThenChangeAgeOfOne());
         ret.push(insertFiveSortedThenRemoveSorted());
         ret.push(oneThatWasCrashing());
         ret.push(sortParamChanged());

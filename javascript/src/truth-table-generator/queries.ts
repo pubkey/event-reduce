@@ -5,8 +5,8 @@ import {
 
 import type {
     MongoQuery
-} from '../types/index.ts';
-import { randomOfArray } from '../util.ts';
+} from '../types/index.js';
+import { randomOfArray } from '../util.js';
 
 export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {
     selector: {},

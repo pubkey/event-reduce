@@ -1,14 +1,14 @@
 import type {
   Human,
   Procedure
-} from './types.ts';
+} from './types.js';
 import type {
   ChangeEvent
-} from '../../src/types/index.ts';
-import { UNKNOWN_VALUE } from './config.ts';
-import { randomOfArray } from '../util.ts';
-import { mingoCollectionCreator } from './database/mingo.ts';
-import { applyChangeEvent } from './database/index.ts';
+} from '../../src/types/index.js';
+import { UNKNOWN_VALUE } from './config.js';
+import { randomOfArray } from '../util.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 import { randomBoolean, randomNumber, randomString } from 'async-test-util';
 
 export function randomHuman(partial?: Partial<Human>): Human {

@@ -5,7 +5,7 @@ import type {
     StateResolveFunction,
     StateSet,
     StateResolveFunctionInput
-} from '../types/index.ts';
+} from '../types/index.js';
 
 import {
     hasLimit,
@@ -27,9 +27,9 @@ import {
     isSortedAfterLast,
     wasMatching,
     doesMatchNow
-} from './state-resolver.ts';
+} from './state-resolver.js';
 
-export * from './state-resolver.ts';
+export * from './state-resolver.js';
 
 /**
  * all states ordered by performance-cost

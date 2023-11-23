@@ -8,6 +8,6 @@ export declare function randomChangeEvent(allDocs: Human[], favor: 'INSERT' | 'D
 export declare const randomEventsPrematureCalculation: {
     [amount: number]: Procedure;
 };
-export declare function getRandomChangeEvents(amount?: number): Promise<Procedure>;
+export declare function getRandomChangeEvents(amount?: number): Procedure;
 export declare function fillRandomEvents(amount: number): void;
-export declare function _getRandomChangeEvents(amount?: number): Promise<Procedure>;
+export declare function _getRandomChangeEvents(amount?: number): Procedure;

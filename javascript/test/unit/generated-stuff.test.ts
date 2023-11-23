@@ -28,20 +28,16 @@ import {
     MongoQuery,
     ChangeEvent
 } from '../../src/types/index.js';
-import {
-    getQueryParamsByMongoQuery,
-    getMinimongoCollection,
-    applyChangeEvent,
-    minimongoFind,
-    minimongoUpsert
-} from '../../src/truth-table-generator/minimongo-helper.js';
 import { randomHuman } from '../../src/truth-table-generator/data-generator.js';
 import { calculateActionName, calculateActionFromMap, runAction } from '../../src/index.js';
 import { getQueryVariations } from '../../src/truth-table-generator/queries.js';
 import { getTestProcedures, oneThatWasCrashing } from '../../src/truth-table-generator/procedures.js';
 import deepEqual from 'deep-equal';
 import { orderedActionList } from '../../src/actions/index.js';
+import { mingoCollectionCreator } from '../../src/truth-table-generator/database/mingo.js';
+import { applyChangeEvent } from '../../src/truth-table-generator/database/index.js';
 
+const pseudoCollection = mingoCollectionCreator();
 
 describe('generated-stuff.test.ts', () => {
     const unknownValueActionId: number = 42;
@@ -81,7 +77,7 @@ describe('generated-stuff.test.ts', () => {
             const insertDoc = randomHuman();
             const input: StateResolveFunctionInput<Human> = {
                 previousResults: [],
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['_id']
                 }),
@@ -122,19 +118,19 @@ describe('generated-stuff.test.ts', () => {
                 };
             });
 
-            const collection = getMinimongoCollection();
+            const collection = mingoCollectionCreator();
             for (const changeEvent of procedure) {
-                const resultsBefore: Human[] = await minimongoFind(collection, query);
+                const resultsBefore: Human[] = await collection.query(query);
                 const keyDocumentMap = new Map();
                 resultsBefore.forEach(d => keyDocumentMap.set(d._id, d));
-                await applyChangeEvent(
+                applyChangeEvent(
                     collection,
                     changeEvent
                 );
 
                 const input: StateResolveFunctionInput<Human> = {
                     previousResults: resultsBefore,
-                    queryParams: getQueryParamsByMongoQuery(query),
+                    queryParams: collection.getQueryParams(query),
                     keyDocumentMap,
                     changeEvent
                 };
@@ -163,7 +159,7 @@ describe('generated-stuff.test.ts', () => {
             }[] = queries.map(query => {
                 return {
                     query,
-                    queryParams: getQueryParamsByMongoQuery(query),
+                    queryParams: pseudoCollection.getQueryParams(query),
                     previousResults: [],
                     keyDocumentMap: new Map(),
                     actions: []
@@ -177,7 +173,7 @@ describe('generated-stuff.test.ts', () => {
                     useQuery.previousResults = [];
                 });
 
-                const collection = getMinimongoCollection();
+                const collection = mingoCollectionCreator();
                 for (const changeEvent of procedure) {
                     await applyChangeEvent(
                         collection,
@@ -186,7 +182,7 @@ describe('generated-stuff.test.ts', () => {
                     for (const useQuery of useQueries) {
                         const resultBefore = useQuery.previousResults.slice();
 
-                        const execResults: Human[] = await minimongoFind(collection, useQuery.query);
+                        const execResults: Human[] = await collection.query(useQuery.query);
                         const action = calculateActionName({
                             previousResults: useQuery.previousResults,
                             changeEvent,
@@ -247,7 +243,7 @@ describe('generated-stuff.test.ts', () => {
                 var1: string;
                 var2: number;
             };
-            const collection = getMinimongoCollection<Doc>();
+            const collection = mingoCollectionCreator();
             const startResult: Doc[] = [
                 {
                     _id: '39yje23e5ux0',
@@ -279,16 +275,16 @@ describe('generated-stuff.test.ts', () => {
             };
 
             await Promise.all(
-                startResult.map(doc => minimongoUpsert(collection, doc))
+                startResult.map(doc => collection.upsert(doc))
             );
-            const previousResults = await minimongoFind(collection, query);
+            const previousResults = await collection.query(query);
             const keyDocumentMap = new Map();
             previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
 
 
             const input: StateResolveFunctionInput<Doc> = {
                 previousResults,
-                queryParams: getQueryParamsByMongoQuery(query),
+                queryParams: collection.getQueryParams(query),
                 keyDocumentMap,
                 changeEvent
             };
@@ -309,7 +305,7 @@ describe('generated-stuff.test.ts', () => {
                 location: string;
                 lastMoved: number;
             };
-            const collection = getMinimongoCollection<Doc>();
+            const collection = mingoCollectionCreator();
 
             // Change two fields: location and lastMoved
             //  so that the document now matches query, and should be first.
@@ -352,15 +348,15 @@ describe('generated-stuff.test.ts', () => {
                 limit: 10,
             };
             await Promise.all(
-                startResult.map(doc => minimongoUpsert(collection, doc))
+                startResult.map(doc => collection.upsert(doc))
             );
-            const previousResults = await minimongoFind(collection, query);
+            const previousResults = await collection.query(query);
             const keyDocumentMap = new Map();
             previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
 
             const input: StateResolveFunctionInput<Doc> = {
                 previousResults,
-                queryParams: getQueryParamsByMongoQuery(query),
+                queryParams: collection.getQueryParams(query),
                 keyDocumentMap,
                 changeEvent
             };
@@ -372,14 +368,14 @@ describe('generated-stuff.test.ts', () => {
             console.log('actionName: ' + actionName);
             const actualResultsFromMap = runAction(
                 actionName,
-                getQueryParamsByMongoQuery(query),
+                collection.getQueryParams(query),
                 changeEvent,
                 previousResults,
                 keyDocumentMap
             );
 
-            await minimongoUpsert(collection, updatedDoc)
-            const expectedResults = await minimongoFind(collection, query);
+            await collection.upsert(updatedDoc)
+            const expectedResults = await collection.query(query);
 
             assert.deepEqual(actualResultsFromMap, expectedResults);
         });

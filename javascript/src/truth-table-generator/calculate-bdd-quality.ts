@@ -14,16 +14,16 @@ import type {
     QueryParams,
     StateName,
     ActionFunctionInput
-} from '../types/index.ts';
+} from '../types/index.js';
 import {
     orderedStateList,
     stateResolveFunctions
-} from '../states/index.ts';
-import { randomHuman } from './data-generator.ts';
-import type { Human, Procedure } from './types.d.ts';
-import { flatClone, shuffleArray } from '../util.ts';
-import { mingoCollectionCreator } from './database/mingo.ts';
-import { applyChangeEvent } from './database/index.ts';
+} from '../states/index.js';
+import { randomHuman } from './data-generator.js';
+import type { Human, Procedure } from './types.d.js';
+import { flatClone, shuffleArray } from '../util.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 
 export type PerformanceMeasurement = {
     [k in StateName]: number // avg runtime in ms

@@ -9,30 +9,30 @@ import {
     RootNode
 } from 'binary-decision-diagram';
 
-import type { StateActionIdMap } from './types.ts';
+import type { StateActionIdMap } from './types.js';
 import {
     OUTPUT_FOLDER_PATH,
     OUTPUT_TRUTH_TABLE_PATH
-} from './config.ts';
-import { getQueryVariations } from './queries.ts';
-import { getTestProcedures } from './procedures.ts';
-import { generateTruthTable } from './index.ts';
+} from './config.js';
+import { getQueryVariations } from './queries.js';
+import { getTestProcedures } from './procedures.js';
+import { generateTruthTable } from './index.js';
 import {
     mapToObject,
     objectToMap,
     roundToTwoDecimals
-} from '../util.ts';
+} from '../util.js';
 import {
     readJsonFile,
     writeJsonFile
-} from './util.ts';
-import { fuzzing } from './fuzzing.ts';
-import { writeBddTemplate } from '../bdd/write-bdd-template.ts';
+} from './util.js';
+import { fuzzing } from './fuzzing.js';
+import { writeBddTemplate } from '../bdd/write-bdd-template.js';
 import {
     measurePerformanceOfStateFunctions,
     getBetterBdd,
     QUALITY_BY_BDD_CACHE
-} from './calculate-bdd-quality.ts';
+} from './calculate-bdd-quality.js';
 
 /**
  * sort object attributes

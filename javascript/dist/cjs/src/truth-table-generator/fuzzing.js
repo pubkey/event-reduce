@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fuzzing = void 0;
 const queries_js_1 = require("./queries.js");
 const data_generator_js_1 = require("./data-generator.js");
-const minimongo_helper_js_1 = require("./minimongo-helper.js");
 const index_js_1 = require("../states/index.js");
 const index_js_2 = require("../actions/index.js");
 const index_js_3 = require("./index.js");
+const mingo_js_1 = require("./database/mingo.js");
+const index_js_4 = require("./database/index.js");
+const pseudoCollection = (0, mingo_js_1.mingoCollectionCreator)();
 /**
  * randomly generates queries and events
  * and returns on the first broken one
@@ -21,26 +23,26 @@ async function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
         .map(() => (0, queries_js_1.randomQuery)());
     const procedure = await (0, data_generator_js_1.getRandomChangeEvents)(eventsAmount);
     const queryParamsByQuery = new Map();
+    const collection = (0, mingo_js_1.mingoCollectionCreator)();
     queries.forEach(query => {
-        queryParamsByQuery.set(query, (0, minimongo_helper_js_1.getQueryParamsByMongoQuery)(query));
+        queryParamsByQuery.set(query, collection.getQueryParams(query));
     });
-    const collection = (0, minimongo_helper_js_1.getMinimongoCollection)();
     const usedChangeEvents = [];
     for (const changeEvent of procedure) {
         usedChangeEvents.push(changeEvent);
         // get previous results
         const resultsBefore = new Map();
-        await Promise.all(queries.map(query => {
-            return (0, minimongo_helper_js_1.minimongoFind)(collection, query)
-                .then(res => resultsBefore.set(query, res));
-        }));
-        await (0, minimongo_helper_js_1.applyChangeEvent)(collection, changeEvent);
+        queries.forEach(query => {
+            const res = collection.query(query);
+            resultsBefore.set(query, res);
+        });
+        await (0, index_js_4.applyChangeEvent)(collection, changeEvent);
         // get results after event
         const resultsAfter = new Map();
-        await Promise.all(queries.map(query => {
-            return (0, minimongo_helper_js_1.minimongoFind)(collection, query)
-                .then(res => resultsAfter.set(query, res));
-        }));
+        queries.forEach(query => {
+            const res = collection.query(query);
+            resultsAfter.set(query, res);
+        });
         // find action to generate after results
         for (const query of queries) {
             const params = queryParamsByQuery.get(query);

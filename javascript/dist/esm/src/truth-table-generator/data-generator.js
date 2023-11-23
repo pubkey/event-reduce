@@ -1,18 +1,14 @@
-import { faker } from '@faker-js/faker';
-import { getMinimongoCollection, minimongoFind, applyChangeEvent } from './minimongo-helper.js';
 import { UNKNOWN_VALUE } from './config.js';
 import { randomOfArray } from '../util.js';
-/**
- * Set a seed to ensure we create deterministic and testable
- * test data.
- */
-faker.seed(2345);
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
+import { randomBoolean, randomNumber, randomString } from 'async-test-util';
 export function randomHuman(partial) {
     const ret = {
-        _id: (faker.number.int(1000) + '').padStart(5, '0'),
-        name: faker.person.firstName().toLowerCase(),
-        gender: faker.datatype.boolean() ? 'f' : 'm',
-        age: faker.number.int({ min: 1, max: 100 })
+        _id: randomString(10),
+        name: randomString(10),
+        gender: randomBoolean() ? 'f' : 'm',
+        age: randomNumber(1, 100)
     };
     if (partial) {
         Object.entries(partial).forEach(([k, v]) => {
@@ -27,13 +23,13 @@ export function randomHumans(amount = 0, partial) {
     return new Array(amount).fill(0).map(() => randomHuman(partial));
 }
 const keyToChangeFn = {
-    1: (i) => i.name = faker.person.firstName().toLowerCase(),
-    2: (i) => i.gender = faker.datatype.boolean() ? 'f' : 'm',
-    3: (i) => i.age = faker.number.int({ min: 1, max: 100 })
+    1: (i) => i.name = randomString(10),
+    2: (i) => i.gender = randomBoolean() ? 'f' : 'm',
+    3: (i) => i.age = randomNumber(1, 100)
 };
 export function randomChangeHuman(input) {
     const cloned = Object.assign({}, input);
-    const field = faker.number.int({ min: 1, max: 3 });
+    const field = randomNumber(1, 3);
     keyToChangeFn[field](cloned);
     return cloned;
 }
@@ -63,7 +59,7 @@ export function randomChangeEvent(allDocs, favor) {
             };
             break;
         case 'UPDATE':
-            const oldDoc = faker.helpers.arrayElement(allDocs);
+            const oldDoc = randomOfArray(allDocs);
             const changedDoc = randomChangeHuman(oldDoc);
             ret = {
                 operation,
@@ -73,7 +69,7 @@ export function randomChangeEvent(allDocs, favor) {
             };
             break;
         case 'DELETE':
-            const docToDelete = faker.helpers.arrayElement(allDocs);
+            const docToDelete = randomOfArray(allDocs);
             ret = {
                 operation,
                 id: docToDelete._id,
@@ -83,7 +79,7 @@ export function randomChangeEvent(allDocs, favor) {
             break;
     }
     // randomly set previous to UNKNOWN
-    if (ret.previous && faker.datatype.boolean()) {
+    if (ret.previous && randomBoolean()) {
         ret.previous = UNKNOWN_VALUE;
     }
     return ret;
@@ -91,7 +87,7 @@ export function randomChangeEvent(allDocs, favor) {
 // ensure that the change-events get generated
 // before we even need them
 export const randomEventsPrematureCalculation = {};
-export async function getRandomChangeEvents(amount = 100) {
+export function getRandomChangeEvents(amount = 100) {
     if (randomEventsPrematureCalculation[amount]) {
         fillRandomEvents(amount);
         const ret = randomEventsPrematureCalculation[amount];
@@ -104,22 +100,20 @@ export async function getRandomChangeEvents(amount = 100) {
     }
 }
 export function fillRandomEvents(amount) {
-    setTimeout(async () => {
-        const newEvents = await _getRandomChangeEvents(amount);
-        randomEventsPrematureCalculation[amount] = newEvents;
-    }, 20);
+    const newEvents = _getRandomChangeEvents(amount);
+    randomEventsPrematureCalculation[amount] = newEvents;
 }
-export async function _getRandomChangeEvents(amount = 100) {
+export function _getRandomChangeEvents(amount = 100) {
     const ret = [];
     const half = Math.ceil(amount / 2);
-    const collection = getMinimongoCollection();
+    const collection = mingoCollectionCreator();
     let allDocs = [];
     // in the first half, we do more inserts
     while (ret.length < half) {
         const changeEvent = randomChangeEvent(allDocs, 'INSERT');
         ret.push(changeEvent);
-        await applyChangeEvent(collection, changeEvent);
-        allDocs = await minimongoFind(collection, {
+        applyChangeEvent(collection, changeEvent);
+        allDocs = collection.query({
             selector: {},
             sort: ['_id']
         });
@@ -128,8 +122,8 @@ export async function _getRandomChangeEvents(amount = 100) {
     while (ret.length < amount) {
         const changeEvent = randomChangeEvent(allDocs, 'DELETE');
         ret.push(changeEvent);
-        await applyChangeEvent(collection, changeEvent);
-        allDocs = await minimongoFind(collection, {
+        applyChangeEvent(collection, changeEvent);
+        allDocs = collection.query({
             selector: {},
             sort: ['_id']
         });
