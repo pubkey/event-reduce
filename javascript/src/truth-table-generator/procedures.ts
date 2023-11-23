@@ -2,7 +2,8 @@ import type { ChangeEvent } from '../types/index.js';
 import type { Human, Procedure } from './types.js';
 import {
     randomHumans,
-    randomChangeHuman
+    randomChangeHuman,
+    HUMAN_MAX_AGE
 } from './data-generator.js';
 import { ensureNotFalsy, flatClone, randomOfArray, shuffleArray } from '../util.js';
 import { randomNumber } from 'async-test-util';
@@ -46,7 +47,7 @@ export function insertChangeAndCleanup(): ChangeEvent<Human>[] {
         docs = docs.filter(d => d._id !== changeMe._id);
         docs.push(changeMeAfter);
 
-        changeMeAfter.age = 1000 + randomNumber(10, 100);
+        changeMeAfter.age = 1000 + randomNumber(10, HUMAN_MAX_AGE);
         const updateEvent: ChangeEvent<Human> = {
             operation: 'UPDATE',
             doc: changeMeAfter,

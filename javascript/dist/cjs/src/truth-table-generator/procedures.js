@@ -36,7 +36,7 @@ function insertChangeAndCleanup() {
         const changeMeAfter = (0, data_generator_js_1.randomChangeHuman)(changeMe);
         docs = docs.filter(d => d._id !== changeMe._id);
         docs.push(changeMeAfter);
-        changeMeAfter.age = 1000 + (0, async_test_util_1.randomNumber)(10, 100);
+        changeMeAfter.age = 1000 + (0, async_test_util_1.randomNumber)(10, data_generator_js_1.HUMAN_MAX_AGE);
         const updateEvent = {
             operation: 'UPDATE',
             doc: changeMeAfter,

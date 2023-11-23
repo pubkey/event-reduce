@@ -19,7 +19,7 @@ import {
     orderedStateList,
     stateResolveFunctions
 } from '../states/index.js';
-import { randomHuman } from './data-generator.js';
+import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
 import type { Human, Procedure } from './types.d.js';
 import { flatClone, shuffleArray } from '../util.js';
 import { mingoCollectionCreator } from './database/mingo.js';
@@ -36,8 +36,8 @@ const testQuery: MongoQuery = {
     selector: {
         gender: 'f',
         age: {
-            $gt: 21,
-            $lt: 80
+            $gt: 11,
+            $lt: 17
         }
     },
     skip: 1,
@@ -64,11 +64,13 @@ export async function measurePerformanceOfStateFunctions(
     );
 
     const previousResults = await collection.query(testQuery);
+
     const keyDocumentMap: ResultKeyDocumentMap<Human> = new Map();
     previousResults.forEach(d => keyDocumentMap.set(d._id, d));
 
     const addDoc = randomHuman();
     const queryParams = collection.getQueryParams(testQuery);
+
     const insertStateInput: StateResolveFunctionInput<Human> = {
         queryParams,
         changeEvent: {
@@ -81,8 +83,11 @@ export async function measurePerformanceOfStateFunctions(
         keyDocumentMap
     };
 
+    if (!previousResults[2]) {
+        throw new Error('previousResults[2] not set');
+    }
     const changedDoc = flatClone(previousResults[2]);
-    changedDoc.age = 100;
+    changedDoc.age = HUMAN_MAX_AGE;
     changedDoc.name = 'alice';
     const updateStateInput: StateResolveFunctionInput<Human> = {
         queryParams,
@@ -109,6 +114,7 @@ export async function measurePerformanceOfStateFunctions(
         keyDocumentMap
 
     };
+    console.log('--- 2');
 
     let remainingRounds = rounds;
     while (remainingRounds > 0) {

@@ -1,7 +1,7 @@
 import { resolveWithSimpleBdd } from 'binary-decision-diagram';
 import { performanceNow } from 'async-test-util';
 import { orderedStateList, stateResolveFunctions } from '../states/index.js';
-import { randomHuman } from './data-generator.js';
+import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
 import { flatClone, shuffleArray } from '../util.js';
 import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
@@ -11,8 +11,8 @@ const testQuery = {
     selector: {
         gender: 'f',
         age: {
-            $gt: 21,
-            $lt: 80
+            $gt: 11,
+            $lt: 17
         }
     },
     skip: 1,
@@ -47,8 +47,11 @@ export async function measurePerformanceOfStateFunctions(rounds = 1000) {
         previousResults,
         keyDocumentMap
     };
+    if (!previousResults[2]) {
+        throw new Error('previousResults[2] not set');
+    }
     const changedDoc = flatClone(previousResults[2]);
-    changedDoc.age = 100;
+    changedDoc.age = HUMAN_MAX_AGE;
     changedDoc.name = 'alice';
     const updateStateInput = {
         queryParams,
@@ -72,6 +75,7 @@ export async function measurePerformanceOfStateFunctions(rounds = 1000) {
         previousResults,
         keyDocumentMap
     };
+    console.log('--- 2');
     let remainingRounds = rounds;
     while (remainingRounds > 0) {
         remainingRounds--;

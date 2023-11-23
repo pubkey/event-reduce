@@ -62,12 +62,17 @@ describe('generated-stuff.test.ts', () => {
     describe('bdd', () => {
         it('the bdd should have the same values as the truth table', () => {
             const resolvers = getResolverFunctions();
+            console.dir(truthTable);
             for (const [key, value] of truthTable.entries()) {
                 const bddValue = resolveWithSimpleBdd(
                     getSimpleBdd(),
                     resolvers,
                     key
                 );
+
+                console.log(' ' + key);
+                console.log('bddValue: ' + bddValue);
+
                 assert.strictEqual(value, bddValue);
             }
         });

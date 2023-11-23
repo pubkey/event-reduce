@@ -1,5 +1,10 @@
 import type { Human, Procedure } from './types.js';
 import type { ChangeEvent } from '../../src/types/index.js';
+/**
+ * Do not use a too height value
+ * so that it more often triggers sort changes.
+ */
+export declare const HUMAN_MAX_AGE = 20;
 export declare function randomHuman(partial?: Partial<Human>): Human;
 export declare const STATIC_RANDOM_HUMAN: Human;
 export declare function randomHumans(amount?: number, partial?: Partial<Human>): Human[];

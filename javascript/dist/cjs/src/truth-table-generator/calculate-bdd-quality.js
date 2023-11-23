@@ -14,8 +14,8 @@ const testQuery = {
     selector: {
         gender: 'f',
         age: {
-            $gt: 21,
-            $lt: 80
+            $gt: 11,
+            $lt: 17
         }
     },
     skip: 1,
@@ -50,8 +50,11 @@ async function measurePerformanceOfStateFunctions(rounds = 1000) {
         previousResults,
         keyDocumentMap
     };
+    if (!previousResults[2]) {
+        throw new Error('previousResults[2] not set');
+    }
     const changedDoc = (0, util_js_1.flatClone)(previousResults[2]);
-    changedDoc.age = 100;
+    changedDoc.age = data_generator_js_1.HUMAN_MAX_AGE;
     changedDoc.name = 'alice';
     const updateStateInput = {
         queryParams,
@@ -75,6 +78,7 @@ async function measurePerformanceOfStateFunctions(rounds = 1000) {
         previousResults,
         keyDocumentMap
     };
+    console.log('--- 2');
     let remainingRounds = rounds;
     while (remainingRounds > 0) {
         remainingRounds--;

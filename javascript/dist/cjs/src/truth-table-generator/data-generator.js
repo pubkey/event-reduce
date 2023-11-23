@@ -1,16 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = void 0;
+exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = exports.HUMAN_MAX_AGE = void 0;
 const util_js_1 = require("../util.js");
 const mingo_js_1 = require("./database/mingo.js");
 const index_js_1 = require("./database/index.js");
 const async_test_util_1 = require("async-test-util");
+/**
+ * Do not use a too height value
+ * so that it more often triggers sort changes.
+ */
+exports.HUMAN_MAX_AGE = 20;
 function randomHuman(partial) {
     const ret = {
         _id: (0, async_test_util_1.randomString)(10),
         name: (0, async_test_util_1.randomString)(10),
         gender: (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
-        age: (0, async_test_util_1.randomNumber)(1, 100)
+        age: (0, async_test_util_1.randomNumber)(1, exports.HUMAN_MAX_AGE)
     };
     if (partial) {
         Object.entries(partial).forEach(([k, v]) => {
@@ -29,7 +34,7 @@ exports.randomHumans = randomHumans;
 const keyToChangeFn = {
     1: (i) => i.name = (0, async_test_util_1.randomString)(10),
     2: (i) => i.gender = (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
-    3: (i) => i.age = (0, async_test_util_1.randomNumber)(1, 100)
+    3: (i) => i.age = (0, async_test_util_1.randomNumber)(1, exports.HUMAN_MAX_AGE)
 };
 function randomChangeHuman(input) {
     const cloned = Object.assign({}, input);

@@ -10,12 +10,18 @@ import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
 import { randomBoolean, randomNumber, randomString } from 'async-test-util';
 
+/**
+ * Do not use a too height value
+ * so that it more often triggers sort changes.
+ */
+export const HUMAN_MAX_AGE = 20;
+
 export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {
     _id: randomString(10),
     name: randomString(10),
     gender: randomBoolean() ? 'f' : 'm',
-    age: randomNumber(1, 100)
+    age: randomNumber(1, HUMAN_MAX_AGE)
   };
   if (partial) {
     Object.entries(partial).forEach(([k, v]) => {
@@ -37,7 +43,7 @@ export function randomHumans(amount = 0, partial?: Partial<Human>): Human[] {
 const keyToChangeFn = {
   1: (i: Human) => i.name = randomString(10),
   2: (i: Human) => i.gender = randomBoolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = randomNumber(1, 100)
+  3: (i: Human) => i.age = randomNumber(1, HUMAN_MAX_AGE)
 };
 
 export function randomChangeHuman(input: Human): Human {

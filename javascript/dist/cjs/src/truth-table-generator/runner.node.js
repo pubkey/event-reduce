@@ -196,7 +196,7 @@ async function run() {
                     },
                     onBetterBdd: async (res) => {
                         console.log('#'.repeat(100));
-                        console.log('## found better bdd ##');
+                        console.log('## Yeah! found better bdd ##');
                         lastBetterFoundTime = new Date().getTime();
                         currentBest = res.bdd;
                         const bddMinimalString = (0, binary_decision_diagram_1.bddToMinimalString)(currentBest);
