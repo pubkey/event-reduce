@@ -69,10 +69,6 @@ describe('generated-stuff.test.ts', () => {
                     resolvers,
                     key
                 );
-
-                console.log(' ' + key);
-                console.log('bddValue: ' + bddValue);
-
                 assert.strictEqual(value, bddValue);
             }
         });
@@ -305,87 +301,190 @@ describe('generated-stuff.test.ts', () => {
             assert.ok(resultFromMap.action !== 'runFullQueryAgain');
         });
 
-        it('should insertFirst in specific update case', async () => {
+        describe('#444 Modifying two collection fields in one UPDATE', () => {
             type Doc = {
                 _id: string;
                 location: string;
                 lastMoved: number;
             };
-            const collection = mingoCollectionCreator();
 
-            // Change two fields: location and lastMoved
-            //  so that the document now matches query, and should be first.
-            const originalDoc = {
-                _id: '3',
-                location: 'archive',
-                lastMoved: 300,
-            };
-            const updatedDoc = {
-                _id: '3',
-                location: 'inbox',
-                lastMoved: 50,
-            };
+            async function setUp() {
+                const collection = mingoCollectionCreator();
 
-            const startResult: Doc[] = [
-                {
+                // Change two fields: location and lastMoved
+                //  so that the document now matches query, and should be first.
+                const originalDoc = {
+                    _id: '1',
+                    location: 'archive',
+                    lastMoved: 300,
+                };
+                const updatedDoc = {
                     _id: '1',
                     location: 'inbox',
-                    lastMoved: 100,
-                },
-                {
-                    _id: '2',
-                    location: 'inbox',
-                    lastMoved: 200,
-                },
-                originalDoc,
-            ];
+                    lastMoved: 50,
+                }
 
-            const changeEvent: ChangeEvent<Doc> = {
-                operation: 'UPDATE',
-                id: '3',
-                doc: updatedDoc,
-                previous: originalDoc,
-            };
-            const query: MongoQuery = {
-                selector: {
-                    location: 'inbox',
-                },
-                sort: ['lastMoved', '_id'],
-                limit: 10,
-            };
-            await Promise.all(
-                startResult.map(doc => collection.upsert(doc))
-            );
-            const previousResults = await collection.query(query);
-            const keyDocumentMap = new Map();
-            previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
+                const allDocs: Doc[] = [
+                    originalDoc,
+                    {
+                        _id: '2',
+                        location: 'inbox',
+                        lastMoved: 100,
+                    },
+                    {
+                        _id: '3',
+                        location: 'inbox',
+                        lastMoved: 200,
+                    },
+                    {
+                        _id: '4',
+                        location: 'inbox',
+                        lastMoved: 250,
+                    },
+                    {
+                        _id: '5',
+                        location: 'inbox',
+                        lastMoved: 275,
+                    },
+                ];
+                const changeEvent: ChangeEvent<Doc> = {
+                    operation: 'UPDATE',
+                    id: '1',
+                    doc: updatedDoc,
+                    previous: originalDoc,
+                };
+                await Promise.all(
+                    allDocs.map(doc => collection.upsert(doc))
+                );
 
-            const input: StateResolveFunctionInput<Doc> = {
-                previousResults,
-                queryParams: collection.getQueryParams(query),
-                keyDocumentMap,
-                changeEvent
-            };
+                return { collection, originalDoc, updatedDoc, allDocs, changeEvent };
+            }
 
-            // Right now, this incorrectly returns insertLast, when it should be an insertFirst
-            const actionName = calculateActionName(input);
-            console.log('actionName: ' + actionName);
-            console.log('getStateSet:');
-            console.dir(getStateSet(input));
-            logStateSet(getStateSet(input));
-            assert.strictEqual(actionName, 'insertFirst');
-            const actualResultsFromMap = runAction(
-                actionName,
-                collection.getQueryParams(query),
-                changeEvent,
-                previousResults,
-                keyDocumentMap
-            );
+            it('new first item with fewer than limit results', async () => {
+                const { collection, originalDoc, updatedDoc, allDocs, changeEvent } = await setUp();
+                const query: MongoQuery = {
+                    selector: {
+                        location: 'inbox',
+                    },
+                    sort: ['lastMoved', '_id'],
+                    limit: 10,
+                };
+                const previousResults = await collection.query(query);
+                const keyDocumentMap = new Map();
+                previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
 
-            await collection.upsert(updatedDoc);
-            const expectedResults = await collection.query(query);
+                const input: StateResolveFunctionInput<Doc> = {
+                    previousResults,
+                    queryParams: collection.getQueryParams(query),
+                    keyDocumentMap,
+                    changeEvent
+                };
 
-            assert.deepEqual(actualResultsFromMap, expectedResults);
+                // Right now, this incorrectly returns insertLast, when it should be an insertFirst
+                const actionName = calculateActionName(input);
+                assert.strictEqual(actionName, 'insertFirst');
+                const actualResultsFromMap = runAction(
+                    actionName,
+                    collection.getQueryParams(query),
+                    changeEvent,
+                    previousResults,
+                    keyDocumentMap
+                );
+
+                // Update the original document (id=1) to now be in the query results
+                await collection.upsert(updatedDoc)
+                const expectedResults = await collection.query(query);
+
+                assert.deepEqual(actualResultsFromMap, expectedResults);
+            });
+
+            it('new first item with more than limit results', async () => {
+                const { collection, originalDoc, updatedDoc, allDocs, changeEvent } = await setUp();
+                const query: MongoQuery = {
+                    selector: {
+                        location: 'inbox',
+                    },
+                    sort: ['lastMoved', '_id'],
+                    limit: 2,
+                };
+                const previousResults = await collection.query(query);
+                assert.strictEqual(previousResults.length, 2);
+                const keyDocumentMap = new Map();
+                previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
+
+                const input: StateResolveFunctionInput<Doc> = {
+                    previousResults,
+                    queryParams: collection.getQueryParams(query),
+                    keyDocumentMap,
+                    changeEvent
+                };
+
+                // Right now, this incorrectly returns insertLast, when it should be an removeLastInsertFirst
+                const actionName = calculateActionName(input);
+                assert.strictEqual(actionName, 'removeLastInsertFirst');
+                const actualResultsFromMap = runAction(
+                    actionName,
+                    collection.getQueryParams(query),
+                    changeEvent,
+                    previousResults,
+                    keyDocumentMap
+                );
+                assert.strictEqual(actualResultsFromMap.length, 2);
+
+                // Update the original document (id=1) to now be in the query results
+                await collection.upsert(updatedDoc)
+                const expectedResults = await collection.query(query);
+                console.log(actionName, actualResultsFromMap, expectedResults);
+                assert.deepEqual(actualResultsFromMap, expectedResults);
+            });
+
+            it('new item should push all results in skip query down', async () => {
+                console.log('--------------------------------------');
+                const { collection, originalDoc, updatedDoc, allDocs, changeEvent } = await setUp();
+                const query: MongoQuery = {
+                    selector: {
+                        location: 'inbox',
+                    },
+                    sort: ['lastMoved', '_id'],
+                    limit: 2,
+                    skip: 2,
+                };
+                const previousResults = await collection.query(query);
+                console.log('previousResults:');
+                console.dir(previousResults);
+                assert.strictEqual(previousResults.length, 2);
+                const keyDocumentMap = new Map();
+                previousResults.forEach(doc => keyDocumentMap.set(doc._id, doc));
+
+
+                const input: StateResolveFunctionInput<Doc> = {
+                    previousResults,
+                    queryParams: collection.getQueryParams(query),
+                    keyDocumentMap,
+                    changeEvent
+                };
+
+                // Right now, this incorrectly returns insertLast, when it should be an insertFirst
+                const actionName = calculateActionName(input);
+                console.log('actionName: ' + actionName);
+                const actualResultsFromMap = runAction(
+                    actionName,
+                    collection.getQueryParams(query),
+                    changeEvent,
+                    previousResults,
+                    keyDocumentMap
+                );
+                console.log('actualResultsFromMap:');
+                console.dir(actualResultsFromMap);
+
+                // Update the original document (id=1) to push all query results down
+                await collection.upsert(updatedDoc)
+                const expectedResults = await collection.query(query);
+                console.log('expectedResults:');
+                console.dir(expectedResults);
+                console.log(actionName, actualResultsFromMap, expectedResults);
+                assert.deepEqual(actualResultsFromMap, expectedResults);
+            });
         });
     });
 });
