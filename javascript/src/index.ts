@@ -7,10 +7,10 @@ import type {
     StateSet,
     ActionFunction,
     StateResolveFunctionInput
-} from './types/index.js';
-import { getStateSet } from './states/index.js';
-import { actionFunctions, orderedActionList } from './actions/index.js';
-import { resolveInput } from './bdd/bdd.generated.js';
+} from './types/index.ts';
+import { getStateSet } from './states/index.ts';
+import { actionFunctions, orderedActionList } from './actions/index.ts';
+import { resolveInput } from './bdd/bdd.generated.ts';
 
 /**
  * Export as type to ensure we do not
@@ -38,10 +38,10 @@ export type {
     StateSetToActionMap,
     UNKNOWN,
     WriteOperation
-} from './types/index.js';
+} from './types/index.ts';
 
-export * from './states/index.js';
-export * from './util.js';
+export * from './states/index.ts';
+export * from './util.ts';
 
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,

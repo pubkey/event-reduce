@@ -4,23 +4,19 @@ import type {
     ChangeEvent,
     ActionName,
     MongoQuery
-} from '../types/index.js';
+} from '../types/index.ts';
 import type {
     Procedure,
     StateActionIdMap,
     Human
-} from './types.js';
-import { randomQuery } from './queries.js';
-import { getRandomChangeEvents } from './data-generator.js';
-import {
-    getMinimongoCollection,
-    getQueryParamsByMongoQuery,
-    minimongoFind,
-    applyChangeEvent
-} from './minimongo-helper.js';
-import { getStateSet } from '../states/index.js';
-import { orderedActionList } from '../actions/index.js';
-import { doesActionWork } from './index.js';
+} from './types.ts';
+import { randomQuery } from './queries.ts';
+import { getRandomChangeEvents } from './data-generator.ts';
+import { getStateSet } from '../states/index.ts';
+import { orderedActionList } from '../actions/index.ts';
+import { doesActionWork } from './index.ts';
+import { mingoCollectionCreator } from './database/mingo.ts';
+import { applyChangeEvent } from './database/index.ts';
 
 export type FuzzingReturn = {
     ok: boolean,
@@ -29,6 +25,8 @@ export type FuzzingReturn = {
     amountOfHandled: number,
     amountOfOptimized: number
 };
+
+const pseudoCollection = mingoCollectionCreator();
 
 /**
  * randomly generates queries and events
@@ -50,13 +48,13 @@ export async function fuzzing(
 
     const procedure = await getRandomChangeEvents(eventsAmount);
     const queryParamsByQuery: Map<MongoQuery, QueryParams<Human>> = new Map();
+    const collection = mingoCollectionCreator();
     queries.forEach(query => {
         queryParamsByQuery.set(
             query,
-            getQueryParamsByMongoQuery(query)
+            collection.getQueryParams(query)
         );
     });
-    const collection = getMinimongoCollection();
 
     const usedChangeEvents: ChangeEvent<Human>[] = [];
     for (const changeEvent of procedure) {
@@ -64,12 +62,10 @@ export async function fuzzing(
 
         // get previous results
         const resultsBefore: Map<MongoQuery, Human[]> = new Map();
-        await Promise.all(
-            queries.map(query => {
-                return minimongoFind(collection, query)
-                    .then(res => resultsBefore.set(query, res));
-            })
-        );
+        queries.forEach(query => {
+            const res = collection.query(query);
+            resultsBefore.set(query, res);
+        })
 
         await applyChangeEvent(
             collection,
@@ -78,12 +74,10 @@ export async function fuzzing(
 
         // get results after event
         const resultsAfter: Map<MongoQuery, Human[]> = new Map();
-        await Promise.all(
-            queries.map(query => {
-                return minimongoFind(collection, query)
-                    .then(res => resultsAfter.set(query, res));
-            })
-        );
+        queries.forEach(query => {
+            const res = collection.query(query);
+            resultsAfter.set(query, res);
+        });
 
         // find action to generate after results
         for (const query of queries) {

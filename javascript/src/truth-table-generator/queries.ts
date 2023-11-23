@@ -5,8 +5,8 @@ import {
 
 import type {
     MongoQuery
-} from '../types/index.js';
-import { randomOfArray } from '../util.js';
+} from '../types/index.ts';
+import { randomOfArray } from '../util.ts';
 
 export const DEFAULT_EXAMPLE_QUERY: MongoQuery = {
     selector: {},
@@ -103,7 +103,7 @@ export const LIMIT_VARIATIONS: { limit: number | undefined }[] = [
     }
 ];
 
-export const SORT_VARIATION: { sort: string[] | string[][] }[] = [
+export const SORT_VARIATION: { sort: string[] }[] = [
     // sort by immutable primary
     {
         sort: ['_id']

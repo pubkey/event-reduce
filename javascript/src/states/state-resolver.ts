@@ -1,5 +1,5 @@
-import type { StateResolveFunction } from '../types/index.js';
-import { getProperty, lastOfArray, UNKNOWN_VALUE } from '../util.js';
+import type { StateResolveFunction } from '../types/index.ts';
+import { getProperty, lastOfArray, UNKNOWN_VALUE } from '../util.ts';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
