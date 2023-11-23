@@ -456,7 +456,7 @@ describe('generated-stuff.test.ts', () => {
             changeEvent
           };
 
-          // Right now, this incorrectly returns insertLast, when it should be an insertFirst
+          // This _should_ be runFullQueryAgain:
           const actionName = calculateActionName(input);
           const actualResultsFromMap = runAction(
             actionName,
