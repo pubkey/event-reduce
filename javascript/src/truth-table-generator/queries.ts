@@ -185,16 +185,25 @@ export function randomSelector() {
         selector.age = {
             [randomOperation()]: randomNumber(1, HUMAN_MAX_AGE)
         };
+        if (randomBoolean()) {
+            selector.age[randomOperation()] = randomNumber(1, HUMAN_MAX_AGE)
+        }
     }
     if (randomBoolean()) {
         selector.gender = {
             [randomOperation()]: randomOfArray(['f', 'm', 'x'])
         };
+        if (randomBoolean()) {
+            selector.gender[randomOperation()] = randomOfArray(['f', 'm', 'x'])
+        }
     }
     if (randomBoolean()) {
         selector.name = {
             [randomOperation()]: randomString(10)
         };
+        if (randomBoolean()) {
+            selector.name[randomOperation()] = randomString(10)
+        }
     }
     return selector;
 }

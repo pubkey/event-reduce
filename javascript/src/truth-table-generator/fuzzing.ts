@@ -26,8 +26,6 @@ export type FuzzingReturn = {
     amountOfOptimized: number
 };
 
-const pseudoCollection = mingoCollectionCreator();
-
 /**
  * randomly generates queries and events
  * and returns on the first broken one

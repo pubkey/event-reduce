@@ -86,7 +86,7 @@ async function run() {
                 const truthTable: StateActionIdMap = objectToMap(
                     readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
                 );
-                const result = await fuzzing(
+                const result = fuzzing(
                     truthTable,
                     20, // queries
                     20 // events
@@ -104,16 +104,19 @@ async function run() {
             (async function iterativeFuzzing() {
                 let lastErrorFoundTime = new Date().getTime();
 
-                const truthTable: StateActionIdMap = objectToMap(
-                    readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
-                );
                 const queries = getQueryVariations();
                 const procedures = getTestProcedures();
                 let totalAmountOfHandled = 0;
                 let totalAmountOfOptimized = 0;
 
-                while (true) {
+                function loadTruthTable(): StateActionIdMap {
+                    return objectToMap(
+                        readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
+                    );
+                }
+                let truthTable: StateActionIdMap = loadTruthTable();
 
+                while (true) {
                     let fuzzingFoundError = false;
                     let fuzzingCount = 0;
                     while (!fuzzingFoundError) {
@@ -121,11 +124,22 @@ async function run() {
                         console.log('#'.repeat(20));
                         console.log('run fuzzing() #' + fuzzingCount);
 
+                        /**
+                         * Here we read in the truth table at each iteration.
+                         * This makes it easy to run the fuzzing in parallel in multiple
+                         * processes and an update to the truth table is propagated to the other processes.
+                         * Implementing parallel fuzzing otherwise would be another point of failure.
+                         * In the beginning of the fuzzing it might be overwrite each other multiple times
+                         * but at later points it will less likely find new state-sets and in total
+                         * we can test more random event-query spaces at the same time.
+                         */
+                        truthTable = loadTruthTable();
+
                         //                    const indexOfRunAgain = orderedActionList.indexOf('runFullQueryAgain');
                         //                      const map: StateActionIdMap = new Map();
                         //                        map.get = () => indexOfRunAgain;
 
-                        const result = await fuzzing(
+                        const result = fuzzing(
                             truthTable,
                             40, // queries
                             20 // events
@@ -162,7 +176,7 @@ async function run() {
                     }
 
                     // update table with fuzzing result
-                    await generateTruthTable({
+                    generateTruthTable({
                         table: truthTable,
                         queries,
                         procedures,
