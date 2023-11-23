@@ -382,7 +382,7 @@ describe('generated-stuff.test.ts', () => {
                 keyDocumentMap
             );
 
-            await collection.upsert(updatedDoc)
+            await collection.upsert(updatedDoc);
             const expectedResults = await collection.query(query);
 
             assert.deepEqual(actualResultsFromMap, expectedResults);
