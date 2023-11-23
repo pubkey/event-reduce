@@ -324,7 +324,7 @@ describe('generated-stuff.test.ts', () => {
                 _id: '3',
                 location: 'inbox',
                 lastMoved: 50,
-            }
+            };
 
             const startResult: Doc[] = [
                 {

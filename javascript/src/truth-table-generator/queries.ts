@@ -186,7 +186,7 @@ export function randomSelector() {
             [randomOperation()]: randomNumber(1, HUMAN_MAX_AGE)
         };
         if (randomBoolean()) {
-            selector.age[randomOperation()] = randomNumber(1, HUMAN_MAX_AGE)
+            selector.age[randomOperation()] = randomNumber(1, HUMAN_MAX_AGE);
         }
     }
     if (randomBoolean()) {
@@ -194,7 +194,7 @@ export function randomSelector() {
             [randomOperation()]: randomOfArray(['f', 'm', 'x'])
         };
         if (randomBoolean()) {
-            selector.gender[randomOperation()] = randomOfArray(['f', 'm', 'x'])
+            selector.gender[randomOperation()] = randomOfArray(['f', 'm', 'x']);
         }
     }
     if (randomBoolean()) {
@@ -202,7 +202,7 @@ export function randomSelector() {
             [randomOperation()]: randomString(10)
         };
         if (randomBoolean()) {
-            selector.name[randomOperation()] = randomString(10)
+            selector.name[randomOperation()] = randomString(10);
         }
     }
     return selector;
