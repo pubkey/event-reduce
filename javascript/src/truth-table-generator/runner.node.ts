@@ -160,14 +160,16 @@ async function run() {
 
                         const percentage = (totalAmountOfOptimized / totalAmountOfHandled) * 100;
                         const rounded = percentage.toFixed(2);
-                        console.log(
-                            'optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled +
-                            ' which is ' + rounded + '%'
-                        );
 
-                        const lastErrorAgo = new Date().getTime() - lastErrorFoundTime;
-                        const lastErrorHours = lastErrorAgo / 1000 / 60 / 60;
-                        console.log('Last error found ' + roundToTwoDecimals(lastErrorHours) + 'hours ago');
+                        if (fuzzingCount % 10 === 0) {
+                            console.log(
+                                'optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled +
+                                ' which is ' + rounded + '%'
+                            );
+                            const lastErrorAgo = new Date().getTime() - lastErrorFoundTime;
+                            const lastErrorHours = lastErrorAgo / 1000 / 60 / 60;
+                            console.log('Last error found ' + roundToTwoDecimals(lastErrorHours) + 'hours ago');
+                        }
 
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
