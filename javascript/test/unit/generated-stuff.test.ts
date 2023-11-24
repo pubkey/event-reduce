@@ -322,7 +322,7 @@ describe('generated-stuff.test.ts', () => {
                     _id: '1',
                     location: 'inbox',
                     lastMoved: 50,
-                }
+                };
 
                 const allDocs: Doc[] = [
                     originalDoc,
@@ -392,7 +392,7 @@ describe('generated-stuff.test.ts', () => {
                 );
 
                 // Update the original document (id=1) to now be in the query results
-                await collection.upsert(updatedDoc)
+                await collection.upsert(updatedDoc);
                 const expectedResults = await collection.query(query);
 
                 assert.deepEqual(actualResultsFromMap, expectedResults);
@@ -432,7 +432,7 @@ describe('generated-stuff.test.ts', () => {
                 assert.strictEqual(actualResultsFromMap.length, 2);
 
                 // Update the original document (id=1) to now be in the query results
-                await collection.upsert(updatedDoc)
+                await collection.upsert(updatedDoc);
                 const expectedResults = await collection.query(query);
                 console.log(actionName, actualResultsFromMap, expectedResults);
                 assert.deepEqual(actualResultsFromMap, expectedResults);
@@ -478,7 +478,7 @@ describe('generated-stuff.test.ts', () => {
                 console.dir(actualResultsFromMap);
 
                 // Update the original document (id=1) to push all query results down
-                await collection.upsert(updatedDoc)
+                await collection.upsert(updatedDoc);
                 const expectedResults = await collection.query(query);
                 console.log('expectedResults:');
                 console.dir(expectedResults);
