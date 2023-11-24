@@ -39,7 +39,6 @@ jobs:
         working-directory: ./javascript
         run: |
           npm install
-          npm run lint
           npm run build
 
       - name: javascript tests
@@ -54,3 +53,5 @@ jobs:
           npm install
           npm run lint
           npm run build
+
+      - run: npm run lint
