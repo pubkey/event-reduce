@@ -57,7 +57,8 @@
     "iterative-fuzzing:4": "npm run iterative-fuzzing",
     "iterative-fuzzing:5": "npm run iterative-fuzzing",
     "iterative-fuzzing:6": "npm run iterative-fuzzing",
-    "iterative-fuzzing:7": "npm run iterative-fuzzing"
+    "iterative-fuzzing:7": "npm run iterative-fuzzing",
+    "iterative-fuzzing:8": "npm run iterative-fuzzing"
   },
   "author": "pubkey",
   "devDependencies": {

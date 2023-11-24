@@ -120,14 +120,18 @@ async function run() {
                 while (true) {
                     let fuzzingFoundError = false;
                     let fuzzingCount = 0;
+
                     while (!fuzzingFoundError) {
                         fuzzingCount++;
-                        console.log('#'.repeat(20));
-                        console.log('run fuzzing() #' + fuzzingCount);
-                        console.dir({
-                            startTruthTableEntries,
-                            currentTruthTableEntries: truthTable.size
-                        });
+
+                        if (fuzzingCount % 10 === 0) {
+                            console.log('#'.repeat(20));
+                            console.log('run fuzzing() #' + fuzzingCount);
+                            console.dir({
+                                startTruthTableEntries,
+                                currentTruthTableEntries: truthTable.size
+                            });
+                        }
 
                         /**
                          * Here we read in the truth table at each iteration.
