@@ -464,26 +464,15 @@ describe('generated-stuff.test.ts', () => {
                     changeEvent
                 };
 
-                // Right now, this incorrectly returns insertLast, when it should be an insertFirst
+                /**
+                 * Must trigger runFullQueryAgain because
+                 * from the previousResults (Id 4+5) and the event (id=1),
+                 * it will not know about the document with id=3,
+                 * so it has to fatch that from the storage.
+                 * https://github.com/pubkey/event-reduce/issues/444#issuecomment-1824994165
+                 */
                 const actionName = calculateActionName(input);
-                console.log('actionName: ' + actionName);
-                const actualResultsFromMap = runAction(
-                    actionName,
-                    collection.getQueryParams(query),
-                    changeEvent,
-                    previousResults,
-                    keyDocumentMap
-                );
-                console.log('actualResultsFromMap:');
-                console.dir(actualResultsFromMap);
-
-                // Update the original document (id=1) to push all query results down
-                await collection.upsert(updatedDoc);
-                const expectedResults = await collection.query(query);
-                console.log('expectedResults:');
-                console.dir(expectedResults);
-                console.log(actionName, actualResultsFromMap, expectedResults);
-                assert.deepEqual(actualResultsFromMap, expectedResults);
+                assert.strictEqual(actionName, 'runFullQueryAgain');
             });
         });
     });
