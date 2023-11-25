@@ -30,11 +30,7 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      # install npm deps
-      - name: install all packages
-        run: npm install
-
-      - name: javascript implementation
+      - name: javascript implementation install & build
         working-directory: ./javascript
         run: |
           npm install
