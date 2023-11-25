@@ -120,7 +120,7 @@ async function getBetterBdd(a, b, perfMeasurement, queries, procedures) {
 }
 exports.getBetterBdd = getBetterBdd;
 const pseudoCollection = (0, mingo_js_1.mingoCollectionCreator)();
-async function countFunctionUsages(bdd, queries, procedures) {
+function countFunctionUsages(bdd, queries, procedures) {
     const ret = {};
     index_js_1.orderedStateList.forEach(stateName => ret[stateName] = 0);
     const countingResolvers = {};
@@ -144,7 +144,7 @@ async function countFunctionUsages(bdd, queries, procedures) {
                 const res = collection.query(query);
                 resultsBefore.set(query, res);
             });
-            await (0, index_js_2.applyChangeEvent)(collection, changeEvent);
+            (0, index_js_2.applyChangeEvent)(collection, changeEvent);
             for (const query of queries) {
                 const params = queryParamsByQuery.get(query);
                 const previousResults = resultsBefore.get(query);
@@ -165,9 +165,9 @@ exports.countFunctionUsages = countFunctionUsages;
  * the higher the better
  */
 exports.QUALITY_BY_BDD_CACHE = new WeakMap();
-async function getQualityOfBdd(bdd, perfMeasurement, queries, procedures) {
+function getQualityOfBdd(bdd, perfMeasurement, queries, procedures) {
     if (!exports.QUALITY_BY_BDD_CACHE.has(bdd)) {
-        const usageCount = await countFunctionUsages(bdd, queries, procedures);
+        const usageCount = countFunctionUsages(bdd, queries, procedures);
         let totalTime = 0;
         Object.entries(usageCount).forEach(entry => {
             const stateName = entry[0];

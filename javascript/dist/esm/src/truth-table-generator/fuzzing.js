@@ -5,14 +5,13 @@ import { orderedActionList } from '../actions/index.js';
 import { doesActionWork } from './index.js';
 import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
-const pseudoCollection = mingoCollectionCreator();
 /**
  * randomly generates queries and events
  * and returns on the first broken one
  *
  * returns ok:true if no problem was found
  */
-export async function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
+export function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
     let amountOfHandled = 0;
     let amountOfOptimized = 0;
     const queries = new Array(queriesAmount)

@@ -13,4 +13,4 @@ export type FuzzingReturn = {
  *
  * returns ok:true if no problem was found
  */
-export declare function fuzzing(table: StateActionIdMap, queriesAmount?: number, eventsAmount?: number): Promise<FuzzingReturn>;
+export declare function fuzzing(table: StateActionIdMap, queriesAmount?: number, eventsAmount?: number): FuzzingReturn;

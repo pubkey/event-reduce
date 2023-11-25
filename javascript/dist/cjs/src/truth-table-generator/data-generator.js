@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = exports.HUMAN_MAX_AGE = void 0;
+exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.mutateFieldFunctions = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = exports.HUMAN_MAX_AGE = void 0;
 const util_js_1 = require("../util.js");
 const mingo_js_1 = require("./database/mingo.js");
 const index_js_1 = require("./database/index.js");
@@ -31,15 +31,20 @@ function randomHumans(amount = 0, partial) {
     return new Array(amount).fill(0).map(() => randomHuman(partial));
 }
 exports.randomHumans = randomHumans;
-const keyToChangeFn = {
-    1: (i) => i.name = (0, async_test_util_1.randomString)(10),
-    2: (i) => i.gender = (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
-    3: (i) => i.age = (0, async_test_util_1.randomNumber)(1, exports.HUMAN_MAX_AGE)
+exports.mutateFieldFunctions = {
+    name: (i) => i.name = (0, async_test_util_1.randomString)(10),
+    gender: (i) => i.gender = (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
+    age: (i) => i.age = (0, async_test_util_1.randomNumber)(1, exports.HUMAN_MAX_AGE)
 };
+const changeableFields = Object.keys(exports.mutateFieldFunctions);
 function randomChangeHuman(input) {
     const cloned = Object.assign({}, input);
-    const field = (0, async_test_util_1.randomNumber)(1, 3);
-    keyToChangeFn[field](cloned);
+    // mutate up to all 3 random fields or no field at all
+    const amountOfFieldChanges = (0, async_test_util_1.randomNumber)(0, changeableFields.length);
+    new Array(amountOfFieldChanges).fill(0).forEach(() => {
+        const field = (0, util_js_1.randomOfArray)(changeableFields);
+        exports.mutateFieldFunctions[field](cloned);
+    });
     return cloned;
 }
 exports.randomChangeHuman = randomChangeHuman;

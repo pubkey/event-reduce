@@ -8,14 +8,13 @@ const index_js_2 = require("../actions/index.js");
 const index_js_3 = require("./index.js");
 const mingo_js_1 = require("./database/mingo.js");
 const index_js_4 = require("./database/index.js");
-const pseudoCollection = (0, mingo_js_1.mingoCollectionCreator)();
 /**
  * randomly generates queries and events
  * and returns on the first broken one
  *
  * returns ok:true if no problem was found
  */
-async function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
+function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
     let amountOfHandled = 0;
     let amountOfOptimized = 0;
     const queries = new Array(queriesAmount)

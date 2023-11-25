@@ -13,4 +13,6 @@ export declare const SORT_VARIATION: {
 }[];
 export declare const QUERIES_FROM_FUZZING: MongoQuery[];
 export declare function getQueryVariations(): MongoQuery[];
+export declare function randomOperation(): string;
+export declare function randomSelector(): any;
 export declare function randomQuery(): MongoQuery;

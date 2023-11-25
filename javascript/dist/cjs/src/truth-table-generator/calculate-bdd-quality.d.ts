@@ -20,10 +20,10 @@ export declare function getBetterBdd(a: RootNode, b: RootNode, perfMeasurement: 
 export type FunctionUsageCount = {
     [k in StateName]: number;
 };
-export declare function countFunctionUsages(bdd: RootNode, queries: MongoQuery[], procedures: Procedure[]): Promise<FunctionUsageCount>;
+export declare function countFunctionUsages(bdd: RootNode, queries: MongoQuery[], procedures: Procedure[]): FunctionUsageCount;
 /**
  * returns the quality of the BDD,
  * the higher the better
  */
 export declare const QUALITY_BY_BDD_CACHE: WeakMap<RootNode, number>;
-export declare function getQualityOfBdd(bdd: RootNode, perfMeasurement: PerformanceMeasurement, queries: MongoQuery[], procedures: Procedure[]): Promise<number>;
+export declare function getQualityOfBdd(bdd: RootNode, perfMeasurement: PerformanceMeasurement, queries: MongoQuery[], procedures: Procedure[]): number;

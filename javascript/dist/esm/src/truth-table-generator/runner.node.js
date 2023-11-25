@@ -8,7 +8,7 @@ import { mapToObject, objectToMap, roundToTwoDecimals } from '../util.js';
 import { readJsonFile, writeJsonFile } from './util.js';
 import { fuzzing } from './fuzzing.js';
 import { writeBddTemplate } from '../bdd/write-bdd-template.js';
-import { measurePerformanceOfStateFunctions, getBetterBdd, QUALITY_BY_BDD_CACHE } from './calculate-bdd-quality.js';
+import { measurePerformanceOfStateFunctions, getBetterBdd, getQualityOfBdd } from './calculate-bdd-quality.js';
 /**
  * sort object attributes
  * @link https://stackoverflow.com/a/39442287
@@ -49,7 +49,7 @@ async function run() {
         case 'fuzzing':
             (async function fuzz() {
                 const truthTable = objectToMap(readJsonFile(OUTPUT_TRUTH_TABLE_PATH));
-                const result = await fuzzing(truthTable, 20, // queries
+                const result = fuzzing(truthTable, 20, // queries
                 20 // events
                 );
                 console.dir(result);
@@ -62,33 +62,57 @@ async function run() {
         case 'iterative-fuzzing':
             (async function iterativeFuzzing() {
                 let lastErrorFoundTime = new Date().getTime();
-                const truthTable = objectToMap(readJsonFile(OUTPUT_TRUTH_TABLE_PATH));
                 const queries = getQueryVariations();
                 const procedures = getTestProcedures();
                 let totalAmountOfHandled = 0;
                 let totalAmountOfOptimized = 0;
+                function loadTruthTable() {
+                    return objectToMap(readJsonFile(OUTPUT_TRUTH_TABLE_PATH));
+                }
+                let truthTable = loadTruthTable();
+                const startTruthTableEntries = truthTable.size;
                 while (true) {
                     let fuzzingFoundError = false;
                     let fuzzingCount = 0;
                     while (!fuzzingFoundError) {
                         fuzzingCount++;
-                        console.log('#'.repeat(20));
-                        console.log('run fuzzing() #' + fuzzingCount);
+                        if (fuzzingCount % 10 === 0) {
+                            console.log('#'.repeat(20));
+                            console.log('run fuzzing() #' + fuzzingCount);
+                            console.dir({
+                                startTruthTableEntries,
+                                currentTruthTableEntries: truthTable.size
+                            });
+                        }
+                        /**
+                         * Here we read in the truth table at each iteration.
+                         * This makes it easy to run the fuzzing in parallel in multiple
+                         * processes and an update to the truth table is propagated to the other processes.
+                         * Implementing parallel fuzzing otherwise would be another point of failure.
+                         * In the beginning of the fuzzing it might be overwrite each other multiple times
+                         * but at later points it will less likely find new state-sets and in total
+                         * we can test more random event-query spaces at the same time.
+                         * Also the operating system will anyway in-memory cache the truth-table.json file
+                         * and serve it very fast.
+                         */
+                        truthTable = loadTruthTable();
                         //                    const indexOfRunAgain = orderedActionList.indexOf('runFullQueryAgain');
                         //                      const map: StateActionIdMap = new Map();
                         //                        map.get = () => indexOfRunAgain;
-                        const result = await fuzzing(truthTable, 40, // queries
+                        const result = fuzzing(truthTable, 40, // queries
                         20 // events
                         );
                         totalAmountOfHandled = totalAmountOfHandled + result.amountOfHandled;
                         totalAmountOfOptimized = totalAmountOfOptimized + result.amountOfOptimized;
                         const percentage = (totalAmountOfOptimized / totalAmountOfHandled) * 100;
                         const rounded = percentage.toFixed(2);
-                        console.log('optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled +
-                            ' which is ' + rounded + '%');
-                        const lastErrorAgo = new Date().getTime() - lastErrorFoundTime;
-                        const lastErrorHours = lastErrorAgo / 1000 / 60 / 60;
-                        console.log('Last error found ' + roundToTwoDecimals(lastErrorHours) + 'hours ago');
+                        if (fuzzingCount % 10 === 0) {
+                            console.log('optimized ' + totalAmountOfOptimized + ' of ' + totalAmountOfHandled +
+                                ' which is ' + rounded + '%');
+                            const lastErrorAgo = new Date().getTime() - lastErrorFoundTime;
+                            const lastErrorHours = lastErrorAgo / 1000 / 60 / 60;
+                            console.log('Last error found ' + roundToTwoDecimals(lastErrorHours) + 'hours ago');
+                        }
                         if (result.ok === false) {
                             console.log('fuzzingFoundError');
                             lastErrorFoundTime = new Date().getTime();
@@ -103,7 +127,7 @@ async function run() {
                         }
                     }
                     // update table with fuzzing result
-                    await generateTruthTable({
+                    generateTruthTable({
                         table: truthTable,
                         queries,
                         procedures,
@@ -150,6 +174,9 @@ async function run() {
                 const perfMeasurement = await measurePerformanceOfStateFunctions(10000);
                 console.log('state function performance:');
                 console.dir(perfMeasurement);
+                function getQuality(bdd) {
+                    return getQualityOfBdd(bdd, perfMeasurement, getQueryVariations(), getTestProcedures());
+                }
                 await optimizeBruteForce({
                     truthTable,
                     iterations: 10000000,
@@ -160,23 +187,28 @@ async function run() {
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
                         if (currentBest) {
                             console.log('current best bdd has ' + currentBest.countNodes() + ' nodes ' +
-                                'and a quality of ' + QUALITY_BY_BDD_CACHE.get(currentBest));
+                                'and a quality of ' + getQuality(currentBest) + ' ' +
+                                'while newly tested one has quality of ' + getQuality(bdd));
+                        }
+                        else {
+                            currentBest = bdd;
                         }
                     },
-                    compareResults: async (a, b) => {
-                        const betterOne = await getBetterBdd(a, b, perfMeasurement, getQueryVariations(), getTestProcedures());
+                    compareResults: (a, b) => {
+                        const betterOne = getBetterBdd(a, b, perfMeasurement, getQueryVariations(), getTestProcedures());
                         return betterOne;
                     },
                     onBetterBdd: async (res) => {
                         console.log('#'.repeat(100));
                         console.log('## Yeah! found better bdd ##');
                         lastBetterFoundTime = new Date().getTime();
-                        currentBest = res.bdd;
                         const bddMinimalString = bddToMinimalString(currentBest);
-                        const quality = QUALITY_BY_BDD_CACHE.get(currentBest);
+                        const quality = getQuality(currentBest);
                         console.log('nodes: ' + currentBest.countNodes());
-                        console.log('quality: ' + quality);
+                        console.log('quality(new): ' + quality);
+                        console.log('quality(old): ' + getQuality(currentBest));
                         console.log('new string: ' + bddMinimalString);
+                        currentBest = res.bdd;
                         writeBddTemplate(bddMinimalString);
                         console.log('-'.repeat(100));
                     },

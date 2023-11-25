@@ -26,15 +26,20 @@ STATIC_RANDOM_HUMAN._id = 'static_random_human';
 export function randomHumans(amount = 0, partial) {
     return new Array(amount).fill(0).map(() => randomHuman(partial));
 }
-const keyToChangeFn = {
-    1: (i) => i.name = randomString(10),
-    2: (i) => i.gender = randomBoolean() ? 'f' : 'm',
-    3: (i) => i.age = randomNumber(1, HUMAN_MAX_AGE)
+export const mutateFieldFunctions = {
+    name: (i) => i.name = randomString(10),
+    gender: (i) => i.gender = randomBoolean() ? 'f' : 'm',
+    age: (i) => i.age = randomNumber(1, HUMAN_MAX_AGE)
 };
+const changeableFields = Object.keys(mutateFieldFunctions);
 export function randomChangeHuman(input) {
     const cloned = Object.assign({}, input);
-    const field = randomNumber(1, 3);
-    keyToChangeFn[field](cloned);
+    // mutate up to all 3 random fields or no field at all
+    const amountOfFieldChanges = randomNumber(0, changeableFields.length);
+    new Array(amountOfFieldChanges).fill(0).forEach(() => {
+        const field = randomOfArray(changeableFields);
+        mutateFieldFunctions[field](cloned);
+    });
     return cloned;
 }
 export function randomChangeEvent(allDocs, favor) {
