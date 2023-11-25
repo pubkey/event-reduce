@@ -28,7 +28,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v4
         with:
-          node-version: "14.x"
+          node-version-file: ".nvmrc"
 
       # install npm deps
       - name: install all packages
@@ -38,7 +38,6 @@ jobs:
         working-directory: ./javascript
         run: |
           npm install
-          npm run lint
           npm run build
 
       - name: javascript tests
@@ -59,3 +58,5 @@ jobs:
         with:
           working-directory: ./examples/browser
           run: npm run test
+
+      - run: npm run lint
