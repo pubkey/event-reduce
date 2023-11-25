@@ -3,7 +3,6 @@ export * from './change-event.js';
 export * from './mongo.js';
 
 export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
-export type UNKNOWN = 'UNKNOWN';
 
 export type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
 
@@ -33,7 +32,6 @@ export type StateName =
     'isInsert' |
     'isUpdate' |
     'wasResultsEmpty' |
-    'previousUnknown' |
     'wasLimitReached' |
     'sortParamsChanged' |
     'wasInResult' |

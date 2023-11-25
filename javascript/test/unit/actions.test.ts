@@ -10,9 +10,11 @@ import {
     ResultKeyDocumentMap
 } from '../../src/types/index.js';
 import { randomChangeEvent, randomHuman, randomHumans } from '../../src/truth-table-generator/data-generator.js';
-import { getQueryParamsByMongoQuery } from '../../src/truth-table-generator/minimongo-helper.js';
 import { Human } from '../../src/truth-table-generator/types.js';
 import { insertFirst, insertLast, removeExisting, insertAtSortPosition } from '../../src/actions/action-functions.js';
+import { mingoCollectionCreator } from '../../src/truth-table-generator/database/mingo.js';
+
+const pseudoCollection = mingoCollectionCreator();
 
 export function docsToMap<DocType>(
     primary: string,
@@ -83,7 +85,7 @@ describe('actions.test.ts', () => {
                         previousResults: [],
                         changeEvent: randomChangeEvent([], 'INSERT'),
                         keyDocumentMap: new Map(),
-                        queryParams: getQueryParamsByMongoQuery({
+                        queryParams: pseudoCollection.getQueryParams({
                             selector: {},
                             sort: ['_id']
                         })
@@ -102,7 +104,7 @@ describe('actions.test.ts', () => {
                     id: insertMe._id,
                     previous: null
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['_id']
                 })
@@ -123,7 +125,7 @@ describe('actions.test.ts', () => {
                     id: insertMe._id,
                     previous: null
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['_id']
                 })
@@ -144,7 +146,7 @@ describe('actions.test.ts', () => {
                     id: deleteMe._id,
                     previous: deleteMe
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['_id']
                 })
@@ -164,7 +166,7 @@ describe('actions.test.ts', () => {
                     id: insertMe._id,
                     previous: null
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['_id']
                 })
@@ -184,7 +186,7 @@ describe('actions.test.ts', () => {
                     id: insertMe._id,
                     previous: null
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['age', '_id']
                 })
@@ -209,7 +211,7 @@ describe('actions.test.ts', () => {
                     id: insertMe._id,
                     previous: null
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['name', 'age', '_id']
                 })
@@ -235,7 +237,7 @@ describe('actions.test.ts', () => {
                     id: insertMe._id,
                     previous: null
                 },
-                queryParams: getQueryParamsByMongoQuery({
+                queryParams: pseudoCollection.getQueryParams({
                     selector: {},
                     sort: ['name', 'age', '_id']
                 })

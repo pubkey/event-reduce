@@ -1,11 +1,8 @@
 import type {
-    StateResolveFunctionInput,
-    UNKNOWN,
     MongoQuery,
     DeepReadonlyObject
 } from './types/index.js';
 
-export const UNKNOWN_VALUE: UNKNOWN = 'UNKNOWN';
 
 export function lastOfArray<T>(ar: T[]): T {
     return ar[ar.length - 1];
@@ -20,32 +17,6 @@ export function randomOfArray<T>(items: T[]): T {
 
 export function shuffleArray<T>(arr: T[]): T[] {
     return arr.slice().sort(() => (Math.random() - 0.5));
-}
-
-/**
- * if the previous doc-data is unknown,
- * try to get it from previous results
- * @mutate the changeEvent of input
- */
-export function tryToFillPreviousDoc<DocType>(
-    input: StateResolveFunctionInput<DocType>
-) {
-    const prev = input.changeEvent.previous;
-    if (prev === UNKNOWN_VALUE) {
-        const id = input.changeEvent.id;
-        const primary = input.queryParams.primaryKey;
-        if (input.keyDocumentMap) {
-            const doc = input.keyDocumentMap.get(id);
-            if (doc) {
-                input.changeEvent.previous = doc;
-            }
-        } else {
-            const found = input.previousResults.find(item => (item as any)[primary] === id);
-            if (found) {
-                input.changeEvent.previous = found;
-            }
-        }
-    }
 }
 
 /**

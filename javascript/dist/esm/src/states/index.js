@@ -1,4 +1,4 @@
-import { hasLimit, isFindOne, hasSkip, wasResultsEmpty, isDelete, isInsert, isUpdate, previousUnknown, wasLimitReached, sortParamsChanged, wasInResult, wasFirst, wasLast, wasSortedBeforeFirst, wasSortedAfterLast, isSortedBeforeFirst, isSortedAfterLast, wasMatching, doesMatchNow } from './state-resolver.js';
+import { hasLimit, isFindOne, hasSkip, wasResultsEmpty, isDelete, isInsert, isUpdate, wasLimitReached, sortParamsChanged, wasInResult, wasFirst, wasLast, wasSortedBeforeFirst, wasSortedAfterLast, isSortedBeforeFirst, isSortedAfterLast, wasMatching, doesMatchNow } from './state-resolver.js';
 export * from './state-resolver.js';
 /**
  * all states ordered by performance-cost
@@ -13,7 +13,6 @@ export const orderedStateList = [
     'isFindOne',
     'hasSkip',
     'wasResultsEmpty',
-    'previousUnknown',
     'wasLimitReached',
     'wasFirst',
     'wasLast',
@@ -34,7 +33,6 @@ export const stateResolveFunctions = {
     isFindOne,
     hasSkip,
     wasResultsEmpty,
-    previousUnknown,
     wasLimitReached,
     wasFirst,
     wasLast,
@@ -55,18 +53,17 @@ export const stateResolveFunctionByIndex = {
     4: isFindOne,
     5: hasSkip,
     6: wasResultsEmpty,
-    7: previousUnknown,
-    8: wasLimitReached,
-    9: wasFirst,
-    10: wasLast,
-    11: sortParamsChanged,
-    12: wasInResult,
-    13: wasSortedBeforeFirst,
-    14: wasSortedAfterLast,
-    15: isSortedBeforeFirst,
-    16: isSortedAfterLast,
-    17: wasMatching,
-    18: doesMatchNow
+    7: wasLimitReached,
+    8: wasFirst,
+    9: wasLast,
+    10: sortParamsChanged,
+    11: wasInResult,
+    12: wasSortedBeforeFirst,
+    13: wasSortedAfterLast,
+    14: isSortedBeforeFirst,
+    15: isSortedAfterLast,
+    16: wasMatching,
+    17: doesMatchNow
 };
 export function resolveState(stateName, input) {
     const fn = stateResolveFunctions[stateName];

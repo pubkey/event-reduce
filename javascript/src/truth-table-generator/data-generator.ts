@@ -1,6 +1,3 @@
-import { faker } from '@faker-js/faker';
-
-
 import type {
   Human,
   Procedure
@@ -8,26 +5,23 @@ import type {
 import type {
   ChangeEvent
 } from '../../src/types/index.js';
-import {
-  getMinimongoCollection,
-  minimongoFind,
-  applyChangeEvent
-} from './minimongo-helper.js';
-import { UNKNOWN_VALUE } from './config.js';
 import { randomOfArray } from '../util.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
+import { randomBoolean, randomNumber, randomString } from 'async-test-util';
 
 /**
- * Set a seed to ensure we create deterministic and testable
- * test data.
+ * Do not use a too height value
+ * so that it more often triggers sort changes.
  */
-faker.seed(2345);
+export const HUMAN_MAX_AGE = 20;
 
 export function randomHuman(partial?: Partial<Human>): Human {
   const ret: Human = {
-    _id: (faker.number.int(1000) + '').padStart(5, '0'),
-    name: faker.person.firstName().toLowerCase(),
-    gender: faker.datatype.boolean() ? 'f' : 'm',
-    age: faker.number.int({ min: 1, max: 100 })
+    _id: randomString(10),
+    name: randomString(10),
+    gender: randomBoolean() ? 'f' : 'm',
+    age: randomNumber(1, HUMAN_MAX_AGE)
   };
   if (partial) {
     Object.entries(partial).forEach(([k, v]) => {
@@ -46,17 +40,22 @@ export function randomHumans(amount = 0, partial?: Partial<Human>): Human[] {
 }
 
 
-const keyToChangeFn = {
-  1: (i: Human) => i.name = faker.person.firstName().toLowerCase(),
-  2: (i: Human) => i.gender = faker.datatype.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = faker.number.int({ min: 1, max: 100 })
+export const mutateFieldFunctions: { [k: string]: (i: Human) => void } = {
+  name: (i: Human) => i.name = randomString(10),
+  gender: (i: Human) => i.gender = randomBoolean() ? 'f' : 'm',
+  age: (i: Human) => i.age = randomNumber(1, HUMAN_MAX_AGE)
 };
+const changeableFields = Object.keys(mutateFieldFunctions);
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = faker.number.int({ min: 1, max: 3 });
-  (keyToChangeFn as any)[field](cloned);
+  // mutate up to all 3 random fields or no field at all
+  const amountOfFieldChanges = randomNumber(0, changeableFields.length);
+  new Array(amountOfFieldChanges).fill(0).forEach(() => {
+    const field = randomOfArray(changeableFields);
+    mutateFieldFunctions[field](cloned);
+  });
 
   return cloned;
 }
@@ -93,7 +92,7 @@ export function randomChangeEvent(
       };
       break;
     case 'UPDATE':
-      const oldDoc = faker.helpers.arrayElement(allDocs);
+      const oldDoc = randomOfArray(allDocs);
       const changedDoc = randomChangeHuman(oldDoc);
       ret = {
         operation,
@@ -103,7 +102,7 @@ export function randomChangeEvent(
       };
       break;
     case 'DELETE':
-      const docToDelete: Human = faker.helpers.arrayElement(allDocs);
+      const docToDelete: Human = randomOfArray(allDocs);
       ret = {
         operation,
         id: docToDelete._id,
@@ -111,11 +110,6 @@ export function randomChangeEvent(
         previous: docToDelete
       };
       break;
-  }
-
-  // randomly set previous to UNKNOWN
-  if (ret.previous && faker.datatype.boolean()) {
-    ret.previous = UNKNOWN_VALUE;
   }
 
   return ret;
@@ -127,9 +121,9 @@ export const randomEventsPrematureCalculation: {
   [amount: number]: Procedure;
 } = {};
 
-export async function getRandomChangeEvents(
+export function getRandomChangeEvents(
   amount: number = 100
-): Promise<Procedure> {
+): Procedure {
   if (randomEventsPrematureCalculation[amount]) {
     fillRandomEvents(amount);
     const ret = randomEventsPrematureCalculation[amount];
@@ -142,29 +136,27 @@ export async function getRandomChangeEvents(
 }
 
 export function fillRandomEvents(amount: number) {
-  setTimeout(async () => {
-    const newEvents = await _getRandomChangeEvents(amount);
-    randomEventsPrematureCalculation[amount] = newEvents;
-  }, 20);
+  const newEvents = _getRandomChangeEvents(amount);
+  randomEventsPrematureCalculation[amount] = newEvents;
 }
 
-export async function _getRandomChangeEvents(
+export function _getRandomChangeEvents(
   amount: number = 100
-): Promise<Procedure> {
+): Procedure {
   const ret: ChangeEvent<Human>[] = [];
   const half = Math.ceil(amount / 2);
-  const collection = getMinimongoCollection();
+  const collection = mingoCollectionCreator();
   let allDocs: Human[] = [];
 
   // in the first half, we do more inserts
   while (ret.length < half) {
     const changeEvent = randomChangeEvent(allDocs, 'INSERT');
     ret.push(changeEvent);
-    await applyChangeEvent(
+    applyChangeEvent(
       collection,
       changeEvent
     );
-    allDocs = await minimongoFind(collection, {
+    allDocs = collection.query({
       selector: {},
       sort: ['_id']
     });
@@ -174,11 +166,11 @@ export async function _getRandomChangeEvents(
   while (ret.length < amount) {
     const changeEvent = randomChangeEvent(allDocs, 'DELETE');
     ret.push(changeEvent);
-    await applyChangeEvent(
+    applyChangeEvent(
       collection,
       changeEvent
     );
-    allDocs = await minimongoFind(collection, {
+    allDocs = collection.query({
       selector: {},
       sort: ['_id']
     });

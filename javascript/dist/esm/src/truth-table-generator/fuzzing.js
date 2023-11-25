@@ -1,9 +1,11 @@
 import { randomQuery } from './queries.js';
 import { getRandomChangeEvents } from './data-generator.js';
-import { getMinimongoCollection, getQueryParamsByMongoQuery, minimongoFind, applyChangeEvent } from './minimongo-helper.js';
 import { getStateSet } from '../states/index.js';
 import { orderedActionList } from '../actions/index.js';
 import { doesActionWork } from './index.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
+const pseudoCollection = mingoCollectionCreator();
 /**
  * randomly generates queries and events
  * and returns on the first broken one
@@ -16,28 +18,28 @@ export async function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
     const queries = new Array(queriesAmount)
         .fill(0)
         .map(() => randomQuery());
-    const procedure = await getRandomChangeEvents(eventsAmount);
+    const procedure = getRandomChangeEvents(eventsAmount);
     const queryParamsByQuery = new Map();
+    const collection = mingoCollectionCreator();
     queries.forEach(query => {
-        queryParamsByQuery.set(query, getQueryParamsByMongoQuery(query));
+        queryParamsByQuery.set(query, collection.getQueryParams(query));
     });
-    const collection = getMinimongoCollection();
     const usedChangeEvents = [];
     for (const changeEvent of procedure) {
         usedChangeEvents.push(changeEvent);
         // get previous results
         const resultsBefore = new Map();
-        await Promise.all(queries.map(query => {
-            return minimongoFind(collection, query)
-                .then(res => resultsBefore.set(query, res));
-        }));
-        await applyChangeEvent(collection, changeEvent);
+        queries.forEach(query => {
+            const res = collection.query(query);
+            resultsBefore.set(query, res);
+        });
+        applyChangeEvent(collection, changeEvent);
         // get results after event
         const resultsAfter = new Map();
-        await Promise.all(queries.map(query => {
-            return minimongoFind(collection, query)
-                .then(res => resultsAfter.set(query, res));
-        }));
+        queries.forEach(query => {
+            const res = collection.query(query);
+            resultsAfter.set(query, res);
+        });
         // find action to generate after results
         for (const query of queries) {
             const params = queryParamsByQuery.get(query);

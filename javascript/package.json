@@ -44,16 +44,24 @@
     "build": "rimraf -r ./dist && npm run transpile && npm run transpile:es",
     "dry": "npm pack --dry-run",
     "test": "npm run build && mocha ./dist/cjs/test/unit/index.test.js --timeout 40000 --bail",
-    "dev": "mocha -r ts-node/register test/unit/index.test.ts  --watch --watch-extensions ts",
-    "generate-truth-table": "ts-node-esm ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
-    "test-fuzzing": "ts-node ./src/truth-table-generator/runner.node.ts fuzzing",
-    "iterative-fuzzing": "ts-node ./src/truth-table-generator/runner.node.ts iterative-fuzzing",
-    "create-bdd": "ts-node ./src/truth-table-generator/runner.node.ts create-bdd",
-    "optimize-bdd": "ts-node ./src/truth-table-generator/runner.node.ts optimize-bdd"
+    "dev": "mocha -r tsx/register test/unit/index.test.ts  --watch --watch-extensions ts",
+    "generate-truth-table": "tsx ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
+    "test-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts fuzzing",
+    "create-bdd": "tsx ./src/truth-table-generator/runner.node.ts create-bdd",
+    "optimize-bdd": "tsx ./src/truth-table-generator/runner.node.ts optimize-bdd",
+    "iterative-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing",
+    "fuzzing-parallel": "npm-run-all --parallel iterative-fuzzing:*",
+    "iterative-fuzzing:1": "npm run iterative-fuzzing",
+    "iterative-fuzzing:2": "npm run iterative-fuzzing",
+    "iterative-fuzzing:3": "npm run iterative-fuzzing",
+    "iterative-fuzzing:4": "npm run iterative-fuzzing",
+    "iterative-fuzzing:5": "npm run iterative-fuzzing",
+    "iterative-fuzzing:6": "npm run iterative-fuzzing",
+    "iterative-fuzzing:7": "npm run iterative-fuzzing",
+    "iterative-fuzzing:8": "npm run iterative-fuzzing"
   },
   "author": "pubkey",
   "devDependencies": {
-    "@faker-js/faker": "8.3.1",
     "@types/deep-equal": "1.0.4",
     "@types/mocha": "10.0.4",
     "@types/node": "20.9.2",
@@ -63,17 +71,18 @@
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "deep-equal": "2.2.3",
-    "minimongo": "6.16.0",
+    "mingo": "6.4.9",
     "mocha": "10.2.0",
+    "npm-run-all": "4.1.5",
     "pouchdb-selector-core": "8.0.1",
     "read-last-lines": "1.8.0",
     "rimraf": "3.0.2",
-    "ts-node": "10.9.1",
     "tslint": "6.1.3",
+    "tsx": "4.4.0",
     "typescript": "5.2.2"
   },
   "dependencies": {
     "array-push-at-sort-position": "4.0.1",
-    "binary-decision-diagram": "3.0.6"
+    "binary-decision-diagram": "3.1.0"
   }
 }

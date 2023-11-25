@@ -9,7 +9,7 @@ export declare const LIMIT_VARIATIONS: {
     limit: number | undefined;
 }[];
 export declare const SORT_VARIATION: {
-    sort: string[] | string[][];
+    sort: string[];
 }[];
 export declare const QUERIES_FROM_FUZZING: MongoQuery[];
 export declare function getQueryVariations(): MongoQuery[];

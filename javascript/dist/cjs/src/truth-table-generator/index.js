@@ -5,11 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.doesActionWork = exports.getNextWorkingAction = exports.incrementTruthTableActions = exports.generateTruthTable = void 0;
 const deep_equal_1 = __importDefault(require("deep-equal"));
-const minimongo_helper_js_1 = require("./minimongo-helper.js");
 const index_js_1 = require("../index.js");
 const index_js_2 = require("../actions/index.js");
 const index_js_3 = require("../states/index.js");
-async function generateTruthTable({ queries, procedures, table = new Map(), log = false }) {
+const mingo_js_1 = require("./database/mingo.js");
+const index_js_4 = require("./database/index.js");
+function generateTruthTable({ queries, procedures, table = new Map(), log = false }) {
     let done = false;
     while (!done) {
         let totalChanges = 0;
@@ -17,7 +18,7 @@ async function generateTruthTable({ queries, procedures, table = new Map(), log 
             if (log) {
                 console.log('generateTruthTable() next procedure with ' + procedure.length + ' events');
             }
-            const changes = await incrementTruthTableActions(table, queries, procedure, log);
+            const changes = incrementTruthTableActions(table, queries, procedure, log);
             totalChanges = totalChanges + changes;
         }
         if (totalChanges === 0) {
@@ -27,27 +28,27 @@ async function generateTruthTable({ queries, procedures, table = new Map(), log 
     return table;
 }
 exports.generateTruthTable = generateTruthTable;
-async function incrementTruthTableActions(table = new Map(), queries, procedure, log = false) {
+function incrementTruthTableActions(table = new Map(), queries, procedure, log = false) {
     if (log) {
         console.log('incrementTruthTableActions()');
     }
     let changesCount = 0;
     const queryParamsByQuery = new Map();
-    queries.forEach(async (query) => {
-        queryParamsByQuery.set(query, (0, minimongo_helper_js_1.getQueryParamsByMongoQuery)(query));
+    const collection = (0, mingo_js_1.mingoCollectionCreator)();
+    queries.forEach((query) => {
+        queryParamsByQuery.set(query, collection.getQueryParams(query));
     });
     const resultsBefore = new Map();
-    queries.forEach(async (query) => {
+    queries.forEach((query) => {
         resultsBefore.set(query, []);
     });
-    const collection = (0, minimongo_helper_js_1.getMinimongoCollection)();
     for (const changeEvent of procedure) {
-        await (0, minimongo_helper_js_1.applyChangeEvent)(collection, changeEvent);
+        (0, index_js_4.applyChangeEvent)(collection, changeEvent);
         // find action to generate after results
         for (const query of queries) {
             const params = queryParamsByQuery.get(query);
             const before = resultsBefore.get(query);
-            const after = await (0, minimongo_helper_js_1.minimongoFind)(collection, query);
+            const after = collection.query(query);
             const input = {
                 changeEvent,
                 previousResults: before.slice(),

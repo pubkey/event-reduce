@@ -17,19 +17,13 @@ import type {
 } from '../types/index.js';
 import {
     orderedStateList,
-    stateResolveFunctions,
-    stateResolveFunctionByIndex
+    stateResolveFunctions
 } from '../states/index.js';
-import {
-    getMinimongoCollection,
-    minimongoUpsert,
-    minimongoFind,
-    getQueryParamsByMongoQuery,
-    applyChangeEvent
-} from './minimongo-helper.js';
-import { randomHuman } from './data-generator.js';
-import type { Human, Procedure } from './types.d.ts';
+import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
+import type { Human, Procedure } from './types.d.js';
 import { flatClone, shuffleArray } from '../util.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 
 export type PerformanceMeasurement = {
     [k in StateName]: number // avg runtime in ms
@@ -42,8 +36,8 @@ const testQuery: MongoQuery = {
     selector: {
         gender: 'f',
         age: {
-            $gt: 21,
-            $lt: 80
+            $gt: 11,
+            $lt: 17
         }
     },
     skip: 1,
@@ -64,17 +58,19 @@ export async function measurePerformanceOfStateFunctions(
     const ret: PerformanceMeasurement = {} as any;
     orderedStateList.forEach(k => ret[k] = 0);
 
-    const collection = getMinimongoCollection();
+    const collection = mingoCollectionCreator();
     await Promise.all(
-        new Array(200).fill(0).map(() => minimongoUpsert(collection, randomHuman()))
+        new Array(200).fill(0).map(() => collection.upsert(randomHuman()))
     );
 
-    const previousResults = await minimongoFind(collection, testQuery);
+    const previousResults = await collection.query(testQuery);
+
     const keyDocumentMap: ResultKeyDocumentMap<Human> = new Map();
     previousResults.forEach(d => keyDocumentMap.set(d._id, d));
 
     const addDoc = randomHuman();
-    const queryParams = getQueryParamsByMongoQuery(testQuery);
+    const queryParams = collection.getQueryParams(testQuery);
+
     const insertStateInput: StateResolveFunctionInput<Human> = {
         queryParams,
         changeEvent: {
@@ -87,8 +83,11 @@ export async function measurePerformanceOfStateFunctions(
         keyDocumentMap
     };
 
+    if (!previousResults[2]) {
+        throw new Error('previousResults[2] not set');
+    }
     const changedDoc = flatClone(previousResults[2]);
-    changedDoc.age = 100;
+    changedDoc.age = HUMAN_MAX_AGE;
     changedDoc.name = 'alice';
     const updateStateInput: StateResolveFunctionInput<Human> = {
         queryParams,
@@ -115,6 +114,7 @@ export async function measurePerformanceOfStateFunctions(
         keyDocumentMap
 
     };
+    console.log('--- 2');
 
     let remainingRounds = rounds;
     while (remainingRounds > 0) {
@@ -170,11 +170,14 @@ export type FunctionUsageCount = {
     [k in StateName]: number;
 };
 
-export async function countFunctionUsages(
+
+const pseudoCollection = mingoCollectionCreator();
+
+export function countFunctionUsages(
     bdd: RootNode,
     queries: MongoQuery[],
     procedures: Procedure[]
-): Promise<FunctionUsageCount> {
+): FunctionUsageCount {
     const ret: FunctionUsageCount = {} as any;
     orderedStateList.forEach(stateName => ret[stateName] = 0);
 
@@ -191,24 +194,23 @@ export async function countFunctionUsages(
     queries.forEach(query => {
         queryParamsByQuery.set(
             query,
-            getQueryParamsByMongoQuery(query)
+            pseudoCollection.getQueryParams(query)
         );
     });
 
     for (const procedure of procedures) {
-        const collection = getMinimongoCollection();
+        const collection = mingoCollectionCreator();
         for (const changeEvent of procedure) {
 
             // get previous results
             const resultsBefore: Map<MongoQuery, Human[]> = new Map();
-            await Promise.all(
-                queries.map(query => {
-                    return minimongoFind(collection, query)
-                        .then(res => resultsBefore.set(query, res));
-                })
-            );
 
-            await applyChangeEvent(
+            queries.forEach(query => {
+                const res = collection.query(query);
+                resultsBefore.set(query, res);
+            });
+
+            applyChangeEvent(
                 collection,
                 changeEvent
             );
@@ -239,14 +241,14 @@ export async function countFunctionUsages(
  * the higher the better
  */
 export const QUALITY_BY_BDD_CACHE: WeakMap<RootNode, number> = new WeakMap();
-export async function getQualityOfBdd(
+export function getQualityOfBdd(
     bdd: RootNode,
     perfMeasurement: PerformanceMeasurement,
     queries: MongoQuery[],
     procedures: Procedure[]
-): Promise<number> {
+): number {
     if (!QUALITY_BY_BDD_CACHE.has(bdd)) {
-        const usageCount = await countFunctionUsages(bdd, queries, procedures);
+        const usageCount = countFunctionUsages(bdd, queries, procedures);
         let totalTime = 0;
         Object.entries(usageCount).forEach(entry => {
             const stateName: StateName = entry[0] as StateName;

@@ -11,15 +11,11 @@ import type {
     ActionFunctionInput,
     MongoQuery
 } from '../types/index.js';
-import {
-    getMinimongoCollection,
-    minimongoFind,
-    applyChangeEvent,
-    getQueryParamsByMongoQuery
-} from './minimongo-helper.js';
 import { runAction } from '../index.js';
 import { orderedActionList } from '../actions/index.js';
 import { getStateSet } from '../states/index.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 
 export interface GenerateTruthTableInput {
     queries: MongoQuery[];
@@ -28,12 +24,12 @@ export interface GenerateTruthTableInput {
     log?: boolean;
 }
 
-export async function generateTruthTable({
+export function generateTruthTable({
     queries,
     procedures,
     table = new Map(),
     log = false
-}: GenerateTruthTableInput): Promise<StateActionIdMap> {
+}: GenerateTruthTableInput): StateActionIdMap {
 
     let done = false;
     while (!done) {
@@ -42,7 +38,7 @@ export async function generateTruthTable({
             if (log) {
                 console.log('generateTruthTable() next procedure with ' + procedure.length + ' events');
             }
-            const changes = await incrementTruthTableActions(
+            const changes = incrementTruthTableActions(
                 table,
                 queries,
                 procedure,
@@ -58,33 +54,35 @@ export async function generateTruthTable({
     return table;
 }
 
-export async function incrementTruthTableActions(
+
+export function incrementTruthTableActions(
     table = new Map(),
     queries: MongoQuery[],
     procedure: Procedure,
     log: boolean = false
-): Promise<number> {
+): number {
     if (log) {
         console.log('incrementTruthTableActions()');
     }
     let changesCount = 0;
 
     const queryParamsByQuery: Map<MongoQuery, QueryParams<Human>> = new Map();
-    queries.forEach(async (query) => {
+
+    const collection = mingoCollectionCreator();
+    queries.forEach((query) => {
         queryParamsByQuery.set(
             query,
-            getQueryParamsByMongoQuery(query)
+            collection.getQueryParams(query)
         );
     });
     const resultsBefore: Map<MongoQuery, Human[]> = new Map();
-    queries.forEach(async (query) => {
+    queries.forEach((query) => {
         resultsBefore.set(query, []);
     });
 
-    const collection = getMinimongoCollection();
     for (const changeEvent of procedure) {
 
-        await applyChangeEvent(
+        applyChangeEvent(
             collection,
             changeEvent
         );
@@ -93,7 +91,7 @@ export async function incrementTruthTableActions(
         for (const query of queries) {
             const params = queryParamsByQuery.get(query) as QueryParams<Human>;
             const before = resultsBefore.get(query) as Human[];
-            const after = await minimongoFind(collection, query);
+            const after = collection.query(query);
             const input: ActionFunctionInput<Human> = {
                 changeEvent,
                 previousResults: before.slice(),

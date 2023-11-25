@@ -25,7 +25,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sortObject = void 0;
 const fs = __importStar(require("fs"));
-const faker_1 = require("@faker-js/faker");
 const binary_decision_diagram_1 = require("binary-decision-diagram");
 const config_js_1 = require("./config.js");
 const queries_js_1 = require("./queries.js");
@@ -90,12 +89,6 @@ async function run() {
         case 'iterative-fuzzing':
             (async function iterativeFuzzing() {
                 let lastErrorFoundTime = new Date().getTime();
-                /**
-                 * Reset the random seed!
-                 * When we restart the generating processes,
-                 * we do not want up to run with the same dataset again.
-                 */
-                faker_1.faker.seed(new Date().getTime());
                 const truthTable = (0, util_js_1.objectToMap)((0, util_js_2.readJsonFile)(config_js_1.OUTPUT_TRUTH_TABLE_PATH));
                 const queries = (0, queries_js_1.getQueryVariations)();
                 const procedures = (0, procedures_js_1.getTestProcedures)();
@@ -203,7 +196,7 @@ async function run() {
                     },
                     onBetterBdd: async (res) => {
                         console.log('#'.repeat(100));
-                        console.log('## found better bdd ##');
+                        console.log('## Yeah! found better bdd ##');
                         lastBetterFoundTime = new Date().getTime();
                         currentBest = res.bdd;
                         const bddMinimalString = (0, binary_decision_diagram_1.bddToMinimalString)(currentBest);

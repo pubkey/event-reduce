@@ -36,7 +36,6 @@ export type {
     StateResolveFunctionInput,
     StateSet,
     StateSetToActionMap,
-    UNKNOWN,
     WriteOperation
 } from './types/index.js';
 

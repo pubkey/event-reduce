@@ -1,17 +1,18 @@
 import { resolveWithSimpleBdd } from 'binary-decision-diagram';
 import { performanceNow } from 'async-test-util';
 import { orderedStateList, stateResolveFunctions } from '../states/index.js';
-import { getMinimongoCollection, minimongoUpsert, minimongoFind, getQueryParamsByMongoQuery, applyChangeEvent } from './minimongo-helper.js';
-import { randomHuman } from './data-generator.js';
+import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
 import { flatClone, shuffleArray } from '../util.js';
+import { mingoCollectionCreator } from './database/mingo.js';
+import { applyChangeEvent } from './database/index.js';
 // an 'average' query
 // used to measure performance
 const testQuery = {
     selector: {
         gender: 'f',
         age: {
-            $gt: 21,
-            $lt: 80
+            $gt: 11,
+            $lt: 17
         }
     },
     skip: 1,
@@ -28,13 +29,13 @@ const testQuery = {
 export async function measurePerformanceOfStateFunctions(rounds = 1000) {
     const ret = {};
     orderedStateList.forEach(k => ret[k] = 0);
-    const collection = getMinimongoCollection();
-    await Promise.all(new Array(200).fill(0).map(() => minimongoUpsert(collection, randomHuman())));
-    const previousResults = await minimongoFind(collection, testQuery);
+    const collection = mingoCollectionCreator();
+    await Promise.all(new Array(200).fill(0).map(() => collection.upsert(randomHuman())));
+    const previousResults = await collection.query(testQuery);
     const keyDocumentMap = new Map();
     previousResults.forEach(d => keyDocumentMap.set(d._id, d));
     const addDoc = randomHuman();
-    const queryParams = getQueryParamsByMongoQuery(testQuery);
+    const queryParams = collection.getQueryParams(testQuery);
     const insertStateInput = {
         queryParams,
         changeEvent: {
@@ -46,8 +47,11 @@ export async function measurePerformanceOfStateFunctions(rounds = 1000) {
         previousResults,
         keyDocumentMap
     };
+    if (!previousResults[2]) {
+        throw new Error('previousResults[2] not set');
+    }
     const changedDoc = flatClone(previousResults[2]);
-    changedDoc.age = 100;
+    changedDoc.age = HUMAN_MAX_AGE;
     changedDoc.name = 'alice';
     const updateStateInput = {
         queryParams,
@@ -71,6 +75,7 @@ export async function measurePerformanceOfStateFunctions(rounds = 1000) {
         previousResults,
         keyDocumentMap
     };
+    console.log('--- 2');
     let remainingRounds = rounds;
     while (remainingRounds > 0) {
         remainingRounds--;
@@ -109,6 +114,7 @@ export async function getBetterBdd(a, b, perfMeasurement, queries, procedures) {
         return b;
     }
 }
+const pseudoCollection = mingoCollectionCreator();
 export async function countFunctionUsages(bdd, queries, procedures) {
     const ret = {};
     orderedStateList.forEach(stateName => ret[stateName] = 0);
@@ -122,17 +128,17 @@ export async function countFunctionUsages(bdd, queries, procedures) {
     });
     const queryParamsByQuery = new Map();
     queries.forEach(query => {
-        queryParamsByQuery.set(query, getQueryParamsByMongoQuery(query));
+        queryParamsByQuery.set(query, pseudoCollection.getQueryParams(query));
     });
     for (const procedure of procedures) {
-        const collection = getMinimongoCollection();
+        const collection = mingoCollectionCreator();
         for (const changeEvent of procedure) {
             // get previous results
             const resultsBefore = new Map();
-            await Promise.all(queries.map(query => {
-                return minimongoFind(collection, query)
-                    .then(res => resultsBefore.set(query, res));
-            }));
+            queries.forEach(query => {
+                const res = collection.query(query);
+                resultsBefore.set(query, res);
+            });
             await applyChangeEvent(collection, changeEvent);
             for (const query of queries) {
                 const params = queryParamsByQuery.get(query);

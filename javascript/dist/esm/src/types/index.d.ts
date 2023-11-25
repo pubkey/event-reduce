@@ -2,11 +2,10 @@ import { ChangeEvent } from './change-event.js';
 export * from './change-event.js';
 export * from './mongo.js';
 export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
-export type UNKNOWN = 'UNKNOWN';
 export type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
 export type ActionName = 'doNothing' | 'insertFirst' | 'insertLast' | 'removeFirstItem' | 'removeLastItem' | 'removeFirstInsertLast' | 'removeLastInsertFirst' | 'removeFirstInsertFirst' | 'removeLastInsertLast' | 'removeExisting' | 'replaceExisting' | 'alwaysWrong' | // this should be optimised out by later steps
 'insertAtSortPosition' | 'removeExistingAndInsertAtSortPosition' | 'runFullQueryAgain' | 'unknownAction';
-export type StateName = 'hasLimit' | 'isFindOne' | 'hasSkip' | 'isDelete' | 'isInsert' | 'isUpdate' | 'wasResultsEmpty' | 'previousUnknown' | 'wasLimitReached' | 'sortParamsChanged' | 'wasInResult' | 'wasFirst' | 'wasLast' | 'wasSortedBeforeFirst' | 'wasSortedAfterLast' | 'isSortedAfterLast' | 'isSortedBeforeFirst' | 'wasMatching' | 'doesMatchNow';
+export type StateName = 'hasLimit' | 'isFindOne' | 'hasSkip' | 'isDelete' | 'isInsert' | 'isUpdate' | 'wasResultsEmpty' | 'wasLimitReached' | 'sortParamsChanged' | 'wasInResult' | 'wasFirst' | 'wasLast' | 'wasSortedBeforeFirst' | 'wasSortedAfterLast' | 'isSortedAfterLast' | 'isSortedBeforeFirst' | 'wasMatching' | 'doesMatchNow';
 export interface QueryParams<DocType> {
     primaryKey: string;
     sortFields: string[];

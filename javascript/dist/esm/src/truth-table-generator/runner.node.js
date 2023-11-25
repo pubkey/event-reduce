@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { faker } from '@faker-js/faker';
 import { createBddFromTruthTable, bddToMinimalString, fillTruthTable, optimizeBruteForce } from 'binary-decision-diagram';
 import { OUTPUT_FOLDER_PATH, OUTPUT_TRUTH_TABLE_PATH } from './config.js';
 import { getQueryVariations } from './queries.js';
@@ -63,12 +62,6 @@ async function run() {
         case 'iterative-fuzzing':
             (async function iterativeFuzzing() {
                 let lastErrorFoundTime = new Date().getTime();
-                /**
-                 * Reset the random seed!
-                 * When we restart the generating processes,
-                 * we do not want up to run with the same dataset again.
-                 */
-                faker.seed(new Date().getTime());
                 const truthTable = objectToMap(readJsonFile(OUTPUT_TRUTH_TABLE_PATH));
                 const queries = getQueryVariations();
                 const procedures = getTestProcedures();
@@ -176,7 +169,7 @@ async function run() {
                     },
                     onBetterBdd: async (res) => {
                         console.log('#'.repeat(100));
-                        console.log('## found better bdd ##');
+                        console.log('## Yeah! found better bdd ##');
                         lastBetterFoundTime = new Date().getTime();
                         currentBest = res.bdd;
                         const bddMinimalString = bddToMinimalString(currentBest);
