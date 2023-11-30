@@ -6,7 +6,11 @@ import {
     fillTruthTable,
     optimizeBruteForce,
     OptimisationResult,
-    RootNode
+    RootNode,
+    resolveWithSimpleBdd,
+    ResolverFunctions,
+    booleanStringToBoolean,
+    minimalStringToSimpleBdd
 } from 'binary-decision-diagram';
 
 import type { StateActionIdMap } from './types.js';
@@ -33,6 +37,7 @@ import {
     getBetterBdd,
     getQualityOfBdd
 } from './calculate-bdd-quality.js';
+import { orderedStateList } from '../states/index.js';
 
 /**
  * sort object attributes
@@ -47,6 +52,14 @@ export function sortObject<T>(obj: T): T {
             [k]: v
         }), {}) as T;
 }
+
+function loadTruthTable() {
+    const truthTable: TruthTable = objectToMap(
+        readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
+    );
+    return truthTable;
+}
+
 
 const unknownValueActionId: number = 42;
 
@@ -109,11 +122,6 @@ async function run() {
                 let totalAmountOfHandled = 0;
                 let totalAmountOfOptimized = 0;
 
-                function loadTruthTable(): StateActionIdMap {
-                    return objectToMap(
-                        readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
-                    );
-                }
                 let truthTable: StateActionIdMap = loadTruthTable();
                 const startTruthTableEntries = truthTable.size;
 
@@ -213,9 +221,7 @@ async function run() {
         case 'create-bdd':
             (async function createBdd() {
                 console.log('read table..');
-                const truthTable: TruthTable = objectToMap(
-                    readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
-                );
+                const truthTable = loadTruthTable();
                 console.log('table size: ' + truthTable.size);
 
                 // fill missing rows with unknown
@@ -226,6 +232,7 @@ async function run() {
                 );
 
                 console.log('create bdd..');
+
                 const bdd = createBddFromTruthTable(truthTable);
                 console.log('mimizing..');
                 console.log('remove unkown states..');
@@ -248,9 +255,7 @@ async function run() {
             (async function optimizeBdd() {
                 console.log('read table..');
                 let lastBetterFoundTime = new Date().getTime();
-                const truthTable: TruthTable = objectToMap(
-                    readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
-                );
+                const truthTable = loadTruthTable();
                 console.log('table size: ' + truthTable.size);
 
                 // fill missing rows with unknown
@@ -267,6 +272,12 @@ async function run() {
                 console.dir(perfMeasurement);
 
 
+                const resolvers: ResolverFunctions = {};
+                new Array(orderedStateList.length).fill(0).forEach((_x, index) => {
+                    const fn = (state: string) => booleanStringToBoolean((state as any)[index]);
+                    resolvers[index] = fn;
+                });
+
                 function getQuality(bdd: RootNode) {
                     return getQualityOfBdd(
                         bdd,
@@ -280,12 +291,29 @@ async function run() {
                     truthTable,
                     iterations: 10000000,
                     afterBddCreation: (bdd: RootNode) => {
-
                         const lastBetterAgo = new Date().getTime() - lastBetterFoundTime;
                         const lastBetterHours = lastBetterAgo / 1000 / 60 / 60;
                         console.log('Last better bdd found ' + roundToTwoDecimals(lastBetterHours) + 'hours ago');
-
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
+
+                        // ensure correctness to have a double-check that the bdd works correctly
+                        const bddMinimalString = bddToMinimalString(bdd);
+                        const simpleBdd = minimalStringToSimpleBdd(bddMinimalString);
+                        for (const [key, value] of loadTruthTable().entries()) {
+                            const bddValue = resolveWithSimpleBdd(
+                                simpleBdd,
+                                resolvers,
+                                key
+                            );
+
+                            if (value !== bddValue) {
+                                console.error('# Error: minimalBdd has different value compared to truth table ' + key);
+                                console.dir({ value, bddValue });
+                                process.exit(-1);
+                            }
+                        }
+
+
                         if (currentBest) {
                             console.log(
                                 'current best bdd has ' + currentBest.countNodes() + ' nodes ' +
