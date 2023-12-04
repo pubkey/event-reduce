@@ -58,7 +58,16 @@
     "iterative-fuzzing:5": "npm run iterative-fuzzing",
     "iterative-fuzzing:6": "npm run iterative-fuzzing",
     "iterative-fuzzing:7": "npm run iterative-fuzzing",
-    "iterative-fuzzing:8": "npm run iterative-fuzzing"
+    "iterative-fuzzing:8": "npm run iterative-fuzzing",
+    "optimize-parallel": "npm-run-all --parallel optimize:*",
+    "optimize:1": "npm run optimize-bdd",
+    "optimize:2": "npm run optimize-bdd",
+    "optimize:3": "npm run optimize-bdd",
+    "optimize:4": "npm run optimize-bdd",
+    "optimize:5": "npm run optimize-bdd",
+    "optimize:6": "npm run optimize-bdd",
+    "optimize:7": "npm run optimize-bdd",
+    "optimize:8": "npm run optimize-bdd"
   },
   "author": "pubkey",
   "devDependencies": {
@@ -83,6 +92,6 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "4.0.1",
-    "binary-decision-diagram": "3.1.0"
+    "binary-decision-diagram": "3.2.0"
   }
 }

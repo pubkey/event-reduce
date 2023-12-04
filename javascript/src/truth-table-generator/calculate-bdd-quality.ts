@@ -4,7 +4,7 @@ import {
     ResolverFunctions
 } from 'binary-decision-diagram';
 import {
-    performanceNow
+    performanceNow, wait
 } from 'async-test-util';
 
 import type {
@@ -133,11 +133,15 @@ export async function measurePerformanceOfStateFunctions(
             const diff = endTime - startTime;
             ret[stateName] = ret[stateName] + diff;
         }
+
+        if (remainingRounds % 10 === 0) {
+            console.log('.. ' + remainingRounds);
+            await wait(50);
+        }
     }
 
     // calculate average
     orderedStateList.forEach(k => ret[k] = (ret[k] / rounds));
-
     return ret;
 }
 
@@ -165,6 +169,8 @@ export async function getBetterBdd(
         return b;
     }
 }
+
+
 
 export type FunctionUsageCount = {
     [k in StateName]: number;

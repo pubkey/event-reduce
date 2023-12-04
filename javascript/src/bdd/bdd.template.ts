@@ -3,7 +3,6 @@ import {
     minimalStringToSimpleBdd,
     resolveWithSimpleBdd
 } from 'binary-decision-diagram';
-
 import type { StateResolveFunctionInput } from '../types/index.js';
 import { stateResolveFunctionByIndex } from '../states/index.js';
 

@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-nohup npm run optimize-bdd > optimize.nohup.out &
+nohup npm run optimize-parallel > optimize.nohup.out &
