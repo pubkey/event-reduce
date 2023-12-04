@@ -341,17 +341,18 @@ async function run() {
                         console.log('#'.repeat(100));
                         console.log('## Yeah! found better bdd ##');
                         lastBetterFoundTime = new Date().getTime();
-                        const bddMinimalString = bddToMinimalString(currentBest);
-                        const quality = getQuality(currentBest, performanceMeasurement);
-                        console.log('nodes: ' + currentBest.countNodes());
+                        const quality = getQuality(res.bdd, performanceMeasurement);
+                        console.log('nodes: ' + res.bdd.countNodes());
                         console.log('quality(new): ' + quality);
                         console.log('quality(old): ' + getQuality(currentBest, performanceMeasurement));
-                        console.log('new string: ' + bddMinimalString);
-                        currentBest = res.bdd;
-
                         const currentOptimizeState = JSON.parse(fs.readFileSync(BDD_OPTIMIZE_STATE_LOCATION, 'utf-8'));
+                        console.log('currentOptimizeState.quality' + currentOptimizeState.quality);
+
+                        currentBest = res.bdd;
                         if (quality > currentOptimizeState.quality) {
                             console.log('########## BETTER THEN BEFORE ! -> Save it');
+                            const bddMinimalString = bddToMinimalString(res.bdd);
+                            console.log('new string: ' + bddMinimalString);
                             writeBddTemplate(
                                 bddMinimalString,
                                 performanceMeasurement,
