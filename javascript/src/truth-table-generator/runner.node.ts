@@ -301,23 +301,6 @@ async function run() {
                         console.log('Last better bdd found ' + roundToTwoDecimals(lastBetterHours) + 'hours ago');
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
 
-                        // ensure correctness to have a double-check that the bdd works correctly
-                        const bddMinimalString = bddToMinimalString(bdd);
-                        const simpleBdd = minimalStringToSimpleBdd(bddMinimalString);
-                        for (const [key, value] of loadTruthTable().entries()) {
-                            const bddValue = resolveWithSimpleBdd(
-                                simpleBdd,
-                                resolvers,
-                                key
-                            );
-
-                            if (value !== bddValue) {
-                                console.error('# Error: minimalBdd has different value compared to truth table ' + key);
-                                console.dir({ value, bddValue });
-                                process.exit(-1);
-                            }
-                        }
-
                         if (currentBest) {
                             console.log(
                                 'current best bdd has ' + currentBest.countNodes() + ' nodes ' +
@@ -349,9 +332,29 @@ async function run() {
                         console.log('currentOptimizeState.quality' + currentOptimizeState.quality);
 
                         currentBest = res.bdd;
+
+                        // ensure correctness to have a double-check that the bdd works correctly
+                        const bddMinimalString = bddToMinimalString(currentBest);
+                        const simpleBdd = minimalStringToSimpleBdd(bddMinimalString);
+                        for (const [key, value] of loadTruthTable().entries()) {
+                            const bddValue = resolveWithSimpleBdd(
+                                simpleBdd,
+                                resolvers,
+                                key
+                            );
+
+                            if (value !== bddValue) {
+                                console.error('# Error: minimalBdd has different value compared to truth table ' + key);
+                                console.dir({ value, bddValue });
+                                process.exit(-1);
+                            }
+                        }
+
+
+
+
                         if (quality > currentOptimizeState.quality) {
                             console.log('########## BETTER THEN BEFORE ! -> Save it');
-                            const bddMinimalString = bddToMinimalString(res.bdd);
                             console.log('new string: ' + bddMinimalString);
                             writeBddTemplate(
                                 bddMinimalString,
