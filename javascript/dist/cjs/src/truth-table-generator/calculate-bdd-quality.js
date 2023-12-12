@@ -94,6 +94,10 @@ async function measurePerformanceOfStateFunctions(rounds = 1000) {
             const diff = endTime - startTime;
             ret[stateName] = ret[stateName] + diff;
         }
+        if (remainingRounds % 10 === 0) {
+            // console.log('.. ' + remainingRounds);
+            await (0, async_test_util_1.wait)(50);
+        }
     }
     // calculate average
     index_js_1.orderedStateList.forEach(k => ret[k] = (ret[k] / rounds));

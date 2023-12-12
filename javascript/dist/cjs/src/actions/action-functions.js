@@ -62,7 +62,6 @@ const removeExisting = (input) => {
     for (let i = 0; i < results.length; i++) {
         const item = results[i];
         // remove
-        // console.dir(item);
         if (item[primary] === input.changeEvent.id) {
             results.splice(i, 1);
             break;

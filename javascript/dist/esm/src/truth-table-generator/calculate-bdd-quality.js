@@ -1,5 +1,5 @@
 import { resolveWithSimpleBdd } from 'binary-decision-diagram';
-import { performanceNow } from 'async-test-util';
+import { performanceNow, wait } from 'async-test-util';
 import { orderedStateList, stateResolveFunctions } from '../states/index.js';
 import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
 import { flatClone, shuffleArray } from '../util.js';
@@ -90,6 +90,10 @@ export async function measurePerformanceOfStateFunctions(rounds = 1000) {
             const endTime = performanceNow();
             const diff = endTime - startTime;
             ret[stateName] = ret[stateName] + diff;
+        }
+        if (remainingRounds % 10 === 0) {
+            // console.log('.. ' + remainingRounds);
+            await wait(50);
         }
     }
     // calculate average

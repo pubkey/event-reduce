@@ -105,13 +105,7 @@ function doesActionWork(input, resultAfter, actionName, log = false) {
     if (actionName === 'runFullQueryAgain') {
         return true;
     }
-    /*
-    console.log('--- '.repeat(100));
-    console.dir(input);
-    console.dir(input.previousResults);
-    console.dir(resultAfter);*/
     const calculatedResults = (0, index_js_1.runAction)(actionName, input.queryParams, input.changeEvent, input.previousResults.slice());
-    // console.dir(calculatedResults);
     if (
     // optimisation shortcut, this is faster because we know we have two arrays
     calculatedResults.length === resultAfter.length &&

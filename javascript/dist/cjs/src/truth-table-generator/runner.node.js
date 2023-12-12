@@ -35,6 +35,7 @@ const util_js_2 = require("./util.js");
 const fuzzing_js_1 = require("./fuzzing.js");
 const write_bdd_template_js_1 = require("../bdd/write-bdd-template.js");
 const calculate_bdd_quality_js_1 = require("./calculate-bdd-quality.js");
+const index_js_2 = require("../states/index.js");
 /**
  * sort object attributes
  * @link https://stackoverflow.com/a/39442287
@@ -49,6 +50,13 @@ function sortObject(obj) {
     }), {});
 }
 exports.sortObject = sortObject;
+function loadTruthTable() {
+    const truthTable = (0, util_js_1.objectToMap)((0, util_js_2.readJsonFile)(config_js_1.OUTPUT_TRUTH_TABLE_PATH));
+    return truthTable;
+}
+function getQuality(bdd, perfMeasurement) {
+    return (0, calculate_bdd_quality_js_1.getQualityOfBdd)(bdd, perfMeasurement, (0, queries_js_1.getQueryVariations)(), (0, procedures_js_1.getTestProcedures)());
+}
 const unknownValueActionId = 42;
 async function run() {
     if (!fs.existsSync(config_js_1.OUTPUT_FOLDER_PATH)) {
@@ -93,9 +101,6 @@ async function run() {
                 const procedures = (0, procedures_js_1.getTestProcedures)();
                 let totalAmountOfHandled = 0;
                 let totalAmountOfOptimized = 0;
-                function loadTruthTable() {
-                    return (0, util_js_1.objectToMap)((0, util_js_2.readJsonFile)(config_js_1.OUTPUT_TRUTH_TABLE_PATH));
-                }
                 let truthTable = loadTruthTable();
                 const startTruthTableEntries = truthTable.size;
                 while (true) {
@@ -173,7 +178,7 @@ async function run() {
         case 'create-bdd':
             (async function createBdd() {
                 console.log('read table..');
-                const truthTable = (0, util_js_1.objectToMap)((0, util_js_2.readJsonFile)(config_js_1.OUTPUT_TRUTH_TABLE_PATH));
+                const truthTable = loadTruthTable();
                 console.log('table size: ' + truthTable.size);
                 // fill missing rows with unknown
                 (0, binary_decision_diagram_1.fillTruthTable)(truthTable, truthTable.keys().next().value.length, unknownValueActionId);
@@ -183,8 +188,10 @@ async function run() {
                 console.log('remove unkown states..');
                 bdd.removeIrrelevantLeafNodes(unknownValueActionId);
                 bdd.log();
+                const performanceMeasurement = await (0, calculate_bdd_quality_js_1.measurePerformanceOfStateFunctions)(2000);
+                const quality = getQuality(bdd, performanceMeasurement);
                 const bddMinimalString = (0, binary_decision_diagram_1.bddToMinimalString)(bdd);
-                (0, write_bdd_template_js_1.writeBddTemplate)(bddMinimalString);
+                (0, write_bdd_template_js_1.writeBddTemplate)(bddMinimalString, performanceMeasurement, quality);
                 console.log('nodes after minify: ' + bdd.countNodes());
             })();
             break;
@@ -193,17 +200,18 @@ async function run() {
             (async function optimizeBdd() {
                 console.log('read table..');
                 let lastBetterFoundTime = new Date().getTime();
-                const truthTable = (0, util_js_1.objectToMap)((0, util_js_2.readJsonFile)(config_js_1.OUTPUT_TRUTH_TABLE_PATH));
+                const truthTable = loadTruthTable();
                 console.log('table size: ' + truthTable.size);
                 // fill missing rows with unknown
                 (0, binary_decision_diagram_1.fillTruthTable)(truthTable, truthTable.keys().next().value.length, unknownValueActionId);
+                const optimizeState = JSON.parse(fs.readFileSync(write_bdd_template_js_1.BDD_OPTIMIZE_STATE_LOCATION, 'utf-8'));
+                const performanceMeasurement = optimizeState.performanceMeasurement;
                 let currentBest;
-                const perfMeasurement = await (0, calculate_bdd_quality_js_1.measurePerformanceOfStateFunctions)(10000);
-                console.log('state function performance:');
-                console.dir(perfMeasurement);
-                function getQuality(bdd) {
-                    return (0, calculate_bdd_quality_js_1.getQualityOfBdd)(bdd, perfMeasurement, (0, queries_js_1.getQueryVariations)(), (0, procedures_js_1.getTestProcedures)());
-                }
+                const resolvers = {};
+                new Array(index_js_2.orderedStateList.length).fill(0).forEach((_x, index) => {
+                    const fn = (state) => (0, binary_decision_diagram_1.booleanStringToBoolean)(state[index]);
+                    resolvers[index] = fn;
+                });
                 await (0, binary_decision_diagram_1.optimizeBruteForce)({
                     truthTable,
                     iterations: 10000000,
@@ -214,32 +222,50 @@ async function run() {
                         bdd.removeIrrelevantLeafNodes(unknownValueActionId);
                         if (currentBest) {
                             console.log('current best bdd has ' + currentBest.countNodes() + ' nodes ' +
-                                'and a quality of ' + getQuality(currentBest) + ' ' +
-                                'while newly tested one has quality of ' + getQuality(bdd));
+                                'and a quality of ' + getQuality(currentBest, performanceMeasurement) + ' ' +
+                                'while newly tested one has quality of ' + getQuality(bdd, performanceMeasurement));
                         }
                         else {
                             currentBest = bdd;
                         }
                     },
                     compareResults: (a, b) => {
-                        const betterOne = (0, calculate_bdd_quality_js_1.getBetterBdd)(a, b, perfMeasurement, (0, queries_js_1.getQueryVariations)(), (0, procedures_js_1.getTestProcedures)());
+                        const betterOne = (0, calculate_bdd_quality_js_1.getBetterBdd)(a, b, performanceMeasurement, (0, queries_js_1.getQueryVariations)(), (0, procedures_js_1.getTestProcedures)());
                         return betterOne;
                     },
                     onBetterBdd: async (res) => {
                         console.log('#'.repeat(100));
                         console.log('## Yeah! found better bdd ##');
                         lastBetterFoundTime = new Date().getTime();
-                        const bddMinimalString = (0, binary_decision_diagram_1.bddToMinimalString)(currentBest);
-                        const quality = getQuality(currentBest);
-                        console.log('nodes: ' + currentBest.countNodes());
+                        const quality = getQuality(res.bdd, performanceMeasurement);
+                        console.log('nodes: ' + res.bdd.countNodes());
                         console.log('quality(new): ' + quality);
-                        console.log('quality(old): ' + getQuality(currentBest));
-                        console.log('new string: ' + bddMinimalString);
+                        console.log('quality(old): ' + getQuality(currentBest, performanceMeasurement));
+                        const currentOptimizeState = JSON.parse(fs.readFileSync(write_bdd_template_js_1.BDD_OPTIMIZE_STATE_LOCATION, 'utf-8'));
+                        console.log('currentOptimizeState.quality' + currentOptimizeState.quality);
                         currentBest = res.bdd;
-                        (0, write_bdd_template_js_1.writeBddTemplate)(bddMinimalString);
-                        console.log('-'.repeat(100));
+                        // ensure correctness to have a double-check that the bdd works correctly
+                        const bddMinimalString = (0, binary_decision_diagram_1.bddToMinimalString)(currentBest);
+                        const simpleBdd = (0, binary_decision_diagram_1.minimalStringToSimpleBdd)(bddMinimalString);
+                        for (const [key, value] of loadTruthTable().entries()) {
+                            const bddValue = (0, binary_decision_diagram_1.resolveWithSimpleBdd)(simpleBdd, resolvers, key);
+                            if (value !== bddValue) {
+                                console.error('# Error: minimalBdd has different value compared to truth table ' + key);
+                                console.dir({ value, bddValue });
+                                process.exit(-1);
+                            }
+                        }
+                        if (quality > currentOptimizeState.quality) {
+                            console.log('########## BETTER THEN BEFORE ! -> Save it');
+                            console.log('new string: ' + bddMinimalString);
+                            (0, write_bdd_template_js_1.writeBddTemplate)(bddMinimalString, performanceMeasurement, quality);
+                            console.log('-'.repeat(100));
+                        }
+                        else {
+                            console.log('# DROP BECAUSE has better one with quality ' + currentOptimizeState.quality);
+                        }
                     },
-                    log: true
+                    log: false
                 });
             })();
             break;
