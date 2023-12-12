@@ -135,7 +135,7 @@ export async function measurePerformanceOfStateFunctions(
         }
 
         if (remainingRounds % 10 === 0) {
-            console.log('.. ' + remainingRounds);
+            // console.log('.. ' + remainingRounds);
             await wait(50);
         }
     }
