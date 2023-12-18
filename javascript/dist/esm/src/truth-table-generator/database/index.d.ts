@@ -1,4 +1,5 @@
 import type { ChangeEvent, MongoQuery, QueryParams } from '../../types';
+export * from './mingo.js';
 /**
  * Abstract the database so that
  * we can swap it out.

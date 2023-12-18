@@ -1,3 +1,4 @@
+export * from './mingo.js';
 export function applyChangeEvent(collection, changeEvent) {
     switch (changeEvent.operation) {
         case 'INSERT':
