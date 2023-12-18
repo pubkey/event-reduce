@@ -6,7 +6,6 @@ import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
 export * from './binary-state.js';
 export * from './calculate-bdd-quality.js';
-export * from './config.js';
 export * from './data-generator.js';
 export * from './fuzzing.js';
 export * from './procedures.js';

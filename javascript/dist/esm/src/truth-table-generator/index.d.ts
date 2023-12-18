@@ -2,7 +2,6 @@ import type { StateActionIdMap, Procedure, Human } from './types.js';
 import type { ActionName, ActionFunctionInput, MongoQuery } from '../types/index.js';
 export * from './binary-state.js';
 export * from './calculate-bdd-quality.js';
-export * from './config.js';
 export * from './data-generator.js';
 export * from './fuzzing.js';
 export * from './procedures.js';

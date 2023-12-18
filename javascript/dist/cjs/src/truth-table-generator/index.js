@@ -26,7 +26,6 @@ const mingo_js_1 = require("./database/mingo.js");
 const index_js_4 = require("./database/index.js");
 __exportStar(require("./binary-state.js"), exports);
 __exportStar(require("./calculate-bdd-quality.js"), exports);
-__exportStar(require("./config.js"), exports);
 __exportStar(require("./data-generator.js"), exports);
 __exportStar(require("./fuzzing.js"), exports);
 __exportStar(require("./procedures.js"), exports);
