@@ -40,7 +40,9 @@ export type {
 } from './types/index.js';
 
 export * from './states/index.js';
+export * from './truth-table-generator/index.js';
 export * from './util.js';
+export * from './actions';
 
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,

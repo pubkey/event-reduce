@@ -22,6 +22,8 @@ import {
     removeLastInsertLast
 } from './action-functions.js';
 
+export * from './action-functions.js';
+
 /**
  * all actions ordered by performance-cost
  * cheapest first
