@@ -36,8 +36,7 @@ import {
     measurePerformanceOfStateFunctions,
     getBetterBdd,
     getQualityOfBdd,
-    PerformanceMeasurement,
-    QUALITY_BY_BDD_CACHE
+    PerformanceMeasurement
 } from './calculate-bdd-quality.js';
 import { orderedStateList } from '../states/index.js';
 
@@ -252,7 +251,7 @@ async function run() {
                 bdd.removeIrrelevantLeafNodes(unknownValueActionId);
 
                 bdd.log();
-                const performanceMeasurement = await measurePerformanceOfStateFunctions(2000)
+                const performanceMeasurement = await measurePerformanceOfStateFunctions(2000);
                 const quality = getQuality(bdd, performanceMeasurement);
 
                 const bddMinimalString = bddToMinimalString(bdd);
