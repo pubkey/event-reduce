@@ -20,7 +20,7 @@ import {
     stateResolveFunctions
 } from '../states/index.js';
 import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
-import type { Human, Procedure } from './types.d.js';
+import type { Human, Procedure } from './types.js';
 import { flatClone, shuffleArray } from '../util.js';
 import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';

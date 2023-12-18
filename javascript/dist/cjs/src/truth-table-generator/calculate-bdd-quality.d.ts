@@ -1,6 +1,6 @@
 import { RootNode } from 'binary-decision-diagram';
 import type { MongoQuery, StateName } from '../types/index.js';
-import type { Procedure } from './types.d.js';
+import type { Procedure } from './types.js';
 export type PerformanceMeasurement = {
     [k in StateName]: number;
 };
