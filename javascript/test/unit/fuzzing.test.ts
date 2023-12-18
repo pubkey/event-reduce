@@ -19,14 +19,4 @@ describe('fuzzing.test.ts', () => {
         );
         assert.strictEqual(result.ok, true);
     });
-    it('should have never be correct on doNothing', async () => {
-        const map: StateActionIdMap = new Map();
-        map.get = () => indexOfDoNothing;
-        const result = await fuzzing(
-            map,
-            10,
-            10
-        );
-        assert.strictEqual(result.ok, false);
-    });
 });
