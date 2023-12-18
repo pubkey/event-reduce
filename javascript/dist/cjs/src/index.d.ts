@@ -8,7 +8,7 @@ export type { ActionFunction, ActionFunctionInput, ActionName, ChangeEvent, Chan
 export * from './states/index.js';
 export * from './truth-table-generator/index.js';
 export * from './util.js';
-export * from './actions';
+export * from './actions/index.js';
 export declare function calculateActionFromMap<DocType>(stateSetToActionMap: StateSetToActionMap, input: StateResolveFunctionInput<DocType>): {
     action: ActionName;
     stateSet: StateSet;
