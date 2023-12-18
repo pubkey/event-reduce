@@ -10,7 +10,6 @@ import {
     getProperty
 } from '../../util.js';
 
-
 export function mingoCollectionCreator(): Collection {
     const data: Human[] = [];
     const collection: Collection = {
