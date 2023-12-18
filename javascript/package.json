@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "5.2.3",
+  "version": "5.2.4",
   "description": "javascript implementation of the event-reduce algorithm https://pubkey.github.io/event-reduce/",
   "keywords": [
     "event-reduce",
