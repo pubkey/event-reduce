@@ -11,7 +11,6 @@ export * from './data-generator.js';
 export * from './fuzzing.js';
 export * from './procedures.js';
 export * from './queries.js';
-export * from './types.js';
 export * from './util.js';
 export * from './database/index.js';
 export function generateTruthTable({ queries, procedures, table = new Map(), log = false }) {

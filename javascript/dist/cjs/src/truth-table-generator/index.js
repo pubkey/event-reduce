@@ -31,7 +31,6 @@ __exportStar(require("./data-generator.js"), exports);
 __exportStar(require("./fuzzing.js"), exports);
 __exportStar(require("./procedures.js"), exports);
 __exportStar(require("./queries.js"), exports);
-__exportStar(require("./types.js"), exports);
 __exportStar(require("./util.js"), exports);
 __exportStar(require("./database/index.js"), exports);
 function generateTruthTable({ queries, procedures, table = new Map(), log = false }) {
