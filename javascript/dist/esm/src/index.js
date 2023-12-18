@@ -2,7 +2,9 @@ import { getStateSet } from './states/index.js';
 import { actionFunctions, orderedActionList } from './actions/index.js';
 import { resolveInput } from './bdd/bdd.generated.js';
 export * from './states/index.js';
+export * from './truth-table-generator/index.js';
 export * from './util.js';
+export * from './actions';
 export function calculateActionFromMap(stateSetToActionMap, input) {
     const stateSet = getStateSet(input);
     const actionName = stateSetToActionMap.get(stateSet);

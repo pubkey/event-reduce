@@ -6,7 +6,9 @@ import type { ChangeEvent, ActionName, ResultKeyDocumentMap, QueryParams, StateS
  */
 export type { ActionFunction, ActionFunctionInput, ActionName, ChangeEvent, ChangeEventBase, ChangeEventDelete, ChangeEventInsert, ChangeEventUpdate, MongoQuery, QueryMatcher, QueryParams, ResultKeyDocumentMap, DeterministicSortComparator, StateName, StateResolveFunction, StateResolveFunctionInput, StateSet, StateSetToActionMap, WriteOperation } from './types/index.js';
 export * from './states/index.js';
+export * from './truth-table-generator/index.js';
 export * from './util.js';
+export * from './actions';
 export declare function calculateActionFromMap<DocType>(stateSetToActionMap: StateSetToActionMap, input: StateResolveFunctionInput<DocType>): {
     action: ActionName;
     stateSet: StateSet;
