@@ -8,7 +8,6 @@ export * from './fuzzing.js';
 export * from './procedures.js';
 export * from './queries.js';
 export type * from './types.js';
-export * from './util.js';
 export * from './database/index.js';
 export interface GenerateTruthTableInput {
     queries: MongoQuery[];

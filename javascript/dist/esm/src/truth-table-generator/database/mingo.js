@@ -1,7 +1,7 @@
-import { getSortFieldsOfQuery } from '../../util';
+import { getSortFieldsOfQuery } from '../../util.js';
 import { Query } from 'mingo';
 import { compare as mingoSortComparator } from 'mingo/util';
-import { getProperty } from '../../util';
+import { getProperty } from '../../util.js';
 export function mingoCollectionCreator() {
     const data = [];
     const collection = {

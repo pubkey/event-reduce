@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMingoSortComparator = exports.mingoCollectionCreator = void 0;
-const util_1 = require("../../util");
+const util_js_1 = require("../../util.js");
 const mingo_1 = require("mingo");
-const util_2 = require("mingo/util");
-const util_3 = require("../../util");
+const util_1 = require("mingo/util");
+const util_js_2 = require("../../util.js");
 function mingoCollectionCreator() {
     const data = [];
     const collection = {
@@ -28,7 +28,7 @@ function mingoCollectionCreator() {
                 skip: query.skip ? query.skip : undefined,
                 limit: query.limit ? query.limit : undefined,
                 queryMatcher: d => queryInstance.test(d),
-                sortFields: (0, util_1.getSortFieldsOfQuery)(query),
+                sortFields: (0, util_js_1.getSortFieldsOfQuery)(query),
                 sortComparator: getMingoSortComparator(query)
             };
         },
@@ -58,7 +58,7 @@ function getMingoSortComparator(query) {
         sortParts.push({
             key,
             direction: direction,
-            getValueFn: (obj) => (0, util_3.getProperty)(obj, key)
+            getValueFn: (obj) => (0, util_js_2.getProperty)(obj, key)
         });
     });
     const fun = (a, b) => {
@@ -67,7 +67,7 @@ function getMingoSortComparator(query) {
             const valueA = sortPart.getValueFn(a);
             const valueB = sortPart.getValueFn(b);
             if (valueA !== valueB) {
-                const ret = sortPart.direction === 'asc' ? (0, util_2.compare)(valueA, valueB) : (0, util_2.compare)(valueB, valueA);
+                const ret = sortPart.direction === 'asc' ? (0, util_1.compare)(valueA, valueB) : (0, util_1.compare)(valueB, valueA);
                 return ret;
             }
         }

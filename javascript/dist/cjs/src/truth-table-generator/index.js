@@ -31,7 +31,6 @@ __exportStar(require("./data-generator.js"), exports);
 __exportStar(require("./fuzzing.js"), exports);
 __exportStar(require("./procedures.js"), exports);
 __exportStar(require("./queries.js"), exports);
-__exportStar(require("./util.js"), exports);
 __exportStar(require("./database/index.js"), exports);
 function generateTruthTable({ queries, procedures, table = new Map(), log = false }) {
     let done = false;
@@ -78,10 +77,6 @@ function incrementTruthTableActions(table = new Map(), queries, procedure, log =
                 queryParams: params
             };
             const state = (0, index_js_3.getStateSet)(input);
-            if (state === '10000000011000000') {
-                console.log('!!');
-                process.exit();
-            }
             let currentActionId = table.get(state);
             if (!currentActionId) {
                 table.set(state, 0);

@@ -1,4 +1,4 @@
-import { ChangeEvent, MongoQuery, QueryParams } from '../../types';
+import type { ChangeEvent, MongoQuery, QueryParams } from '../../types';
 
 /**
  * Abstract the database so that

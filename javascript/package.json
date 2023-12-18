@@ -27,6 +27,13 @@
         "default": "./dist/cjs/src/index.es5.js"
       }
     },
+    "./truth-table-generator": {
+      "default": {
+        "types": "./dist/esm/src/truth-table-generator/index.d.ts",
+        "import": "./dist/esm/src/truth-table-generator/index.js",
+        "default": "./dist/cjs/src/truth-table-generator/index.es5.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/cjs/src/index.es5.js",

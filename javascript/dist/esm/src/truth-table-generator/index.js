@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import { default as deepEqual } from 'deep-equal';
 import { runAction } from '../index.js';
 import { orderedActionList } from '../actions/index.js';
 import { getStateSet } from '../states/index.js';
@@ -11,7 +11,6 @@ export * from './data-generator.js';
 export * from './fuzzing.js';
 export * from './procedures.js';
 export * from './queries.js';
-export * from './util.js';
 export * from './database/index.js';
 export function generateTruthTable({ queries, procedures, table = new Map(), log = false }) {
     let done = false;
@@ -57,10 +56,6 @@ export function incrementTruthTableActions(table = new Map(), queries, procedure
                 queryParams: params
             };
             const state = getStateSet(input);
-            if (state === '10000000011000000') {
-                console.log('!!');
-                process.exit();
-            }
             let currentActionId = table.get(state);
             if (!currentActionId) {
                 table.set(state, 0);

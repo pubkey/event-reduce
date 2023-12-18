@@ -1,14 +1,14 @@
-import { Collection, CollectionCreator } from '.';
-import { DeterministicSortComparator, MongoQuery } from '../../types';
-import { getSortFieldsOfQuery } from '../../util';
-import { Human } from '../types';
+import type { Collection } from '.';
+import type { DeterministicSortComparator, MongoQuery } from '../../types';
+import { getSortFieldsOfQuery } from '../../util.js';
+import type { Human } from '../types';
 import { Query } from 'mingo';
 import {
     compare as mingoSortComparator
 } from 'mingo/util';
 import {
     getProperty
-} from '../../util';
+} from '../../util.js';
 
 
 export function mingoCollectionCreator(): Collection {

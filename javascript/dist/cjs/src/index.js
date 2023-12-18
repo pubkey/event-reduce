@@ -19,7 +19,6 @@ const index_js_1 = require("./states/index.js");
 const index_js_2 = require("./actions/index.js");
 const bdd_generated_js_1 = require("./bdd/bdd.generated.js");
 __exportStar(require("./states/index.js"), exports);
-__exportStar(require("./truth-table-generator/index.js"), exports);
 __exportStar(require("./util.js"), exports);
 __exportStar(require("./actions/index.js"), exports);
 function calculateActionFromMap(stateSetToActionMap, input) {

@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import { default as deepEqual } from 'deep-equal';
 
 import type {
     StateActionIdMap,
@@ -25,7 +25,6 @@ export * from './fuzzing.js';
 export * from './procedures.js';
 export * from './queries.js';
 export type * from './types.js';
-export * from './util.js';
 export * from './database/index.js';
 
 export interface GenerateTruthTableInput {
@@ -109,12 +108,6 @@ export function incrementTruthTableActions(
                 queryParams: params
             };
             const state = getStateSet(input);
-
-
-            if (state === '10000000011000000') {
-                console.log('!!');
-                process.exit();
-            }
 
             let currentActionId = table.get(state);
             if (!currentActionId) {
