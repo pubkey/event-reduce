@@ -1,0 +1,17 @@
+{
+    "name": "event-reduce-truth-table-generator",
+    "sideEffects": false,
+    "types": "../dist/esm/src/truth-table-generator/index.d.ts",
+    "exports": {
+        ".": {
+            "default": {
+                "types": "../dist/esm/src/truth-table-generator/index.d.ts",
+                "import": "../dist/esm/src/truth-table-generator/index.js",
+                "default": "../dist/cjs/src/truth-table-generator/index.js"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": ".../dist/cjs/src/truth-table-generator/index.js",
+    "module": "../dist/esm/src/truth-table-generator/index.js"
+}
