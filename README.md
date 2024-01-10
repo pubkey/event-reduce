@@ -80,8 +80,6 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 
 - Baqend is [creating a database](https://vsis-www.informatik.uni-hamburg.de/getDoc.php/publications/620/invalidb_4-pages.pdf) that optimizes for realtime queries. Watch the video [Real-Time Databases Explained: Why Meteor, RethinkDB, Parse & Firebase Don't Scale](https://www.youtube.com/watch?v=HiQgQ88AdYo) to learn more.
 
-- [Noria](https://github.com/mit-pdos/noria) also uses the priciple of recomputing query results incrementally on table writes. Read the paper [Noria: dynamic, partially-stateful data-flow for high-performance web applications](https://pdos.csail.mit.edu/papers/noria:osdi18.pdf)
-
 
 ## FAQ
 
