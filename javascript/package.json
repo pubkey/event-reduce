@@ -79,7 +79,7 @@
   "author": "pubkey",
   "devDependencies": {
     "@types/deep-equal": "1.0.4",
-    "@types/mocha": "10.0.4",
+    "@types/mocha": "10.0.9",
     "@types/node": "20.9.2",
     "array-shuffle": "3.0.0",
     "assert": "2.1.0",
@@ -88,7 +88,7 @@
     "clone": "2.1.2",
     "deep-equal": "2.2.3",
     "mingo": "6.4.9",
-    "mocha": "10.2.0",
+    "mocha": "10.7.3",
     "npm-run-all": "4.1.5",
     "pouchdb-selector-core": "8.0.1",
     "read-last-lines": "1.8.0",
