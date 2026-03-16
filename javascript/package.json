@@ -98,7 +98,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
-    "array-push-at-sort-position": "4.0.1",
+    "array-push-at-sort-position": "5.0.0",
     "binary-decision-diagram": "3.2.0"
   }
 }
