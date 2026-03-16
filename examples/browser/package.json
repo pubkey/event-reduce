@@ -42,7 +42,7 @@
         "@types/faker": "5.5.9",
         "assert": "2.1.0",
         "concurrently": "8.2.2",
-        "css-loader": "6.8.1",
+        "css-loader": "6.11.0",
         "less": "4.2.0",
         "less-loader": "11.1.4",
         "local-web-server": "5.3.0",
