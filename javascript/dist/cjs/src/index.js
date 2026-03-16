@@ -14,7 +14,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runAction = exports.calculateActionFunction = exports.calculateActionName = exports.calculateActionFromMap = void 0;
+exports.calculateActionFromMap = calculateActionFromMap;
+exports.calculateActionName = calculateActionName;
+exports.calculateActionFunction = calculateActionFunction;
+exports.runAction = runAction;
 const index_js_1 = require("./states/index.js");
 const index_js_2 = require("./actions/index.js");
 const bdd_generated_js_1 = require("./bdd/bdd.generated.js");
@@ -37,17 +40,14 @@ function calculateActionFromMap(stateSetToActionMap, input) {
         };
     }
 }
-exports.calculateActionFromMap = calculateActionFromMap;
 function calculateActionName(input) {
     const resolvedActionId = (0, bdd_generated_js_1.resolveInput)(input);
     return index_js_2.orderedActionList[resolvedActionId];
 }
-exports.calculateActionName = calculateActionName;
 function calculateActionFunction(input) {
     const actionName = calculateActionName(input);
     return index_js_2.actionFunctions[actionName];
 }
-exports.calculateActionFunction = calculateActionFunction;
 /**
  * for performance reasons,
  * @mutates the input
@@ -63,5 +63,4 @@ function runAction(action, queryParams, changeEvent, previousResults, keyDocumen
     });
     return previousResults;
 }
-exports.runAction = runAction;
 //# sourceMappingURL=index.js.map

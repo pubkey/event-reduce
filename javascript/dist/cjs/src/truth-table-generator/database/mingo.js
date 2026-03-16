@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMingoSortComparator = exports.mingoCollectionCreator = void 0;
+exports.mingoCollectionCreator = mingoCollectionCreator;
+exports.getMingoSortComparator = getMingoSortComparator;
 const util_js_1 = require("../../util.js");
 const mingo_1 = require("mingo");
 const util_1 = require("mingo/util");
@@ -47,7 +48,6 @@ function mingoCollectionCreator() {
     };
     return collection;
 }
-exports.mingoCollectionCreator = mingoCollectionCreator;
 function getMingoSortComparator(query) {
     if (!query.sort) {
         throw new Error('no sort given');
@@ -74,5 +74,4 @@ function getMingoSortComparator(query) {
     };
     return fun;
 }
-exports.getMingoSortComparator = getMingoSortComparator;
 //# sourceMappingURL=mingo.js.map

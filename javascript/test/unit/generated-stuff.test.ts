@@ -102,7 +102,7 @@ describe('generated-stuff.test.ts', () => {
 
             fillTruthTable(
                 truthTable,
-                truthTable.keys().next().value.length,
+                (truthTable.keys().next().value as string).length,
                 unknownValueActionId
             );
             const bdd = createBddFromTruthTable(truthTable);

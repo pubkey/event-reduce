@@ -36,7 +36,7 @@ describe('calculate-bdd-quality.test.ts', () => {
     }
     fillTruthTable(
         truthTable,
-        truthTable.keys().next().value.length,
+        (truthTable.keys().next().value as string).length,
         unknownValueActionId
     );
 

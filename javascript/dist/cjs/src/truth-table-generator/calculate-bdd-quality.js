@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getQualityOfBdd = exports.QUALITY_BY_BDD_CACHE = exports.countFunctionUsages = exports.getBetterBdd = exports.measurePerformanceOfStateFunctions = void 0;
+exports.QUALITY_BY_BDD_CACHE = void 0;
+exports.measurePerformanceOfStateFunctions = measurePerformanceOfStateFunctions;
+exports.getBetterBdd = getBetterBdd;
+exports.countFunctionUsages = countFunctionUsages;
+exports.getQualityOfBdd = getQualityOfBdd;
 const binary_decision_diagram_1 = require("binary-decision-diagram");
 const async_test_util_1 = require("async-test-util");
 const index_js_1 = require("../states/index.js");
@@ -103,7 +107,6 @@ async function measurePerformanceOfStateFunctions(rounds = 1000) {
     index_js_1.orderedStateList.forEach(k => ret[k] = (ret[k] / rounds));
     return ret;
 }
-exports.measurePerformanceOfStateFunctions = measurePerformanceOfStateFunctions;
 /**
  * Comparator used to find the best sort-order of the boolean functions.
  * In the past we just used the bdd with the least amount of nodes.
@@ -122,7 +125,6 @@ async function getBetterBdd(a, b, perfMeasurement, queries, procedures) {
         return b;
     }
 }
-exports.getBetterBdd = getBetterBdd;
 const pseudoCollection = (0, mingo_js_1.mingoCollectionCreator)();
 function countFunctionUsages(bdd, queries, procedures) {
     const ret = {};
@@ -163,7 +165,6 @@ function countFunctionUsages(bdd, queries, procedures) {
     }
     return ret;
 }
-exports.countFunctionUsages = countFunctionUsages;
 /**
  * returns the quality of the BDD,
  * the higher the better
@@ -185,5 +186,4 @@ function getQualityOfBdd(bdd, perfMeasurement, queries, procedures) {
     }
     return exports.QUALITY_BY_BDD_CACHE.get(bdd);
 }
-exports.getQualityOfBdd = getQualityOfBdd;
 //# sourceMappingURL=calculate-bdd-quality.js.map

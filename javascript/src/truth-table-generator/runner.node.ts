@@ -239,7 +239,7 @@ async function run() {
                 // fill missing rows with unknown
                 fillTruthTable(
                     truthTable,
-                    truthTable.keys().next().value.length,
+                    (truthTable.keys().next().value as string).length,
                     unknownValueActionId
                 );
 
@@ -277,7 +277,7 @@ async function run() {
                 // fill missing rows with unknown
                 fillTruthTable(
                     truthTable,
-                    truthTable.keys().next().value.length,
+                    (truthTable.keys().next().value as string).length,
                     unknownValueActionId
                 );
 

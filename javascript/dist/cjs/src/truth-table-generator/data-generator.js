@@ -1,6 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._getRandomChangeEvents = exports.fillRandomEvents = exports.getRandomChangeEvents = exports.randomEventsPrematureCalculation = exports.randomChangeEvent = exports.randomChangeHuman = exports.mutateFieldFunctions = exports.randomHumans = exports.STATIC_RANDOM_HUMAN = exports.randomHuman = exports.HUMAN_MAX_AGE = void 0;
+exports.randomEventsPrematureCalculation = exports.mutateFieldFunctions = exports.STATIC_RANDOM_HUMAN = exports.HUMAN_MAX_AGE = void 0;
+exports.randomHuman = randomHuman;
+exports.randomHumans = randomHumans;
+exports.randomChangeHuman = randomChangeHuman;
+exports.randomChangeEvent = randomChangeEvent;
+exports.getRandomChangeEvents = getRandomChangeEvents;
+exports.fillRandomEvents = fillRandomEvents;
+exports._getRandomChangeEvents = _getRandomChangeEvents;
 const util_js_1 = require("../util.js");
 const mingo_js_1 = require("./database/mingo.js");
 const index_js_1 = require("./database/index.js");
@@ -24,13 +31,11 @@ function randomHuman(partial) {
     }
     return ret;
 }
-exports.randomHuman = randomHuman;
 exports.STATIC_RANDOM_HUMAN = randomHuman();
 exports.STATIC_RANDOM_HUMAN._id = 'static_random_human';
 function randomHumans(amount = 0, partial) {
     return new Array(amount).fill(0).map(() => randomHuman(partial));
 }
-exports.randomHumans = randomHumans;
 exports.mutateFieldFunctions = {
     name: (i) => i.name = (0, async_test_util_1.randomString)(10),
     gender: (i) => i.gender = (0, async_test_util_1.randomBoolean)() ? 'f' : 'm',
@@ -47,7 +52,6 @@ function randomChangeHuman(input) {
     });
     return cloned;
 }
-exports.randomChangeHuman = randomChangeHuman;
 function randomChangeEvent(allDocs, favor) {
     const ops = [
         'INSERT',
@@ -95,7 +99,6 @@ function randomChangeEvent(allDocs, favor) {
     }
     return ret;
 }
-exports.randomChangeEvent = randomChangeEvent;
 // ensure that the change-events get generated
 // before we even need them
 exports.randomEventsPrematureCalculation = {};
@@ -111,12 +114,10 @@ function getRandomChangeEvents(amount = 100) {
         return _getRandomChangeEvents(amount);
     }
 }
-exports.getRandomChangeEvents = getRandomChangeEvents;
 function fillRandomEvents(amount) {
     const newEvents = _getRandomChangeEvents(amount);
     exports.randomEventsPrematureCalculation[amount] = newEvents;
 }
-exports.fillRandomEvents = fillRandomEvents;
 function _getRandomChangeEvents(amount = 100) {
     const ret = [];
     const half = Math.ceil(amount / 2);
@@ -144,5 +145,4 @@ function _getRandomChangeEvents(amount = 100) {
     }
     return ret;
 }
-exports._getRandomChangeEvents = _getRandomChangeEvents;
 //# sourceMappingURL=data-generator.js.map

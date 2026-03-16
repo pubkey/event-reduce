@@ -15,6 +15,10 @@
         "declaration": true,
         "resolveJsonModule": true,
         "outDir": "./dist/cjs",
+        "baseUrl": ".",
+        "paths": {
+            "mingo/util": ["./node_modules/mingo/types/util/index.d.ts"]
+        },
         "lib": [
             "es7",
             "dom"

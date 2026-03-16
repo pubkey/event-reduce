@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resolveInput = exports.getSimpleBdd = exports.minimalBddString = void 0;
+exports.resolveInput = exports.minimalBddString = void 0;
+exports.getSimpleBdd = getSimpleBdd;
 const binary_decision_diagram_1 = require("binary-decision-diagram");
 const index_js_1 = require("../states/index.js");
 exports.minimalBddString = '${minimalBddString}';
@@ -11,7 +12,6 @@ function getSimpleBdd() {
     }
     return simpleBdd;
 }
-exports.getSimpleBdd = getSimpleBdd;
 const resolveInput = (input) => {
     return (0, binary_decision_diagram_1.resolveWithSimpleBdd)(getSimpleBdd(), index_js_1.stateResolveFunctionByIndex, input);
 };
