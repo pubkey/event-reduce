@@ -43,8 +43,11 @@ const sortParamsChanged = (input) => {
     }
     for (let i = 0; i < sortFields.length; i++) {
         const field = sortFields[i];
-        const beforeData = field.includes('.') ? (0, util_js_1.getProperty)(prev, field) : prev[field];
-        const afterData = field.includes('.') ? (0, util_js_1.getProperty)(doc, field) : doc[field];
+        // Use direct property access for simple fields (no nested path).
+        // Falls back to getProperty() for dot-separated nested paths.
+        const isNested = field.includes('.');
+        const beforeData = isNested ? (0, util_js_1.getProperty)(prev, field) : prev[field];
+        const afterData = isNested ? (0, util_js_1.getProperty)(doc, field) : doc[field];
         if (beforeData !== afterData) {
             return true;
         }
