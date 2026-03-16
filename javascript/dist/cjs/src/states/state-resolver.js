@@ -11,12 +11,7 @@ const isFindOne = (input) => {
 };
 exports.isFindOne = isFindOne;
 const hasSkip = (input) => {
-    if (input.queryParams.skip && input.queryParams.skip > 0) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return !!input.queryParams.skip && input.queryParams.skip > 0;
 };
 exports.hasSkip = hasSkip;
 const isDelete = (input) => {
@@ -32,7 +27,8 @@ const isUpdate = (input) => {
 };
 exports.isUpdate = isUpdate;
 const wasLimitReached = (input) => {
-    return (0, exports.hasLimit)(input) && input.previousResults.length >= input.queryParams.limit;
+    const limit = input.queryParams.limit;
+    return !!limit && input.previousResults.length >= limit;
 };
 exports.wasLimitReached = wasLimitReached;
 const sortParamsChanged = (input) => {
@@ -47,8 +43,8 @@ const sortParamsChanged = (input) => {
     }
     for (let i = 0; i < sortFields.length; i++) {
         const field = sortFields[i];
-        const beforeData = (0, util_js_1.getProperty)(prev, field);
-        const afterData = (0, util_js_1.getProperty)(doc, field);
+        const beforeData = field.includes('.') ? (0, util_js_1.getProperty)(prev, field) : prev[field];
+        const afterData = field.includes('.') ? (0, util_js_1.getProperty)(doc, field) : doc[field];
         if (beforeData !== afterData) {
             return true;
         }
@@ -59,15 +55,13 @@ exports.sortParamsChanged = sortParamsChanged;
 const wasInResult = (input) => {
     const id = input.changeEvent.id;
     if (input.keyDocumentMap) {
-        const has = input.keyDocumentMap.has(id);
-        return has;
+        return input.keyDocumentMap.has(id);
     }
     else {
         const primary = input.queryParams.primaryKey;
         const results = input.previousResults;
         for (let i = 0; i < results.length; i++) {
-            const item = results[i];
-            if (item[primary] === id) {
+            if (results[i][primary] === id) {
                 return true;
             }
         }
@@ -77,22 +71,13 @@ const wasInResult = (input) => {
 exports.wasInResult = wasInResult;
 const wasFirst = (input) => {
     const first = input.previousResults[0];
-    if (first && first[input.queryParams.primaryKey] === input.changeEvent.id) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return !!first && first[input.queryParams.primaryKey] === input.changeEvent.id;
 };
 exports.wasFirst = wasFirst;
 const wasLast = (input) => {
-    const last = (0, util_js_1.lastOfArray)(input.previousResults);
-    if (last && last[input.queryParams.primaryKey] === input.changeEvent.id) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    const results = input.previousResults;
+    const last = results[results.length - 1];
+    return !!last && last[input.queryParams.primaryKey] === input.changeEvent.id;
 };
 exports.wasLast = wasLast;
 const wasSortedBeforeFirst = (input) => {
@@ -110,11 +95,11 @@ const wasSortedBeforeFirst = (input) => {
      * sort order. Because both document could be equal.
      * So instead we have to return true.
      */
-    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    const comp = input.queryParams.sortComparator(prev, first);
-    return comp < 0;
+    return input.queryParams.sortComparator(prev, first) < 0;
 };
 exports.wasSortedBeforeFirst = wasSortedBeforeFirst;
 const wasSortedAfterLast = (input) => {
@@ -122,15 +107,16 @@ const wasSortedAfterLast = (input) => {
     if (!prev) {
         return false;
     }
-    const last = (0, util_js_1.lastOfArray)(input.previousResults);
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
-    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    const comp = input.queryParams.sortComparator(prev, last);
-    return comp > 0;
+    return input.queryParams.sortComparator(prev, last) > 0;
 };
 exports.wasSortedAfterLast = wasSortedAfterLast;
 const isSortedBeforeFirst = (input) => {
@@ -142,11 +128,11 @@ const isSortedBeforeFirst = (input) => {
     if (!first) {
         return false;
     }
-    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    const comp = input.queryParams.sortComparator(doc, first);
-    return comp < 0;
+    return input.queryParams.sortComparator(doc, first) < 0;
 };
 exports.isSortedBeforeFirst = isSortedBeforeFirst;
 const isSortedAfterLast = (input) => {
@@ -154,15 +140,16 @@ const isSortedAfterLast = (input) => {
     if (!doc) {
         return false;
     }
-    const last = (0, util_js_1.lastOfArray)(input.previousResults);
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
-    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    const comp = input.queryParams.sortComparator(doc, last);
-    return comp > 0;
+    return input.queryParams.sortComparator(doc, last) > 0;
 };
 exports.isSortedAfterLast = isSortedAfterLast;
 const wasMatching = (input) => {
@@ -178,8 +165,7 @@ const doesMatchNow = (input) => {
     if (!doc) {
         return false;
     }
-    const ret = input.queryParams.queryMatcher(doc);
-    return ret;
+    return input.queryParams.queryMatcher(doc);
 };
 exports.doesMatchNow = doesMatchNow;
 const wasResultsEmpty = (input) => {

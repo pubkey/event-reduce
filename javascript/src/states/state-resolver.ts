@@ -1,5 +1,5 @@
 import type { StateResolveFunction } from '../types/index.js';
-import { getProperty, lastOfArray } from '../util.js';
+import { getProperty } from '../util.js';
 
 export const hasLimit: StateResolveFunction<any> = (input) => {
     return !!input.queryParams.limit;
@@ -10,11 +10,7 @@ export const isFindOne: StateResolveFunction<any> = (input) => {
 };
 
 export const hasSkip: StateResolveFunction<any> = (input) => {
-    if (input.queryParams.skip && input.queryParams.skip > 0) {
-        return true;
-    } else {
-        return false;
-    }
+    return !!input.queryParams.skip && input.queryParams.skip > 0;
 };
 
 export const isDelete: StateResolveFunction<any> = (input) => {
@@ -31,7 +27,8 @@ export const isUpdate: StateResolveFunction<any> = (input) => {
 
 
 export const wasLimitReached: StateResolveFunction<any> = (input) => {
-    return hasLimit(input) && input.previousResults.length >= (input.queryParams.limit as number);
+    const limit = input.queryParams.limit;
+    return !!limit && input.previousResults.length >= limit;
 };
 
 export const sortParamsChanged: StateResolveFunction<any> = (input) => {
@@ -47,8 +44,8 @@ export const sortParamsChanged: StateResolveFunction<any> = (input) => {
 
     for (let i = 0; i < sortFields.length; i++) {
         const field = sortFields[i];
-        const beforeData = getProperty(prev, field);
-        const afterData = getProperty(doc, field);
+        const beforeData = field.includes('.') ? getProperty(prev, field) : prev[field];
+        const afterData = field.includes('.') ? getProperty(doc, field) : doc[field];
         if (beforeData !== afterData) {
             return true;
         }
@@ -59,14 +56,12 @@ export const sortParamsChanged: StateResolveFunction<any> = (input) => {
 export const wasInResult: StateResolveFunction<any> = (input) => {
     const id = input.changeEvent.id;
     if (input.keyDocumentMap) {
-        const has = input.keyDocumentMap.has(id);
-        return has;
+        return input.keyDocumentMap.has(id);
     } else {
         const primary = input.queryParams.primaryKey;
         const results = input.previousResults;
         for (let i = 0; i < results.length; i++) {
-            const item = results[i];
-            if (item[primary] === id) {
+            if (results[i][primary] === id) {
                 return true;
             }
         }
@@ -76,20 +71,13 @@ export const wasInResult: StateResolveFunction<any> = (input) => {
 
 export const wasFirst: StateResolveFunction<any> = (input) => {
     const first = input.previousResults[0];
-    if (first && first[input.queryParams.primaryKey] === input.changeEvent.id) {
-        return true;
-    } else {
-        return false;
-    }
+    return !!first && first[input.queryParams.primaryKey] === input.changeEvent.id;
 };
 
 export const wasLast: StateResolveFunction<any> = (input) => {
-    const last = lastOfArray(input.previousResults);
-    if (last && last[input.queryParams.primaryKey] === input.changeEvent.id) {
-        return true;
-    } else {
-        return false;
-    }
+    const results = input.previousResults;
+    const last = results[results.length - 1];
+    return !!last && last[input.queryParams.primaryKey] === input.changeEvent.id;
 };
 
 
@@ -110,15 +98,12 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
      * sort order. Because both document could be equal.
      * So instead we have to return true.
      */
-    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    const comp = input.queryParams.sortComparator(
-        prev,
-        first
-    );
-    return comp < 0;
+    return input.queryParams.sortComparator(prev, first) < 0;
 };
 
 export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
@@ -127,20 +112,18 @@ export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    const last = lastOfArray(input.previousResults);
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
 
-    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    const comp = input.queryParams.sortComparator(
-        prev,
-        last
-    );
-    return comp > 0;
+    return input.queryParams.sortComparator(prev, last) > 0;
 };
 
 export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
@@ -154,15 +137,12 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    const comp = input.queryParams.sortComparator(
-        doc,
-        first
-    );
-    return comp < 0;
+    return input.queryParams.sortComparator(doc, first) < 0;
 };
 
 export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
@@ -171,20 +151,18 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    const last = lastOfArray(input.previousResults);
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
 
-    if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    const comp = input.queryParams.sortComparator(
-        doc,
-        last
-    );
-    return comp > 0;
+    return input.queryParams.sortComparator(doc, last) > 0;
 };
 
 
@@ -193,9 +171,7 @@ export const wasMatching: StateResolveFunction<any> = (input) => {
     if (!prev) {
         return false;
     }
-    return input.queryParams.queryMatcher(
-        prev
-    );
+    return input.queryParams.queryMatcher(prev);
 };
 
 export const doesMatchNow: StateResolveFunction<any> = (input) => {
@@ -203,10 +179,7 @@ export const doesMatchNow: StateResolveFunction<any> = (input) => {
     if (!doc) {
         return false;
     }
-    const ret = input.queryParams.queryMatcher(
-        doc
-    );
-    return ret;
+    return input.queryParams.queryMatcher(doc);
 };
 
 
