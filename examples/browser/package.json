@@ -24,7 +24,7 @@
         "@types/pouchdb-core": "7.0.15",
         "async-test-util": "2.5.0",
         "event-reduce-js": "file:../../javascript/",
-        "faker": "6.6.6",
+        "faker": "5.5.3",
         "json-pretty-html": "1.1.6",
         "minimongo": "7.1.1",
         "nedb": "1.8.0",
@@ -39,7 +39,7 @@
         "webpack-cli": "7.0.0"
     },
     "devDependencies": {
-        "@types/faker": "6.6.11",
+        "@types/faker": "5.5.9",
         "assert": "2.1.0",
         "concurrently": "9.2.1",
         "css-loader": "7.1.4",
