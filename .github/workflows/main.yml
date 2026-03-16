@@ -16,7 +16,9 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     env:
       TAG: "${{github.sha}}"
       COMPOSE_DOCKER_CLI_BUILD: 1
@@ -55,4 +57,6 @@ jobs:
           working-directory: ./examples/browser
           run: npm run test
 
-      - run: npm run lint
+      - name: lint
+        working-directory: ./javascript
+        run: npm run lint
