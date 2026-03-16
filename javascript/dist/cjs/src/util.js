@@ -1,21 +1,32 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProperty = exports.isObject = exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = void 0;
+exports.lastOfArray = lastOfArray;
+exports.randomOfArray = randomOfArray;
+exports.shuffleArray = shuffleArray;
+exports.normalizeSortField = normalizeSortField;
+exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
+exports.replaceCharAt = replaceCharAt;
+exports.mapToObject = mapToObject;
+exports.objectToMap = objectToMap;
+exports.cloneMap = cloneMap;
+exports.flatClone = flatClone;
+exports.ensureNotFalsy = ensureNotFalsy;
+exports.mergeSets = mergeSets;
+exports.roundToTwoDecimals = roundToTwoDecimals;
+exports.isObject = isObject;
+exports.getProperty = getProperty;
 function lastOfArray(ar) {
     return ar[ar.length - 1];
 }
-exports.lastOfArray = lastOfArray;
 /**
  * @link https://stackoverflow.com/a/5915122
  */
 function randomOfArray(items) {
     return items[Math.floor(Math.random() * items.length)];
 }
-exports.randomOfArray = randomOfArray;
 function shuffleArray(arr) {
     return arr.slice().sort(() => (Math.random() - 0.5));
 }
-exports.shuffleArray = shuffleArray;
 /**
  * normalizes sort-field
  * in: '-age'
@@ -29,7 +40,6 @@ function normalizeSortField(field) {
         return field;
     }
 }
-exports.normalizeSortField = normalizeSortField;
 function getSortFieldsOfQuery(query) {
     if (!query.sort) {
         // if no sort-order is set, use the primary key
@@ -44,14 +54,12 @@ function getSortFieldsOfQuery(query) {
         }
     });
 }
-exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
 /**
  *  @link https://stackoverflow.com/a/1431113
  */
 function replaceCharAt(str, index, replacement) {
     return str.substr(0, index) + replacement + str.substr(index + replacement.length);
 }
-exports.replaceCharAt = replaceCharAt;
 function mapToObject(map) {
     const ret = {};
     map.forEach((value, key) => {
@@ -59,7 +67,6 @@ function mapToObject(map) {
     });
     return ret;
 }
-exports.mapToObject = mapToObject;
 function objectToMap(object) {
     const ret = new Map();
     Object.entries(object).forEach(([k, v]) => {
@@ -67,7 +74,6 @@ function objectToMap(object) {
     });
     return ret;
 }
-exports.objectToMap = objectToMap;
 function cloneMap(map) {
     const ret = new Map();
     map.forEach((value, key) => {
@@ -75,7 +81,6 @@ function cloneMap(map) {
     });
     return ret;
 }
-exports.cloneMap = cloneMap;
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone
@@ -84,14 +89,12 @@ exports.cloneMap = cloneMap;
 function flatClone(obj) {
     return Object.assign({}, obj);
 }
-exports.flatClone = flatClone;
 function ensureNotFalsy(obj) {
     if (!obj) {
         throw new Error('ensureNotFalsy() is falsy');
     }
     return obj;
 }
-exports.ensureNotFalsy = ensureNotFalsy;
 function mergeSets(sets) {
     let ret = new Set();
     sets.forEach(set => {
@@ -99,19 +102,16 @@ function mergeSets(sets) {
     });
     return ret;
 }
-exports.mergeSets = mergeSets;
 /**
  * @link https://stackoverflow.com/a/12830454/3443137
  */
 function roundToTwoDecimals(num) {
     return parseFloat(num.toFixed(2));
 }
-exports.roundToTwoDecimals = roundToTwoDecimals;
 function isObject(value) {
     const type = typeof value;
     return value !== null && (type === 'object' || type === 'function');
 }
-exports.isObject = isObject;
 function getProperty(object, path, value) {
     if (Array.isArray(path)) {
         path = path.join('.');
@@ -145,7 +145,6 @@ function getProperty(object, path, value) {
     }
     return object === undefined ? value : object;
 }
-exports.getProperty = getProperty;
 function isStringIndex(object, key) {
     if (typeof key !== 'number' && Array.isArray(object)) {
         const index = Number.parseInt(key, 10);

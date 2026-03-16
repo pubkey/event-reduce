@@ -27,25 +27,25 @@ export function mingoCollectionCreator(): Collection {
             }
         },
         getQueryParams(query) {
-            const queryInstance = new Query(query.selector);
+            const queryInstance = new Query(query.selector as any);
             return {
                 primaryKey: '_id',
                 skip: query.skip ? query.skip : undefined,
                 limit: query.limit ? query.limit : undefined,
-                queryMatcher: d => queryInstance.test(d),
+                queryMatcher: d => queryInstance.test(d as any),
                 sortFields: getSortFieldsOfQuery(query),
                 sortComparator: getMingoSortComparator(query)
             };
         },
         query(query) {
-            const queryInstance = new Query(query.selector);
+            const queryInstance = new Query(query.selector as any);
             const queryParams = this.getQueryParams(query);
             const skip = query.skip ? query.skip : 0;
             const limit = query.limit ? query.limit : Infinity;
             const skipPlusLimit = skip + limit;
 
             let rows = data
-                .filter(d => queryInstance.test(d))
+                .filter(d => queryInstance.test(d as any))
                 .sort(queryParams.sortComparator);
 
             rows = rows.slice(skip, skipPlusLimit);

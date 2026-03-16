@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTestProcedures = exports.sortParamChanged = exports.oneThatWasCrashing = exports.insertFiveSortedThenRemoveSorted = exports.insertFiveSorted = exports.insertChangeAndCleanup = void 0;
+exports.insertChangeAndCleanup = insertChangeAndCleanup;
+exports.insertFiveSorted = insertFiveSorted;
+exports.insertFiveSortedThenRemoveSorted = insertFiveSortedThenRemoveSorted;
+exports.oneThatWasCrashing = oneThatWasCrashing;
+exports.sortParamChanged = sortParamChanged;
+exports.getTestProcedures = getTestProcedures;
 const data_generator_js_1 = require("./data-generator.js");
 const util_js_1 = require("../util.js");
 const async_test_util_1 = require("async-test-util");
@@ -59,7 +64,6 @@ function insertChangeAndCleanup() {
     }
     return ret;
 }
-exports.insertChangeAndCleanup = insertChangeAndCleanup;
 function insertFiveSorted() {
     return [
         {
@@ -118,7 +122,6 @@ function insertFiveSorted() {
         }
     ];
 }
-exports.insertFiveSorted = insertFiveSorted;
 function insertFiveSortedThenRemoveSorted() {
     const inserts = insertFiveSorted();
     const ret = inserts.slice();
@@ -133,7 +136,6 @@ function insertFiveSortedThenRemoveSorted() {
     });
     return ret;
 }
-exports.insertFiveSortedThenRemoveSorted = insertFiveSortedThenRemoveSorted;
 function oneThatWasCrashing() {
     return [
         {
@@ -258,7 +260,6 @@ function oneThatWasCrashing() {
         }
     ];
 }
-exports.oneThatWasCrashing = oneThatWasCrashing;
 function sortParamChanged() {
     return [
         {
@@ -281,7 +282,6 @@ function sortParamChanged() {
         }
     ];
 }
-exports.sortParamChanged = sortParamChanged;
 let CACHE;
 function getTestProcedures() {
     if (!CACHE) {
@@ -295,5 +295,4 @@ function getTestProcedures() {
     }
     return CACHE;
 }
-exports.getTestProcedures = getTestProcedures;
 //# sourceMappingURL=procedures.js.map

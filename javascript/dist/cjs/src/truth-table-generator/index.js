@@ -17,7 +17,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doesActionWork = exports.getNextWorkingAction = exports.incrementTruthTableActions = exports.generateTruthTable = void 0;
+exports.generateTruthTable = generateTruthTable;
+exports.incrementTruthTableActions = incrementTruthTableActions;
+exports.getNextWorkingAction = getNextWorkingAction;
+exports.doesActionWork = doesActionWork;
 const deep_equal_1 = __importDefault(require("deep-equal"));
 const index_js_1 = require("../index.js");
 const index_js_2 = require("../actions/index.js");
@@ -48,7 +51,6 @@ function generateTruthTable({ queries, procedures, table = new Map(), log = fals
     }
     return table;
 }
-exports.generateTruthTable = generateTruthTable;
 function incrementTruthTableActions(table = new Map(), queries, procedure, log = false) {
     if (log) {
         console.log('incrementTruthTableActions()');
@@ -96,7 +98,6 @@ function incrementTruthTableActions(table = new Map(), queries, procedure, log =
     }
     return changesCount;
 }
-exports.incrementTruthTableActions = incrementTruthTableActions;
 function getNextWorkingAction(input, resultAfter, lastWorkingActionId, log = false) {
     let t = lastWorkingActionId;
     while (t <= index_js_2.orderedActionList.length) {
@@ -113,7 +114,6 @@ function getNextWorkingAction(input, resultAfter, lastWorkingActionId, log = fal
     }
     throw new Error('this should never happen');
 }
-exports.getNextWorkingAction = getNextWorkingAction;
 /**
  * returns true if the action calculates the same
  * results as given
@@ -133,5 +133,4 @@ function doesActionWork(input, resultAfter, actionName, log = false) {
         return false;
     }
 }
-exports.doesActionWork = doesActionWork;
 //# sourceMappingURL=index.js.map

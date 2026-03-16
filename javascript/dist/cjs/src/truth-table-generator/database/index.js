@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyChangeEvent = void 0;
+exports.applyChangeEvent = applyChangeEvent;
 __exportStar(require("./mingo.js"), exports);
 function applyChangeEvent(collection, changeEvent) {
     switch (changeEvent.operation) {
@@ -29,5 +29,4 @@ function applyChangeEvent(collection, changeEvent) {
             break;
     }
 }
-exports.applyChangeEvent = applyChangeEvent;
 //# sourceMappingURL=index.js.map

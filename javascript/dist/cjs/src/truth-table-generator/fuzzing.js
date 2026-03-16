@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fuzzing = void 0;
+exports.fuzzing = fuzzing;
 const queries_js_1 = require("./queries.js");
 const data_generator_js_1 = require("./data-generator.js");
 const index_js_1 = require("../states/index.js");
@@ -91,5 +91,4 @@ function fuzzing(table, queriesAmount = 30, eventsAmount = 100) {
         amountOfOptimized
     };
 }
-exports.fuzzing = fuzzing;
 //# sourceMappingURL=fuzzing.js.map

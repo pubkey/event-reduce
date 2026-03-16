@@ -14,7 +14,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logStateSet = exports.getStateSet = exports.resolveState = exports.stateResolveFunctionByIndex = exports.stateResolveFunctions = exports.orderedStateList = void 0;
+exports.stateResolveFunctionByIndex = exports.stateResolveFunctions = exports.orderedStateList = void 0;
+exports.resolveState = resolveState;
+exports.getStateSet = getStateSet;
+exports.logStateSet = logStateSet;
 const state_resolver_js_1 = require("./state-resolver.js");
 __exportStar(require("./state-resolver.js"), exports);
 /**
@@ -89,7 +92,6 @@ function resolveState(stateName, input) {
     }
     return fn(input);
 }
-exports.resolveState = resolveState;
 function getStateSet(input) {
     let set = '';
     for (let i = 0; i < exports.orderedStateList.length; i++) {
@@ -100,11 +102,9 @@ function getStateSet(input) {
     }
     return set;
 }
-exports.getStateSet = getStateSet;
 function logStateSet(stateSet) {
     exports.orderedStateList.forEach((state, index) => {
         console.log('state: ' + state + ' : ' + stateSet[index]);
     });
 }
-exports.logStateSet = logStateSet;
 //# sourceMappingURL=index.js.map
