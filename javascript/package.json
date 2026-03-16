@@ -83,7 +83,7 @@
     "@types/node": "22.19.15",
     "array-shuffle": "3.0.0",
     "assert": "2.1.0",
-    "async-test-util": "2.2.1",
+    "async-test-util": "2.5.0",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "deep-equal": "2.2.3",
