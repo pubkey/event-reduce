@@ -17,6 +17,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     env:
       TAG: "${{github.sha}}"
       COMPOSE_DOCKER_CLI_BUILD: 1
