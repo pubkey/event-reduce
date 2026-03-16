@@ -17,7 +17,8 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pubkey/event-reduce.git"
+    "url": "git+https://github.com/pubkey/event-reduce.git",
+    "directory": "javascript"
   },
   "exports": {
     ".": {
