@@ -10,7 +10,7 @@ export declare function shuffleArray<T>(arr: T[]): T[];
  * in: '-age'
  * out: 'age'
  */
-export declare function normalizeSortField(field: string): string;
+export declare function normalizeSortField(field: string | any): string;
 export declare function getSortFieldsOfQuery(query: MongoQuery): string[];
 /**
  *  @link https://stackoverflow.com/a/1431113

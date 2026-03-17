@@ -16,8 +16,19 @@ export function shuffleArray(arr) {
  * out: 'age'
  */
 export function normalizeSortField(field) {
-    if (field.startsWith('-')) {
-        return field.substr(1);
+    if (typeof field === 'string') {
+        if (field.startsWith('-')) {
+            return field.substr(1);
+        }
+        else {
+            return field;
+        }
+    }
+    else if (Array.isArray(field)) {
+        return normalizeSortField(field[0]);
+    }
+    else if (typeof field === 'object' && field !== null) {
+        return normalizeSortField(Object.keys(field)[0]);
     }
     else {
         return field;
