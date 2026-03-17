@@ -17,24 +17,35 @@ implementations.forEach(imp => {
     });
 });
 
-async function printBrowserConsoleMessages(t: TestController) {
+/**
+ * Polls browser console messages and prints only ones that
+ * have not been printed yet, using index-based deduplication.
+ */
+async function pollBrowserConsoleMessages(
+    t: TestController,
+    seenCounts: { log: number; warn: number; error: number; info: number }
+) {
     const messages = await t.getBrowserConsoleMessages();
-    if (messages.error.length > 0) {
-        console.error('--- Browser console errors ---');
-        messages.error.forEach(msg => console.error('  ERROR: ' + msg));
+
+    for (let i = seenCounts.error; i < messages.error.length; i++) {
+        console.error('  BROWSER ERROR: ' + messages.error[i]);
     }
-    if (messages.warn.length > 0) {
-        console.warn('--- Browser console warnings ---');
-        messages.warn.forEach(msg => console.warn('  WARN: ' + msg));
+    seenCounts.error = messages.error.length;
+
+    for (let i = seenCounts.warn; i < messages.warn.length; i++) {
+        console.warn('  BROWSER WARN: ' + messages.warn[i]);
     }
-    if (messages.log.length > 0) {
-        console.log('--- Browser console logs ---');
-        messages.log.forEach(msg => console.log('  LOG: ' + msg));
+    seenCounts.warn = messages.warn.length;
+
+    for (let i = seenCounts.log; i < messages.log.length; i++) {
+        console.log('  BROWSER LOG: ' + messages.log[i]);
     }
-    if (messages.info.length > 0) {
-        console.log('--- Browser console info ---');
-        messages.info.forEach(msg => console.log('  INFO: ' + msg));
+    seenCounts.log = messages.log.length;
+
+    for (let i = seenCounts.info; i < messages.info.length; i++) {
+        console.log('  BROWSER INFO: ' + messages.info[i]);
     }
+    seenCounts.info = messages.info.length;
 }
 
 /* tslint:disable-next-line */
@@ -46,6 +57,7 @@ const rootUrl = 'http://0.0.0.0:8888/';
 for (const tech of techs) {
     test.page(rootUrl + '?tech=' + tech)
         ('run in both modes (' + tech + ')', async t => {
+            const seenCounts = { log: 0, warn: 0, error: 0, info: 0 };
 
             async function getLoadingState() {
                 const loadingState = await Selector('#loading-state').innerText;
@@ -56,6 +68,7 @@ for (const tech of techs) {
             await wait(100);
 
             await waitUntil(async () => {
+                await pollBrowserConsoleMessages(t, seenCounts);
                 const state = await getLoadingState();
                 return state === DEFAULT_LOADING_STATE;
             });
@@ -64,10 +77,12 @@ for (const tech of techs) {
             await wait(100);
 
             await waitUntil(async () => {
+                await pollBrowserConsoleMessages(t, seenCounts);
                 const state = await getLoadingState();
                 return state === DEFAULT_LOADING_STATE;
             });
 
-            await printBrowserConsoleMessages(t);
+            // Final poll for any remaining messages
+            await pollBrowserConsoleMessages(t, seenCounts);
         });
 }
