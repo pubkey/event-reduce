@@ -17,6 +17,26 @@ implementations.forEach(imp => {
     });
 });
 
+async function printBrowserConsoleMessages(t: TestController) {
+    const messages = await t.getBrowserConsoleMessages();
+    if (messages.error.length > 0) {
+        console.error('--- Browser console errors ---');
+        messages.error.forEach(msg => console.error('  ERROR: ' + msg));
+    }
+    if (messages.warn.length > 0) {
+        console.warn('--- Browser console warnings ---');
+        messages.warn.forEach(msg => console.warn('  WARN: ' + msg));
+    }
+    if (messages.log.length > 0) {
+        console.log('--- Browser console logs ---');
+        messages.log.forEach(msg => console.log('  LOG: ' + msg));
+    }
+    if (messages.info.length > 0) {
+        console.log('--- Browser console info ---');
+        messages.info.forEach(msg => console.log('  INFO: ' + msg));
+    }
+}
+
 /* tslint:disable-next-line */
 fixture `A fixture`;
 
@@ -47,5 +67,7 @@ for (const tech of techs) {
                 const state = await getLoadingState();
                 return state === DEFAULT_LOADING_STATE;
             });
+
+            await printBrowserConsoleMessages(t);
         });
 }
