@@ -26,7 +26,7 @@ jobs:
       NODE_OPTIONS: "--max-old-space-size=4096"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v4
         with:
@@ -39,7 +39,7 @@ jobs:
           npm run build
 
       - name: javascript tests
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: GabrielBB/xvfb-action@v1.7
         with:
           working-directory: ./javascript
           run: npm run test
@@ -52,7 +52,7 @@ jobs:
           npm run build
 
       - name: test examples
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: GabrielBB/xvfb-action@v1.7
         with:
           working-directory: ./examples/browser
           run: npm run test
