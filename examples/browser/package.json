@@ -35,7 +35,7 @@
         "pouchdb-find": "8.0.1",
         "rxjs": "7.8.2",
         "stream": "0.0.3",
-        "webpack": "5.106.0",
+        "webpack": "5.106.1",
         "webpack-cli": "7.0.2"
     },
     "devDependencies": {
