@@ -81,7 +81,7 @@
   "devDependencies": {
     "@types/deep-equal": "1.0.4",
     "@types/mocha": "10.0.10",
-    "@types/node": "25.7.0",
+    "@types/node": "25.8.0",
     "array-shuffle": "4.1.0",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
