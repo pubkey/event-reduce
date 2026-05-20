@@ -44,7 +44,7 @@
         "concurrently": "9.2.1",
         "css-loader": "7.1.4",
         "less": "4.6.4",
-        "less-loader": "12.3.3",
+        "less-loader": "13.0.0",
         "local-web-server": "5.4.0",
         "path": "0.12.7",
         "style-loader": "4.0.0",
