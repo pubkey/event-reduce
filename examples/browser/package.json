@@ -41,7 +41,7 @@
     "devDependencies": {
         "@types/faker": "5.5.9",
         "assert": "2.1.0",
-        "concurrently": "10.0.3",
+        "concurrently": "10.0.5",
         "css-loader": "7.1.4",
         "less": "4.6.7",
         "less-loader": "13.0.0",
