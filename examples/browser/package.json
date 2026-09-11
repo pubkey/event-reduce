@@ -43,7 +43,7 @@
         "assert": "2.1.0",
         "concurrently": "10.0.5",
         "css-loader": "7.1.5",
-        "less": "4.6.7",
+        "less": "4.9.1",
         "less-loader": "13.0.0",
         "local-web-server": "5.4.0",
         "path": "0.12.7",
