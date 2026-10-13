@@ -11,7 +11,7 @@ import {
 } from '../../src/types/index.js';
 import { randomChangeEvent, randomHuman, randomHumans } from '../../src/truth-table-generator/data-generator.js';
 import { Human } from '../../src/truth-table-generator/types.js';
-import { insertFirst, insertLast, removeExisting, insertAtSortPosition } from '../../src/actions/action-functions.js';
+import { insertFirst, insertLast, removeExisting, replaceExisting, insertAtSortPosition } from '../../src/actions/action-functions.js';
 import { mingoCollectionCreator } from '../../src/truth-table-generator/database/mingo.js';
 
 const pseudoCollection = mingoCollectionCreator();
@@ -153,6 +153,119 @@ describe('actions.test.ts', () => {
             };
             runCheckedAction(removeExisting, input);
             assert.equal(input.previousResults.length, 0);
+        });
+        it('should remove the correct document from the middle with keyDocumentMap', () => {
+            const docs = randomHumans(20);
+            const deleteMe = docs[10];
+            const input: ActionFunctionInput<Human> = {
+                previousResults: docs,
+                keyDocumentMap: docsToMap('_id', docs),
+                changeEvent: {
+                    operation: 'DELETE',
+                    doc: null,
+                    id: deleteMe._id,
+                    previous: deleteMe
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['_id']
+                })
+            };
+            runCheckedAction(removeExisting, input);
+            assert.strictEqual(input.previousResults.length, 19);
+            assert.ok(!input.previousResults.find(d => d._id === deleteMe._id));
+            assert.strictEqual(input.keyDocumentMap?.has(deleteMe._id), false);
+        });
+        it('should work when keyDocumentMap holds a different reference than the results', () => {
+            const docs = randomHumans(20);
+            const deleteMe = docs[10];
+            // map built from clones, so indexOf() cannot find the reference
+            const clones = docs.map(d => Object.assign({}, d));
+            const input: ActionFunctionInput<Human> = {
+                previousResults: docs,
+                keyDocumentMap: docsToMap('_id', clones),
+                changeEvent: {
+                    operation: 'DELETE',
+                    doc: null,
+                    id: deleteMe._id,
+                    previous: deleteMe
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['_id']
+                })
+            };
+            runCheckedAction(removeExisting, input);
+            assert.strictEqual(input.previousResults.length, 19);
+            assert.ok(!input.previousResults.find(d => d._id === deleteMe._id));
+        });
+    });
+    describe('.replaceExisting()', () => {
+        it('should replace the document at the same position with keyDocumentMap', () => {
+            const docs = randomHumans(20);
+            const previous = docs[7];
+            const doc: Human = Object.assign({}, previous, { age: 99 });
+            const input: ActionFunctionInput<Human> = {
+                previousResults: docs,
+                keyDocumentMap: docsToMap('_id', docs),
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc,
+                    id: doc._id,
+                    previous
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['_id']
+                })
+            };
+            runCheckedAction(replaceExisting, input);
+            assert.strictEqual(input.previousResults.length, 20);
+            assert.strictEqual(input.previousResults[7], doc);
+            assert.strictEqual(input.keyDocumentMap?.get(doc._id), doc);
+        });
+        it('should replace the document without keyDocumentMap', () => {
+            const docs = randomHumans(20);
+            const previous = docs[7];
+            const doc: Human = Object.assign({}, previous, { age: 99 });
+            const input: ActionFunctionInput<Human> = {
+                previousResults: docs,
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc,
+                    id: doc._id,
+                    previous
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['_id']
+                })
+            };
+            runCheckedAction(replaceExisting, input);
+            assert.strictEqual(input.previousResults[7], doc);
+        });
+        it('should work when keyDocumentMap holds a different reference than the results', () => {
+            const docs = randomHumans(20);
+            const previous = docs[7];
+            const doc: Human = Object.assign({}, previous, { age: 99 });
+            const clones = docs.map(d => Object.assign({}, d));
+            const input: ActionFunctionInput<Human> = {
+                previousResults: docs,
+                keyDocumentMap: docsToMap('_id', clones),
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc,
+                    id: doc._id,
+                    previous
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['_id']
+                })
+            };
+            runCheckedAction(replaceExisting, input);
+            assert.strictEqual(input.previousResults[7], doc);
+            assert.strictEqual(input.keyDocumentMap?.get(doc._id), doc);
         });
     });
     describe('.insertAtSortPosition()', () => {
