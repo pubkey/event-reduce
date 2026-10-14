@@ -1,6 +1,6 @@
 <br/>
 
-<h1 align="center">Event-Reduce</h1>
+<h1 align="center">Event-Reduce Algorithm</h1>
 <p align="center">
   <strong>An algorithm to optimize database queries that run multiple times</strong>
 </p>
