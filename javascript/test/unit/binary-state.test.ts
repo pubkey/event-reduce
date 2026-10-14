@@ -44,6 +44,12 @@ describe('binary-state.test.ts', () => {
                 decimalToPaddedBinary(7).endsWith('0111')
             );
         });
+        it('should not cut off the bits above 32', () => {
+            assert.strictEqual(
+                decimalToPaddedBinary(2 ** 32, 33),
+                '1' + '0'.repeat(32)
+            );
+        });
     });
     describe('getNextState()', () => {
         it('should get the initial state', () => {

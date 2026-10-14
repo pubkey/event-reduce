@@ -24,7 +24,8 @@ export function decimalToPaddedBinary(
     decimal: number,
     padding: number = STATE_SET_LENGTH
 ) {
-    const binary = (decimal >>> 0).toString(2);
+    // >>> 0 would cut off everything above 32 bits, only use it for the two's complement of negative numbers
+    const binary = (decimal < 0 ? decimal >>> 0 : decimal).toString(2);
     const padded = binary.padStart(padding, '0');
     return padded;
 }
