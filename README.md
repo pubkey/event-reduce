@@ -119,6 +119,14 @@ Use EventReduce whenever you observe query results and need to keep them up to d
 * reduce the bandwith when streaming realtime query results from the backend to the client
 * create a better form of caching where instead of invalidating the cache on write, you update its content
 
+## Used by RxDB
+
+[RxDB](https://rxdb.info/), the local-first JavaScript database, uses EventReduce for its live queries since [version 9.0.0](https://rxdb.info/releases/9.0.0.html), where it is enabled by default.
+When an app subscribes to a query, RxDB keeps the results up to date by running each write event of the collection through EventReduce.
+Only when EventReduce returns `runFullQueryAgain`, RxDB queries the storage again.
+So most writes update the observed results without an extra read from the storage, whichever storage RxDB runs on.
+Before, RxDB used its own `QueryChangeDetection`, which was made of many handwritten if-else comparisons.
+
 ## Limitations
 
 - EventReduce only works with queries that have a [predictable](https://stackoverflow.com/a/11599283) sort-order for any given documents. (you can make any query predicable by adding the primary key as last sort parameter)

@@ -2,6 +2,37 @@
 
 This is the JavaScript implementation of the [EventReduce algorithm](https://github.com/pubkey/event-reduce): update live query results from database change events without re-running the query.
 
+## What is EventReduce?
+
+EventReduce is an algorithm to optimize database queries that run multiple times.
+When you observe the results of a query, every write to the database can change them.
+The simple solution is to run the full query again after each write, which costs disk-IO and time.
+EventReduce instead takes the write event and the previous results of the query and calculates the new results on the CPU, without touching the database.
+
+1. You run a query and get its results.
+2. A write event (insert, update or delete) changes some data.
+3. EventReduce gets the event and the previous results and tells you what to do with the results, for example `insertFirst`, `removeExisting` or `insertAtSortPosition`.
+   Only when that is not possible, it tells you to run the query again (`runFullQueryAgain`).
+
+To decide this quickly, EventReduce describes the event and the previous results with 18 boolean state functions like `isInsert()`, `wasResultsEmpty()` or `sortParamsChanged()`.
+A [binary decision diagram](https://github.com/pubkey/binary-decision-diagram) that was created from the truth table of all state combinations and optimized for the fewest and cheapest calls,
+then picks one of 16 action functions that changes the results exactly like the database would.
+
+In the [browser demo](https://pubkey.github.io/event-reduce/), about **94%** of randomly generated events could be optimized this way,
+and new query results are displayed up to **12 times** faster after a write.
+
+EventReduce works with any database and query language, as long as you can tell it which documents match the query and how they are sorted.
+The sort order must be [predictable](https://stackoverflow.com/a/11599283), which you get by adding the primary key as the last sort field.
+
+## Where is it used?
+
+- [RxDB](https://rxdb.info/), the local-first JavaScript database, uses EventReduce for its realtime queries since [version 9.0.0](https://rxdb.info/releases/9.0.0.html).
+  When you subscribe to a query in RxDB, writes to the collection update the results with EventReduce instead of running the query again.
+- It is a good fit wherever query results are observed or cached:
+  - reduce the latency until a change to the database updates your application
+  - make observing query results more scalable by doing less disk-IO
+  - reduce the bandwidth when streaming realtime query results from the backend to the client
+  - update a query cache on writes instead of invalidating it
 
 ## Installation
 
