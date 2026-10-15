@@ -30,9 +30,8 @@ To let it run on a server, use this command so you can exit the terminal and it 
 `npm run optimize-bdd`
 
 Optimize the binary decision diagramm to get the one which has the best performance.
-Because there are 2^13 permutations or the bdd order, we just generate a random order and test it.
-As soon as we find a better bdd, it is written to the generated files.
-Run this until it no longer finds a better bdd. I had let this run about one week.
-
-To let it run on a server, use this command so you can exit the terminal and it still runs:
-`nohup npm run optimize-bdd &> optimize-bdd.out &`
+It uses `optimizeOrdering()` of the [binary-decision-diagram](https://github.com/pubkey/binary-decision-diagram) library
+to deterministically find the order of the state functions with the lowest expected cpu time per resolve.
+The measured runtime of each state function is used as its cost and state sets that occur often in the example queries are weighted higher.
+It takes a few seconds and often proves that no better order exists.
+If the found bdd is better than the current one, it is written to the generated files.

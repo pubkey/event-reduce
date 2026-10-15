@@ -1,6 +1,7 @@
 import {
     RootNode,
-    resolveWithSimpleBdd,
+    bddToPackedBdd,
+    resolveWithPackedBdd,
     ResolverFunctions
 } from 'binary-decision-diagram';
 import {
@@ -10,12 +11,14 @@ import {
 import type {
     MongoQuery,
     StateResolveFunctionInput,
+    StateSet,
     ResultKeyDocumentMap,
     QueryParams,
     StateName,
     ActionFunctionInput
 } from '../types/index.js';
 import {
+    getStateSet,
     orderedStateList,
     stateResolveFunctions
 } from '../states/index.js';
@@ -179,23 +182,15 @@ export type FunctionUsageCount = {
 
 const pseudoCollection = mingoCollectionCreator();
 
-export function countFunctionUsages(
-    bdd: RootNode,
+/**
+ * Runs all procedures and calls the handler
+ * with the input of each query for each change event.
+ */
+function forEachExampleInput(
     queries: MongoQuery[],
-    procedures: Procedure[]
-): FunctionUsageCount {
-    const ret: FunctionUsageCount = {} as any;
-    orderedStateList.forEach(stateName => ret[stateName] = 0);
-
-    const countingResolvers: ResolverFunctions = {};
-    orderedStateList.forEach((stateName, index) => {
-        const fn = stateResolveFunctions[stateName];
-        countingResolvers[index] = (i: StateResolveFunctionInput<Human>) => {
-            ret[stateName] = ret[stateName] + 1;
-            return fn(i);
-        };
-    });
-
+    procedures: Procedure[],
+    handler: (input: StateResolveFunctionInput<Human>) => void
+) {
     const queryParamsByQuery: Map<MongoQuery, QueryParams<Human>> = new Map();
     queries.forEach(query => {
         queryParamsByQuery.set(
@@ -224,21 +219,63 @@ export function countFunctionUsages(
             for (const query of queries) {
                 const params = queryParamsByQuery.get(query) as QueryParams<Human>;
                 const previousResults = resultsBefore.get(query) as Human[];
+                const keyDocumentMap: ResultKeyDocumentMap<Human> = new Map();
+                previousResults.forEach(d => keyDocumentMap.set(d._id, d));
                 const input: ActionFunctionInput<Human> = {
                     changeEvent,
                     previousResults,
-                    queryParams: params
+                    queryParams: params,
+                    keyDocumentMap
                 };
-
-                const resolvedInput = resolveWithSimpleBdd(
-                    bdd.toSimpleBdd(),
-                    countingResolvers,
-                    input
-                );
+                handler(input);
             }
         }
     }
+}
 
+export function countFunctionUsages(
+    bdd: RootNode,
+    queries: MongoQuery[],
+    procedures: Procedure[]
+): FunctionUsageCount {
+    const ret: FunctionUsageCount = {} as any;
+    orderedStateList.forEach(stateName => ret[stateName] = 0);
+
+    const countingResolvers: ResolverFunctions = {};
+    orderedStateList.forEach((stateName, index) => {
+        const fn = stateResolveFunctions[stateName];
+        countingResolvers[index] = (i: StateResolveFunctionInput<Human>) => {
+            ret[stateName] = ret[stateName] + 1;
+            return fn(i);
+        };
+    });
+
+    const packedBdd = bddToPackedBdd(bdd);
+    forEachExampleInput(queries, procedures, input => {
+        resolveWithPackedBdd(
+            packedBdd,
+            countingResolvers,
+            input
+        );
+    });
+
+    return ret;
+}
+
+/**
+ * Counts how often each state set occurs in the example queries and procedures.
+ * Used as row weights so that the bdd optimizer
+ * makes the common state sets cheap to resolve.
+ */
+export function countStateSetOccurrences(
+    queries: MongoQuery[],
+    procedures: Procedure[]
+): Map<StateSet, number> {
+    const ret: Map<StateSet, number> = new Map();
+    forEachExampleInput(queries, procedures, input => {
+        const stateSet = getStateSet(input);
+        ret.set(stateSet, (ret.get(stateSet) || 0) + 1);
+    });
     return ret;
 }
 

@@ -1,24 +1,24 @@
 import {
-    SimpleBdd,
-    minimalStringToSimpleBdd,
-    resolveWithSimpleBdd
+    PackedBdd,
+    packedBddFromBase64String,
+    resolveWithPackedBdd
 } from 'binary-decision-diagram';
 import type { StateResolveFunctionInput } from '../types/index.js';
 import { stateResolveFunctionByIndex } from '../states/index.js';
 
-export const minimalBddString = '${minimalBddString}';
+export const packedBddString = '${packedBddString}';
 
-let simpleBdd: SimpleBdd | undefined;
-export function getSimpleBdd() {
-    if (!simpleBdd) {
-        simpleBdd = minimalStringToSimpleBdd(minimalBddString);
+let packedBdd: PackedBdd | undefined;
+export function getPackedBdd(): PackedBdd {
+    if (!packedBdd) {
+        packedBdd = packedBddFromBase64String(packedBddString);
     }
-    return simpleBdd;
+    return packedBdd;
 }
 
 export const resolveInput = (input: StateResolveFunctionInput<any>) => {
-    return resolveWithSimpleBdd(
-        getSimpleBdd(),
+    return resolveWithPackedBdd(
+        getPackedBdd(),
         stateResolveFunctionByIndex,
         input
     );

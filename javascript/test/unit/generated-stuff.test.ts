@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import {
     ResolverFunctions,
     booleanStringToBoolean,
-    resolveWithSimpleBdd,
+    resolveWithPackedBdd,
     fillTruthTable,
     createBddFromTruthTable
 } from 'binary-decision-diagram';
@@ -21,7 +21,7 @@ import {
 } from '../../src/truth-table-generator/util.js';
 import { OUTPUT_TRUTH_TABLE_PATH } from '../../src/truth-table-generator/config.js';
 import { StateActionIdMap, Human } from '../../src/truth-table-generator/types.js';
-import { getSimpleBdd } from '../../src/bdd/bdd.generated.js';
+import { getPackedBdd } from '../../src/bdd/bdd.generated.js';
 import {
     StateResolveFunctionInput,
     QueryParams,
@@ -64,8 +64,8 @@ describe('generated-stuff.test.ts', () => {
             const resolvers = getResolverFunctions();
             console.dir(truthTable);
             for (const [key, value] of truthTable.entries()) {
-                const bddValue = resolveWithSimpleBdd(
-                    getSimpleBdd(),
+                const bddValue = resolveWithPackedBdd(
+                    getPackedBdd(),
                     resolvers,
                     key
                 );

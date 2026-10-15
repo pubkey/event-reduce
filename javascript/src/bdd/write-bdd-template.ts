@@ -18,13 +18,13 @@ export const BDD_TEMPLATE_GOAL = path.join(
 );
 
 export function writeBddTemplate(
-    minimalBddString: string,
+    packedBddString: string,
     performanceMeasurement: PerformanceMeasurement,
     quality: number
 ) {
     let templateString: string = fs.readFileSync(BDD_TEMPLATE_LOCATION, 'utf-8');
     const replaceVariables = {
-        minimalBddString: '\'' + minimalBddString + '\'',
+        packedBddString: '\'' + packedBddString + '\'',
     };
 
     Object.entries(replaceVariables).forEach(([key, content]) => {
@@ -37,7 +37,7 @@ export function writeBddTemplate(
         BDD_OPTIMIZE_STATE_LOCATION,
         JSON.stringify({
             performanceMeasurement,
-            minimalBddString,
+            packedBddString,
             quality
         }, null, 4),
         { encoding: 'utf8', flag: 'w' }
