@@ -1,11 +1,13 @@
 # EventReduce JavaScript Implementation
 
-This is the javascript version of the [EventReduce algorithm](https://github.com/pubkey/event-reduce).
+This is the JavaScript implementation of the [EventReduce algorithm](https://github.com/pubkey/event-reduce): update live query results from database change events without re-running the query.
 
 
 ## Installation
 
-`npm run install event-reduce-js --save`
+```bash
+npm install event-reduce-js
+```
 
 ## Usage
 

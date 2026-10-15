@@ -2,7 +2,21 @@
 
 <h1 align="center">Event-Reduce Algorithm</h1>
 <p align="center">
-  <strong>An algorithm to optimize database queries that run multiple times</strong>
+  <strong>Update live query results from change events without re-running the query</strong>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/event-reduce-js"><img src="https://img.shields.io/npm/v/event-reduce-js.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/event-reduce-js"><img src="https://img.shields.io/npm/dm/event-reduce-js.svg" alt="npm downloads" /></a>
+  <a href="https://github.com/pubkey/event-reduce/actions/workflows/main.yml"><img src="https://github.com/pubkey/event-reduce/actions/workflows/main.yml/badge.svg" alt="CI" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license" /></a>
+</p>
+
+<p align="center">
+  <a href="https://pubkey.github.io/event-reduce/">Live demo</a> ·
+  <a href="./javascript/">JavaScript implementation</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#faq">FAQ</a>
 </p>
 
 <br/>
@@ -10,6 +24,49 @@
 * * *
 
 <br/>
+
+EventReduce is an algorithm for **live queries** (also called reactive or realtime queries). When a document is inserted, updated or deleted, it takes the old query results and the change event and computes the new results **in memory, without querying the database again**. It works like a lightweight form of **incremental view maintenance** for a single query over a single table or collection.
+
+- **~94% of write events** in the [browser demo](https://pubkey.github.io/event-reduce/) are handled without re-running the query
+- **Up to 12× faster** delivery of new query results after a write
+- **Works with any database** that gives you a change stream: MongoDB, PostgreSQL, MySQL, IndexedDB, SQLite, in-memory stores...
+- **Proven in production** as the query engine behind the live queries of [RxDB](https://rxdb.info/)
+
+## Quickstart
+
+```bash
+npm install event-reduce-js
+```
+
+```javascript
+import { calculateActionName, runAction } from 'event-reduce-js';
+
+// describe your query: SELECT * FROM users WHERE age > 18 ORDER BY age, id LIMIT 10
+const queryParams = {
+    primaryKey: 'id',
+    sortFields: ['age', 'id'],
+    limit: 10,
+    queryMatcher: doc => doc.age > 18,
+    sortComparator: (a, b) => (a.age - b.age || (a.id < b.id ? -1 : 1)) < 0 ? -1 : 1
+};
+
+let results = [{ id: 'a', age: 20 }, { id: 'b', age: 30 }];
+
+// a change event from your database's change stream
+const changeEvent = { operation: 'INSERT', id: 'c', doc: { id: 'c', age: 25 }, previous: null };
+
+const action = calculateActionName({ queryParams, changeEvent, previousResults: results });
+if (action === 'runFullQueryAgain') {
+    results = await runQueryOnDatabase(); // EventReduce could not optimize this event
+} else {
+    results = runAction(action, queryParams, changeEvent, results);
+    // -> [{ id: 'a', age: 20 }, { id: 'c', age: 25 }, { id: 'b', age: 30 }]
+}
+```
+
+See the [JavaScript implementation](./javascript/) for the full API and a MongoDB-style example.
+
+## The problem
 
 
 <ul>
@@ -41,7 +98,7 @@
 
 In the [browser demo](https://pubkey.github.io/event-reduce/) you can see that for randomly generated events, about **94%** of them could be optimized by EventReduce. In real world usage, with non-random events, this can be even higher. For the different implementations in common browser databases, we can observe an up to **12 times** faster displaying of new query results after a write occurred.
 
-## How they do it
+## How it works
 
 EventReduce uses 18 different `state functions` to 'describe' an event+previousResults combination. A state function is a function that returns a boolean value like `isInsert()`, `wasResultsEmpty()`, `sortParamsChanged()` and so on.
 
@@ -51,11 +108,11 @@ For each of our `2^19` state combinations, we calculate which action function gi
 
 From this state-action combinations we create a big truth table that is used to create a [binary decision diagram](https://github.com/pubkey/binary-decision-diagram). The BDD is then optimized to call as few `state functions` as possible to determine the correct action of an incoming event-results combination.
 
-The resulting optimized BDD is then shipped as the EventReduce algoritm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [javascript implementation](https://github.com/pubkey/event-reduce/tree/master/javascript)
+The resulting optimized BDD is then shipped as the EventReduce algorithm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [JavaScript implementation](https://github.com/pubkey/event-reduce/tree/master/javascript)
 
 ## When to use this
 
-You can use this to
+Use EventReduce whenever you observe query results and need to keep them up to date, for example for reactive UIs, realtime dashboards, live queries in local-first apps or server-push subscriptions. You can use it to
 
 * reduce the latency until a change to the database updates your application
 * make observing query results more scalable by doing less disk-io
@@ -84,6 +141,11 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 ## FAQ
 
 <details>
+  <summary>Is this incremental view maintenance (IVM)?</summary>
+  In a narrow sense, yes. EventReduce incrementally maintains the result of one query (filter, sort, skip, limit) over one table or collection. Unlike general IVM engines it needs no query planner or dataflow graph and does not run any work on writes. It is a pure function from <code>(old results, change event)</code> to <code>new results</code> that you call whenever you need fresh results.
+</details>
+
+<details>
   <summary>Is this something like materialized views?</summary>
   Yes and no. Materialized views solve a similar problem but in a different way with different trade-offs. When you have many users, all subscribing to <b>different queries</b>, you cannot create that many views because they are all recalculated on each write access to the database. EventReduce however has better scalability because it does not affect write performance and the calculation is done when the fresh query results are requested, not beforehand.
 </details>
@@ -95,10 +157,10 @@ At the moment there is only the [JavaScript implementation](./javascript/) that 
 
 <details>
   <summary>Isn't this optimization already done by database engines?</summary>
-  No. I tested EventReduce with many common databases like MongoDB, MySQL and Postgres. Each of them had better performance with Event-Reduce then just observing the eventstream and running the queries again. If you understand what Event-Reduce exactly does, it comes clear that this optimization can not done by pull-based databases because they have missing information.
+  No. I tested EventReduce with many common databases like MongoDB, MySQL and Postgres. Each of them had better performance with Event-Reduce than just observing the eventstream and running the queries again. If you understand what Event-Reduce exactly does, it becomes clear that this optimization cannot be done by pull-based databases because they have missing information.
 </details>
 
 <details>
   <summary>Isn't this the same as product XY?</summary>
-  No. EventReduce is not a product, it is not comparable to any database or streaming backend out there. EventReduce is an algorithm with a specific input and output, nothing more, nothing less. You can use EventReduce without having to change your underlaying data infrastructure.
+  No. EventReduce is not a product, it is not comparable to any database or streaming backend out there. EventReduce is an algorithm with a specific input and output, nothing more, nothing less. You can use EventReduce without having to change your underlying data infrastructure.
 </details>
