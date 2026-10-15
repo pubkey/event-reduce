@@ -216,11 +216,11 @@ export function randomQuery(): MongoQuery {
     const skip = randomBoolean() ? randomNumber(1, 25) : undefined;
     const limit = randomBoolean() ? randomNumber(1, 25) : undefined;
     const sort = randomOfArray(SORT_VARIATION);
-    const randomQuery = {
+    const query = {
         selector,
         skip,
         limit,
         sort: sort.sort
     };
-    return randomQuery;
+    return query;
 }

@@ -17,7 +17,7 @@ implementations.forEach(imp => {
     });
 });
 
-/* tslint:disable-next-line */
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 fixture `A fixture`;
 
 const rootUrl = 'http://0.0.0.0:8888/';

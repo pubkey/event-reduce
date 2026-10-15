@@ -3,14 +3,14 @@
         "outDir": "./dist/",
         "sourceMap": true,
         "strict": false,
-        "moduleResolution": "node",
-        "module": "es6",
-        "target": "es5",
+        "moduleResolution": "bundler",
+        "module": "es2020",
+        "target": "es2018",
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "lib": [
-            "es2015",
+            "es2018",
             "dom"
         ]
     },

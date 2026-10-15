@@ -27,7 +27,7 @@ export function shuffleArray<T>(arr: T[]): T[] {
 export function normalizeSortField(field: string | any): string {
     if (typeof field === 'string') {
         if (field.startsWith('-')) {
-            return field.substr(1);
+            return field.slice(1);
         } else {
             return field;
         }
@@ -58,7 +58,7 @@ export function getSortFieldsOfQuery(query: MongoQuery): string[] {
  *  @link https://stackoverflow.com/a/1431113
  */
 export function replaceCharAt(str: string, index: number, replacement: string) {
-    return str.substr(0, index) + replacement + str.substr(index + replacement.length);
+    return str.slice(0, index) + replacement + str.slice(index + replacement.length);
 }
 
 export function mapToObject<K, V>(map: Map<K, V>): {

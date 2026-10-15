@@ -157,15 +157,13 @@ describe('generated-stuff.test.ts', () => {
                 previousResults: Human[];
                 keyDocumentMap: Map<string, Human>;
                 actions: string[];
-            }[] = queries.map(query => {
-                return {
+            }[] = queries.map(query => ({
                     query,
                     queryParams: pseudoCollection.getQueryParams(query),
                     previousResults: [],
                     keyDocumentMap: new Map(),
                     actions: []
-                };
-            });
+                }));
 
             for (const procedure of procedures) {
                 // clear queries
