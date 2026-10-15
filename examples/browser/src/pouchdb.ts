@@ -89,7 +89,9 @@ export class PouchDbImplementation implements DatabaseImplementation<MongoQuery>
         return getQueryParamsByMongoQuery(query);
     }
     async getRawResults(query: MongoQuery): Promise<Human[]> {
-        const res = await this.col.find(query);
+        // pouchdb-find replaces query.selector with its normalized form (gender: 'm' -> { $eq: 'm' }),
+        // which minimongo does not understand, so give it a copy.
+        const res = await this.col.find({ ...query });
         return res.docs;
     }
     async getAll(): Promise<Human[]> {
