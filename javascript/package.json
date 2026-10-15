@@ -1,19 +1,36 @@
 {
   "name": "event-reduce-js",
   "version": "7.0.0",
-  "description": "javascript implementation of the event-reduce algorithm https://pubkey.github.io/event-reduce/",
+  "description": "Update live query results from database change events without re-running the query. Fast reactive and realtime queries for any database.",
   "keywords": [
     "event-reduce",
+    "live-query",
+    "live-queries",
+    "reactive",
+    "reactive-query",
+    "realtime",
+    "realtime-query",
+    "incremental-view-maintenance",
+    "ivm",
+    "query-cache",
+    "change-stream",
+    "changefeed",
+    "local-first",
     "database",
     "query",
     "mongodb",
+    "postgres",
+    "indexeddb",
     "nosql",
-    "no-sql",
     "performance",
     "optimization",
     "bdd"
   ],
   "license": "MIT",
+  "homepage": "https://github.com/pubkey/event-reduce#readme",
+  "bugs": {
+    "url": "https://github.com/pubkey/event-reduce/issues"
+  },
   "sideEffects": false,
   "repository": {
     "type": "git",
