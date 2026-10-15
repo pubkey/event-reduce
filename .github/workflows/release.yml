@@ -21,6 +21,8 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
+          # writes an .npmrc that reads NODE_AUTH_TOKEN, without it npm publish fails with ENEEDAUTH
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install
         working-directory: ./javascript
