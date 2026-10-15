@@ -1,29 +1,17 @@
 import type { StateResolveFunction } from '../types/index.js';
 import { getProperty } from '../util.js';
 
-export const hasLimit: StateResolveFunction<any> = (input) => {
-    return !!input.queryParams.limit;
-};
+export const hasLimit: StateResolveFunction<any> = (input) => !!input.queryParams.limit;
 
-export const isFindOne: StateResolveFunction<any> = (input) => {
-    return input.queryParams.limit === 1;
-};
+export const isFindOne: StateResolveFunction<any> = (input) => input.queryParams.limit === 1;
 
-export const hasSkip: StateResolveFunction<any> = (input) => {
-    return !!input.queryParams.skip && input.queryParams.skip > 0;
-};
+export const hasSkip: StateResolveFunction<any> = (input) => !!input.queryParams.skip && input.queryParams.skip > 0;
 
-export const isDelete: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.operation === 'DELETE';
-};
+export const isDelete: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'DELETE';
 
-export const isInsert: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.operation === 'INSERT';
-};
+export const isInsert: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'INSERT';
 
-export const isUpdate: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.operation === 'UPDATE';
-};
+export const isUpdate: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'UPDATE';
 
 
 export const wasLimitReached: StateResolveFunction<any> = (input) => {
@@ -186,6 +174,4 @@ export const doesMatchNow: StateResolveFunction<any> = (input) => {
 };
 
 
-export const wasResultsEmpty: StateResolveFunction<any> = (input) => {
-    return input.previousResults.length === 0;
-};
+export const wasResultsEmpty: StateResolveFunction<any> = (input) => input.previousResults.length === 0;

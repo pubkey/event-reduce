@@ -16,10 +16,8 @@ export function getPackedBdd(): PackedBdd {
     return packedBdd;
 }
 
-export const resolveInput = (input: StateResolveFunctionInput<any>) => {
-    return resolveWithPackedBdd(
+export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveWithPackedBdd(
         getPackedBdd(),
         stateResolveFunctionByIndex,
         input
     );
-};

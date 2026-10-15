@@ -1,8 +1,4 @@
-import {
-  random,
-  datatype as fakerDatatype,
-  name
-} from 'faker';
+import { faker } from '@faker-js/faker';
 import {
   Human,
   Procedure
@@ -19,10 +15,10 @@ import { randomOfArray } from './util';
 
 export function randomHuman(): Human {
   return {
-    _id: random.alphaNumeric(10),
-    name: name.firstName().toLowerCase(),
-    gender: fakerDatatype.boolean() ? 'f' : 'm',
-    age: fakerDatatype.number({ min: 1, max: 100 })
+    _id: faker.string.alphanumeric(10),
+    name: faker.person.firstName().toLowerCase(),
+    gender: faker.datatype.boolean() ? 'f' : 'm',
+    age: faker.number.int({ min: 1, max: 100 })
   };
 }
 
@@ -46,15 +42,15 @@ export function getInitialData(amount: number = 100): ChangeEvent<Human>[] {
 }
 
 const keyToChangeFn = {
-  1: (i: Human) => i.name = name.firstName().toLowerCase(),
-  2: (i: Human) => i.gender = fakerDatatype.boolean() ? 'f' : 'm',
-  3: (i: Human) => i.age = fakerDatatype.number({ min: 1, max: 100 })
+  1: (i: Human) => i.name = faker.person.firstName().toLowerCase(),
+  2: (i: Human) => i.gender = faker.datatype.boolean() ? 'f' : 'm',
+  3: (i: Human) => i.age = faker.number.int({ min: 1, max: 100 })
 };
 
 export function randomChangeHuman(input: Human): Human {
   const cloned: Human = Object.assign({}, input);
 
-  const field = fakerDatatype.number({ min: 1, max: 3 });
+  const field = faker.number.int({ min: 1, max: 3 });
   keyToChangeFn[field](cloned);
 
   return cloned;
@@ -92,7 +88,7 @@ export function randomChangeEvent(
       };
       break;
     case 'UPDATE':
-      const oldDoc = random.arrayElement(allDocs);
+      const oldDoc = faker.helpers.arrayElement(allDocs);
       const changedDoc = randomChangeHuman(oldDoc);
       ret = {
         operation,
@@ -102,7 +98,7 @@ export function randomChangeEvent(
       };
       break;
     case 'DELETE':
-      const docToDelete: Human = random.arrayElement(allDocs);
+      const docToDelete: Human = faker.helpers.arrayElement(allDocs);
       ret = {
         operation,
         id: docToDelete._id,

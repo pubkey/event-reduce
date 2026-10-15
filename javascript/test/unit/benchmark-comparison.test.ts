@@ -19,13 +19,9 @@ const pseudoCollection = mingoCollectionCreator();
 
 // -------- Original (unoptimized) implementations --------
 
-const oldHasLimit: StateResolveFunction<any> = (input) => {
-    return !!input.queryParams.limit;
-};
+const oldHasLimit: StateResolveFunction<any> = (input) => !!input.queryParams.limit;
 
-const oldIsFindOne: StateResolveFunction<any> = (input) => {
-    return input.queryParams.limit === 1;
-};
+const oldIsFindOne: StateResolveFunction<any> = (input) => input.queryParams.limit === 1;
 
 const oldHasSkip: StateResolveFunction<any> = (input) => {
     if (input.queryParams.skip && input.queryParams.skip > 0) {
@@ -35,21 +31,13 @@ const oldHasSkip: StateResolveFunction<any> = (input) => {
     }
 };
 
-const oldIsDelete: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.operation === 'DELETE';
-};
+const oldIsDelete: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'DELETE';
 
-const oldIsInsert: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.operation === 'INSERT';
-};
+const oldIsInsert: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'INSERT';
 
-const oldIsUpdate: StateResolveFunction<any> = (input) => {
-    return input.changeEvent.operation === 'UPDATE';
-};
+const oldIsUpdate: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'UPDATE';
 
-const oldWasLimitReached: StateResolveFunction<any> = (input) => {
-    return oldHasLimit(input) && input.previousResults.length >= (input.queryParams.limit as number);
-};
+const oldWasLimitReached: StateResolveFunction<any> = (input) => oldHasLimit(input) && input.previousResults.length >= (input.queryParams.limit as number);
 
 const oldSortParamsChanged: StateResolveFunction<any> = (input) => {
     const sortFields = input.queryParams.sortFields;
@@ -189,9 +177,7 @@ const oldDoesMatchNow: StateResolveFunction<any> = (input) => {
     return ret;
 };
 
-const oldWasResultsEmpty: StateResolveFunction<any> = (input) => {
-    return input.previousResults.length === 0;
-};
+const oldWasResultsEmpty: StateResolveFunction<any> = (input) => input.previousResults.length === 0;
 
 const oldStateResolveFunctions: Record<string, StateResolveFunction<any>> = {
     isInsert: oldIsInsert,
@@ -344,7 +330,8 @@ describe('benchmark: old vs new state-resolver', () => {
             const speedup = ((oldTime - newTime) / oldTime * 100).toFixed(1);
 
             console.log(
-                `    │ ${String(size).padEnd(22)} │ ${oldOps.toLocaleString().padStart(13)} │ ${newOps.toLocaleString().padStart(13)} │ ${(speedup + '%').padStart(8)} │`
+                `    │ ${String(size).padEnd(22)} │ ${oldOps.toLocaleString().padStart(13)} │ ` +
+                `${newOps.toLocaleString().padStart(13)} │ ${(speedup + '%').padStart(8)} │`
             );
         }
 

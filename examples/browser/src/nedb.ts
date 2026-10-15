@@ -24,7 +24,7 @@ export function mangoSortToMongoSort(query: MongoQuery) {
             // pouchdb sorting with strings
             if (fieldObj.startsWith('-')) {
                 // desc
-                ret[fieldObj.substr(1)] = -1;
+                ret[fieldObj.slice(1)] = -1;
             } else {
                 // asc
                 ret[fieldObj] = 1;

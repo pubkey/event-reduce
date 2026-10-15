@@ -1,0 +1,9 @@
+{
+    "//": "Used by testcafe to compile the e2e tests. testcafe forces moduleResolution node10, which TypeScript 6 only accepts with ignoreDeprecations.",
+    "compilerOptions": {
+        "ignoreDeprecations": "6.0",
+        "strict": false,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true
+    }
+}

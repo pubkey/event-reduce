@@ -11,5 +11,14 @@
     "ignorePaths": [],
     "rebaseStalePrs": true,
     "prHourlyLimit": 4,
-    "dependencyDashboard": false
+    "dependencyDashboard": false,
+    "packageRules": [
+        {
+            "description": "typescript-eslint does not support TypeScript 7 yet (peer range <6.1.0)",
+            "matchPackageNames": [
+                "typescript"
+            ],
+            "allowedVersions": "<7"
+        }
+    ]
 }
