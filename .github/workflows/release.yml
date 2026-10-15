@@ -21,7 +21,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
-          # writes an .npmrc that reads NODE_AUTH_TOKEN, without it npm publish fails with ENEEDAUTH
           registry-url: "https://registry.npmjs.org"
 
       - name: Install
@@ -53,11 +52,12 @@ jobs:
           working-directory: ./javascript
           run: npm run test
 
+      # npm trusted publishing: npm authenticates with the GitHub OIDC token (id-token: write),
+      # no npm token is needed. Provenance is generated automatically.
+      # @link https://docs.npmjs.com/trusted-publishers
       - name: Publish
         working-directory: ./javascript
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Push changes
         run: |
