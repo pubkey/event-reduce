@@ -54,6 +54,6 @@
         "typescript": "6.0.3",
         "typescript-eslint": "8.71.2",
         "util": "0.12.5",
-        "webpack-dev-server": "6.0.0"
+        "webpack-dev-server": "6.1.0"
     }
 }
