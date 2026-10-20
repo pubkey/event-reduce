@@ -14,25 +14,22 @@ import type { ActionFunction, ActionFunctionInput } from '../types/index.js';
  * If the map holds a different object reference than the results array
  * (for example because the caller built the map from clones),
  * we fall back to the primary key comparison.
- *
- * The input properties are destructured once at the top of each function
- * so that minifiers can rename the local variables and the long
- * property names only appear once per function in the bundle.
  */
-function findIndexOfChangedDoc({ queryParams, changeEvent, previousResults, keyDocumentMap }: ActionFunctionInput<any>): number {
-    const id = changeEvent.id;
-    if (keyDocumentMap) {
-        const docInMap = keyDocumentMap.get(id);
+function findIndexOfChangedDoc(input: ActionFunctionInput<any>): number {
+    const id = input.changeEvent.id;
+    const results = input.previousResults;
+    if (input.keyDocumentMap) {
+        const docInMap = input.keyDocumentMap.get(id);
         if (docInMap) {
-            const index = previousResults.indexOf(docInMap);
+            const index = results.indexOf(docInMap);
             if (index >= 0) {
                 return index;
             }
         }
     }
-    const primary = queryParams.primaryKey;
-    for (let i = 0; i < previousResults.length; i++) {
-        if (previousResults[i][primary] === id) {
+    const primary = input.queryParams.primaryKey;
+    for (let i = 0; i < results.length; i++) {
+        if (results[i][primary] === id) {
             return i;
         }
     }
@@ -41,38 +38,38 @@ function findIndexOfChangedDoc({ queryParams, changeEvent, previousResults, keyD
 
 export const doNothing: ActionFunction<any> = (_input) => { };
 
-export const insertFirst: ActionFunction<any> = ({ changeEvent, previousResults, keyDocumentMap }) => {
-    previousResults.unshift(changeEvent.doc);
-    if (keyDocumentMap) {
-        keyDocumentMap.set(
-            changeEvent.id,
-            changeEvent.doc
+export const insertFirst: ActionFunction<any> = (input) => {
+    input.previousResults.unshift(input.changeEvent.doc);
+    if (input.keyDocumentMap) {
+        input.keyDocumentMap.set(
+            input.changeEvent.id,
+            input.changeEvent.doc
         );
     }
 };
-export const insertLast: ActionFunction<any> = ({ changeEvent, previousResults, keyDocumentMap }) => {
-    previousResults.push(changeEvent.doc);
-    if (keyDocumentMap) {
-        keyDocumentMap.set(
-            changeEvent.id,
-            changeEvent.doc
+export const insertLast: ActionFunction<any> = (input) => {
+    input.previousResults.push(input.changeEvent.doc);
+    if (input.keyDocumentMap) {
+        input.keyDocumentMap.set(
+            input.changeEvent.id,
+            input.changeEvent.doc
         );
     }
 };
-export const removeFirstItem: ActionFunction<any> = ({ queryParams, previousResults, keyDocumentMap }) => {
-    const first = previousResults.shift();
-    if (keyDocumentMap && first) {
-        keyDocumentMap.delete(
-            first[queryParams.primaryKey]
+export const removeFirstItem: ActionFunction<any> = (input) => {
+    const first = input.previousResults.shift();
+    if (input.keyDocumentMap && first) {
+        input.keyDocumentMap.delete(
+            first[input.queryParams.primaryKey]
         );
     }
 };
 
-export const removeLastItem: ActionFunction<any> = ({ queryParams, previousResults, keyDocumentMap }) => {
-    const last = previousResults.pop();
-    if (keyDocumentMap && last) {
-        keyDocumentMap.delete(
-            last[queryParams.primaryKey]
+export const removeLastItem: ActionFunction<any> = (input) => {
+    const last = input.previousResults.pop();
+    if (input.keyDocumentMap && last) {
+        input.keyDocumentMap.delete(
+            last[input.queryParams.primaryKey]
         );
     }
 };
@@ -98,27 +95,25 @@ export const removeLastInsertLast: ActionFunction<any> = (input) => {
 };
 
 export const removeExisting: ActionFunction<any> = (input) => {
-    const { changeEvent, previousResults, keyDocumentMap } = input;
     const index = findIndexOfChangedDoc(input);
-    if (keyDocumentMap) {
-        keyDocumentMap.delete(
-            changeEvent.id
+    if (input.keyDocumentMap) {
+        input.keyDocumentMap.delete(
+            input.changeEvent.id
         );
     }
     if (index >= 0) {
-        previousResults.splice(index, 1);
+        input.previousResults.splice(index, 1);
     }
 };
 
 export const replaceExisting: ActionFunction<any> = (input) => {
-    const { changeEvent, previousResults, keyDocumentMap } = input;
     const index = findIndexOfChangedDoc(input);
     if (index >= 0) {
-        const doc = changeEvent.doc;
-        previousResults[index] = doc;
-        if (keyDocumentMap) {
-            keyDocumentMap.set(
-                changeEvent.id,
+        const doc = input.changeEvent.doc;
+        input.previousResults[index] = doc;
+        if (input.keyDocumentMap) {
+            input.keyDocumentMap.set(
+                input.changeEvent.id,
                 doc
             );
         }
@@ -130,27 +125,27 @@ export const replaceExisting: ActionFunction<any> = (input) => {
  * it must be later optimised out
  * otherwise there is something broken
  */
-export const alwaysWrong: ActionFunction<any> = ({ previousResults, keyDocumentMap }) => {
+export const alwaysWrong: ActionFunction<any> = (input) => {
     const wrongHuman = {
         _id: 'wrongHuman' + new Date().getTime()
     };
-    previousResults.length = 0; // clear array
-    previousResults.push(wrongHuman);
-    if (keyDocumentMap) {
-        keyDocumentMap.clear();
-        keyDocumentMap.set(
+    input.previousResults.length = 0; // clear array
+    input.previousResults.push(wrongHuman);
+    if (input.keyDocumentMap) {
+        input.keyDocumentMap.clear();
+        input.keyDocumentMap.set(
             wrongHuman._id,
             wrongHuman
         );
     }
 };
 
-export const insertAtSortPosition: ActionFunction<any> = ({ queryParams, changeEvent, previousResults, keyDocumentMap }) => {
-    const docId = changeEvent.id;
-    const doc = changeEvent.doc;
-    if (keyDocumentMap) {
+export const insertAtSortPosition: ActionFunction<any> = (input) => {
+    const docId = input.changeEvent.id;
+    const doc = input.changeEvent.doc;
+    if (input.keyDocumentMap) {
 
-        if (keyDocumentMap.has(docId)) {
+        if (input.keyDocumentMap.has(docId)) {
             /**
              * If document is already in results,
              * we cannot add it again because it would throw on non-deterministic ordering.
@@ -158,13 +153,12 @@ export const insertAtSortPosition: ActionFunction<any> = ({ queryParams, changeE
             return;
         }
 
-        keyDocumentMap.set(
+        input.keyDocumentMap.set(
             docId,
             doc
         );
     } else {
-        const primaryKey = queryParams.primaryKey;
-        const isDocInResults = previousResults.find((d: any) => d[primaryKey] === docId);
+        const isDocInResults = input.previousResults.find((d: any) => d[input.queryParams.primaryKey] === docId);
         /**
          * If document is already in results,
          * we cannot add it again because it would throw on non-deterministic ordering.
@@ -175,9 +169,9 @@ export const insertAtSortPosition: ActionFunction<any> = ({ queryParams, changeE
     }
 
     pushAtSortPosition(
-        previousResults,
+        input.previousResults,
         doc,
-        queryParams.sortComparator,
+        input.queryParams.sortComparator,
         0
     );
 };

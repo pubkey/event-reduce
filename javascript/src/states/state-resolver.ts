@@ -1,34 +1,28 @@
 import type { StateResolveFunction } from '../types/index.js';
 import { getProperty } from '../util.js';
 
-/**
- * The input properties are destructured once at the top of each function
- * so that minifiers can rename the local variables and the long
- * property names only appear once per function in the bundle.
- */
+export const hasLimit: StateResolveFunction<any> = (input) => !!input.queryParams.limit;
 
-export const hasLimit: StateResolveFunction<any> = ({ queryParams }) => !!queryParams.limit;
+export const isFindOne: StateResolveFunction<any> = (input) => input.queryParams.limit === 1;
 
-export const isFindOne: StateResolveFunction<any> = ({ queryParams }) => queryParams.limit === 1;
+export const hasSkip: StateResolveFunction<any> = (input) => !!input.queryParams.skip && input.queryParams.skip > 0;
 
-export const hasSkip: StateResolveFunction<any> = ({ queryParams }) => !!queryParams.skip && queryParams.skip > 0;
+export const isDelete: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'DELETE';
 
-export const isDelete: StateResolveFunction<any> = ({ changeEvent }) => changeEvent.operation === 'DELETE';
+export const isInsert: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'INSERT';
 
-export const isInsert: StateResolveFunction<any> = ({ changeEvent }) => changeEvent.operation === 'INSERT';
-
-export const isUpdate: StateResolveFunction<any> = ({ changeEvent }) => changeEvent.operation === 'UPDATE';
+export const isUpdate: StateResolveFunction<any> = (input) => input.changeEvent.operation === 'UPDATE';
 
 
-export const wasLimitReached: StateResolveFunction<any> = ({ queryParams, previousResults }) => {
-    const limit = queryParams.limit;
-    return !!limit && previousResults.length >= limit;
+export const wasLimitReached: StateResolveFunction<any> = (input) => {
+    const limit = input.queryParams.limit;
+    return !!limit && input.previousResults.length >= limit;
 };
 
-export const sortParamsChanged: StateResolveFunction<any> = ({ queryParams, changeEvent }) => {
-    const sortFields = queryParams.sortFields;
-    const prev = changeEvent.previous;
-    const doc = changeEvent.doc;
+export const sortParamsChanged: StateResolveFunction<any> = (input) => {
+    const sortFields = input.queryParams.sortFields;
+    const prev = input.changeEvent.previous;
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
@@ -50,14 +44,15 @@ export const sortParamsChanged: StateResolveFunction<any> = ({ queryParams, chan
     return false;
 };
 
-export const wasInResult: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults, keyDocumentMap }) => {
-    const id = changeEvent.id;
-    if (keyDocumentMap) {
-        return keyDocumentMap.has(id);
+export const wasInResult: StateResolveFunction<any> = (input) => {
+    const id = input.changeEvent.id;
+    if (input.keyDocumentMap) {
+        return input.keyDocumentMap.has(id);
     } else {
-        const primary = queryParams.primaryKey;
-        for (let i = 0; i < previousResults.length; i++) {
-            if (previousResults[i][primary] === id) {
+        const primary = input.queryParams.primaryKey;
+        const results = input.previousResults;
+        for (let i = 0; i < results.length; i++) {
+            if (results[i][primary] === id) {
                 return true;
             }
         }
@@ -65,24 +60,25 @@ export const wasInResult: StateResolveFunction<any> = ({ queryParams, changeEven
     }
 };
 
-export const wasFirst: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
-    const first = previousResults[0];
-    return !!first && first[queryParams.primaryKey] === changeEvent.id;
+export const wasFirst: StateResolveFunction<any> = (input) => {
+    const first = input.previousResults[0];
+    return !!first && first[input.queryParams.primaryKey] === input.changeEvent.id;
 };
 
-export const wasLast: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
-    const last = previousResults[previousResults.length - 1];
-    return !!last && last[queryParams.primaryKey] === changeEvent.id;
+export const wasLast: StateResolveFunction<any> = (input) => {
+    const results = input.previousResults;
+    const last = results[results.length - 1];
+    return !!last && last[input.queryParams.primaryKey] === input.changeEvent.id;
 };
 
 
-export const wasSortedBeforeFirst: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
-    const prev = changeEvent.previous;
+export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev) {
         return false;
     }
 
-    const first = previousResults[0];
+    const first = input.previousResults[0];
     if (!first) {
         return false;
     }
@@ -93,83 +89,89 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = ({ queryParams, c
      * sort order. Because both document could be equal.
      * So instead we have to return true.
      */
-    if (first[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    return queryParams.sortComparator(prev, first) < 0;
+    return input.queryParams.sortComparator(prev, first) < 0;
 };
 
-export const wasSortedAfterLast: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
-    const prev = changeEvent.previous;
+export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev) {
         return false;
     }
 
-    const last = previousResults[previousResults.length - 1];
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
 
-    if (last[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    return queryParams.sortComparator(prev, last) > 0;
+    return input.queryParams.sortComparator(prev, last) > 0;
 };
 
-export const isSortedBeforeFirst: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
-    const doc = changeEvent.doc;
+export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
 
-    const first = previousResults[0];
+    const first = input.previousResults[0];
     if (!first) {
         return false;
     }
 
-    if (first[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    return queryParams.sortComparator(doc, first) < 0;
+    return input.queryParams.sortComparator(doc, first) < 0;
 };
 
-export const isSortedAfterLast: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
-    const doc = changeEvent.doc;
+export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
 
-    const last = previousResults[previousResults.length - 1];
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
 
-    if (last[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
 
-    return queryParams.sortComparator(doc, last) > 0;
+    return input.queryParams.sortComparator(doc, last) > 0;
 };
 
 
-export const wasMatching: StateResolveFunction<any> = ({ queryParams, changeEvent }) => {
-    const prev = changeEvent.previous;
+export const wasMatching: StateResolveFunction<any> = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev) {
         return false;
     }
-    return queryParams.queryMatcher(prev);
+    return input.queryParams.queryMatcher(prev);
 };
 
-export const doesMatchNow: StateResolveFunction<any> = ({ queryParams, changeEvent }) => {
-    const doc = changeEvent.doc;
+export const doesMatchNow: StateResolveFunction<any> = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    return queryParams.queryMatcher(doc);
+    return input.queryParams.queryMatcher(doc);
 };
 
 
-export const wasResultsEmpty: StateResolveFunction<any> = ({ previousResults }) => previousResults.length === 0;
+export const wasResultsEmpty: StateResolveFunction<any> = (input) => input.previousResults.length === 0;
