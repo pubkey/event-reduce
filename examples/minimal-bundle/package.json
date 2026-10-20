@@ -1,0 +1,16 @@
+{
+    "name": "event-reduce-examples-minimal-bundle",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Minimal demo that only depends on event-reduce-js and bundles it into one minified file",
+    "scripts": {
+        "build": "esbuild src/index.js --bundle --minify --format=iife --platform=browser --target=es2018 --outfile=dist/bundle.min.js",
+        "start": "npm run build && node dist/bundle.min.js"
+    },
+    "dependencies": {
+        "event-reduce-js": "file:../../javascript/"
+    },
+    "devDependencies": {
+        "esbuild": "0.25.10"
+    }
+}
