@@ -1,9 +1,4 @@
 import type { StateResolveFunction } from '../types/index.js';
-/**
- * The input properties are destructured once at the top of each function
- * so that minifiers can rename the local variables and the long
- * property names only appear once per function in the bundle.
- */
 export declare const hasLimit: StateResolveFunction<any>;
 export declare const isFindOne: StateResolveFunction<any>;
 export declare const hasSkip: StateResolveFunction<any>;

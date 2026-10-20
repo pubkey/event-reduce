@@ -49,7 +49,8 @@ export type ActionFunction<DocType> = (input: ActionFunctionInput<DocType>) => v
  * @link https://stackoverflow.com/a/49670389/3443137
  */
 type DeepReadonly<T> = T extends (infer R)[] ? DeepReadonlyArray<R> : T extends Function ? T : T extends object ? DeepReadonlyObject<T> : T;
-type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
+}
 export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };

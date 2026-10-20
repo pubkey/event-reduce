@@ -187,12 +187,12 @@ export function randomQuery() {
     const skip = randomBoolean() ? randomNumber(1, 25) : undefined;
     const limit = randomBoolean() ? randomNumber(1, 25) : undefined;
     const sort = randomOfArray(SORT_VARIATION);
-    const query = {
+    const randomQuery = {
         selector,
         skip,
         limit,
         sort: sort.sort
     };
-    return query;
+    return randomQuery;
 }
 //# sourceMappingURL=queries.js.map

@@ -18,7 +18,7 @@ export function shuffleArray(arr) {
 export function normalizeSortField(field) {
     if (typeof field === 'string') {
         if (field.startsWith('-')) {
-            return field.slice(1);
+            return field.substr(1);
         }
         else {
             return field;
@@ -52,7 +52,7 @@ export function getSortFieldsOfQuery(query) {
  *  @link https://stackoverflow.com/a/1431113
  */
 export function replaceCharAt(str, index, replacement) {
-    return str.slice(0, index) + replacement + str.slice(index + replacement.length);
+    return str.substr(0, index) + replacement + str.substr(index + replacement.length);
 }
 export function mapToObject(map) {
     const ret = {};
@@ -85,7 +85,7 @@ export function flatClone(obj) {
 }
 export function ensureNotFalsy(obj) {
     if (!obj) {
-        throw new Error('EventReduce:FALSY');
+        throw new Error('ensureNotFalsy() is falsy');
     }
     return obj;
 }

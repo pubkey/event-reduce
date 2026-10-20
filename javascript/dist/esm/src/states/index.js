@@ -68,7 +68,7 @@ export const stateResolveFunctionByIndex = {
 export function resolveState(stateName, input) {
     const fn = stateResolveFunctions[stateName];
     if (!fn) {
-        throw new Error('EventReduce:UNK_STATE ' + stateName);
+        throw new Error('resolveState() has no function for ' + stateName);
     }
     return fn(input);
 }

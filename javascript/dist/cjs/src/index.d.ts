@@ -13,11 +13,6 @@ export declare function calculateActionFromMap<DocType>(stateSetToActionMap: Sta
     stateSet: StateSet;
 };
 export declare function calculateActionName<DocType>(input: StateResolveFunctionInput<DocType>): ActionName;
-/**
- * Like calculateActionName() but returns the action function directly.
- * Prefer this one when bundle size matters, because it does not
- * pull the action names into the bundle.
- */
 export declare function calculateActionFunction<DocType>(input: StateResolveFunctionInput<DocType>): ActionFunction<DocType>;
 /**
  * for performance reasons,

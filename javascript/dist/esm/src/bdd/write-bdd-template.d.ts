@@ -2,4 +2,4 @@ import { PerformanceMeasurement } from '../truth-table-generator/calculate-bdd-q
 export declare const BDD_TEMPLATE_LOCATION: string;
 export declare const BDD_OPTIMIZE_STATE_LOCATION: string;
 export declare const BDD_TEMPLATE_GOAL: string;
-export declare function writeBddTemplate(packedBddString: string, performanceMeasurement: PerformanceMeasurement, quality: number): void;
+export declare function writeBddTemplate(minimalBddString: string, performanceMeasurement: PerformanceMeasurement, quality: number): void;

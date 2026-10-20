@@ -1,23 +1,30 @@
 import { getProperty } from '../util.js';
-/**
- * The input properties are destructured once at the top of each function
- * so that minifiers can rename the local variables and the long
- * property names only appear once per function in the bundle.
- */
-export const hasLimit = ({ queryParams }) => !!queryParams.limit;
-export const isFindOne = ({ queryParams }) => queryParams.limit === 1;
-export const hasSkip = ({ queryParams }) => !!queryParams.skip && queryParams.skip > 0;
-export const isDelete = ({ changeEvent }) => changeEvent.operation === 'DELETE';
-export const isInsert = ({ changeEvent }) => changeEvent.operation === 'INSERT';
-export const isUpdate = ({ changeEvent }) => changeEvent.operation === 'UPDATE';
-export const wasLimitReached = ({ queryParams, previousResults }) => {
-    const limit = queryParams.limit;
-    return !!limit && previousResults.length >= limit;
+export const hasLimit = (input) => {
+    return !!input.queryParams.limit;
 };
-export const sortParamsChanged = ({ queryParams, changeEvent }) => {
-    const sortFields = queryParams.sortFields;
-    const prev = changeEvent.previous;
-    const doc = changeEvent.doc;
+export const isFindOne = (input) => {
+    return input.queryParams.limit === 1;
+};
+export const hasSkip = (input) => {
+    return !!input.queryParams.skip && input.queryParams.skip > 0;
+};
+export const isDelete = (input) => {
+    return input.changeEvent.operation === 'DELETE';
+};
+export const isInsert = (input) => {
+    return input.changeEvent.operation === 'INSERT';
+};
+export const isUpdate = (input) => {
+    return input.changeEvent.operation === 'UPDATE';
+};
+export const wasLimitReached = (input) => {
+    const limit = input.queryParams.limit;
+    return !!limit && input.previousResults.length >= limit;
+};
+export const sortParamsChanged = (input) => {
+    const sortFields = input.queryParams.sortFields;
+    const prev = input.changeEvent.previous;
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
@@ -37,35 +44,37 @@ export const sortParamsChanged = ({ queryParams, changeEvent }) => {
     }
     return false;
 };
-export const wasInResult = ({ queryParams, changeEvent, previousResults, keyDocumentMap }) => {
-    const id = changeEvent.id;
-    if (keyDocumentMap) {
-        return keyDocumentMap.has(id);
+export const wasInResult = (input) => {
+    const id = input.changeEvent.id;
+    if (input.keyDocumentMap) {
+        return input.keyDocumentMap.has(id);
     }
     else {
-        const primary = queryParams.primaryKey;
-        for (let i = 0; i < previousResults.length; i++) {
-            if (previousResults[i][primary] === id) {
+        const primary = input.queryParams.primaryKey;
+        const results = input.previousResults;
+        for (let i = 0; i < results.length; i++) {
+            if (results[i][primary] === id) {
                 return true;
             }
         }
         return false;
     }
 };
-export const wasFirst = ({ queryParams, changeEvent, previousResults }) => {
-    const first = previousResults[0];
-    return !!first && first[queryParams.primaryKey] === changeEvent.id;
+export const wasFirst = (input) => {
+    const first = input.previousResults[0];
+    return !!first && first[input.queryParams.primaryKey] === input.changeEvent.id;
 };
-export const wasLast = ({ queryParams, changeEvent, previousResults }) => {
-    const last = previousResults[previousResults.length - 1];
-    return !!last && last[queryParams.primaryKey] === changeEvent.id;
+export const wasLast = (input) => {
+    const results = input.previousResults;
+    const last = results[results.length - 1];
+    return !!last && last[input.queryParams.primaryKey] === input.changeEvent.id;
 };
-export const wasSortedBeforeFirst = ({ queryParams, changeEvent, previousResults }) => {
-    const prev = changeEvent.previous;
+export const wasSortedBeforeFirst = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev) {
         return false;
     }
-    const first = previousResults[0];
+    const first = input.previousResults[0];
     if (!first) {
         return false;
     }
@@ -75,66 +84,74 @@ export const wasSortedBeforeFirst = ({ queryParams, changeEvent, previousResults
      * sort order. Because both document could be equal.
      * So instead we have to return true.
      */
-    if (first[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    return queryParams.sortComparator(prev, first) < 0;
+    return input.queryParams.sortComparator(prev, first) < 0;
 };
-export const wasSortedAfterLast = ({ queryParams, changeEvent, previousResults }) => {
-    const prev = changeEvent.previous;
+export const wasSortedAfterLast = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev) {
         return false;
     }
-    const last = previousResults[previousResults.length - 1];
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
-    if (last[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    return queryParams.sortComparator(prev, last) > 0;
+    return input.queryParams.sortComparator(prev, last) > 0;
 };
-export const isSortedBeforeFirst = ({ queryParams, changeEvent, previousResults }) => {
-    const doc = changeEvent.doc;
+export const isSortedBeforeFirst = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    const first = previousResults[0];
+    const first = input.previousResults[0];
     if (!first) {
         return false;
     }
-    if (first[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (first[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    return queryParams.sortComparator(doc, first) < 0;
+    return input.queryParams.sortComparator(doc, first) < 0;
 };
-export const isSortedAfterLast = ({ queryParams, changeEvent, previousResults }) => {
-    const doc = changeEvent.doc;
+export const isSortedAfterLast = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    const last = previousResults[previousResults.length - 1];
+    const results = input.previousResults;
+    const last = results[results.length - 1];
     if (!last) {
         return false;
     }
-    if (last[queryParams.primaryKey] === changeEvent.id) {
+    const primaryKey = input.queryParams.primaryKey;
+    if (last[primaryKey] === input.changeEvent.id) {
         return true;
     }
-    return queryParams.sortComparator(doc, last) > 0;
+    return input.queryParams.sortComparator(doc, last) > 0;
 };
-export const wasMatching = ({ queryParams, changeEvent }) => {
-    const prev = changeEvent.previous;
+export const wasMatching = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev) {
         return false;
     }
-    return queryParams.queryMatcher(prev);
+    return input.queryParams.queryMatcher(prev);
 };
-export const doesMatchNow = ({ queryParams, changeEvent }) => {
-    const doc = changeEvent.doc;
+export const doesMatchNow = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    return queryParams.queryMatcher(doc);
+    return input.queryParams.queryMatcher(doc);
 };
-export const wasResultsEmpty = ({ previousResults }) => previousResults.length === 0;
+export const wasResultsEmpty = (input) => {
+    return input.previousResults.length === 0;
+};
 //# sourceMappingURL=state-resolver.js.map

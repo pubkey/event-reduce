@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { createBddFromTruthTable, fillTruthTable, optimizeOrdering, booleanStringToBoolean, bddToPackedBdd, packedBddToBase64String, packedBddFromBase64String, resolveWithPackedBdd } from 'binary-decision-diagram';
+import { createBddFromTruthTable, bddToMinimalString, fillTruthTable, optimizeBruteForce, resolveWithSimpleBdd, booleanStringToBoolean, minimalStringToSimpleBdd } from 'binary-decision-diagram';
 import { OUTPUT_FOLDER_PATH, OUTPUT_TRUTH_TABLE_PATH } from './config.js';
 import { getQueryVariations } from './queries.js';
 import { getTestProcedures } from './procedures.js';
@@ -8,7 +8,7 @@ import { mapToObject, objectToMap, roundToTwoDecimals } from '../util.js';
 import { readJsonFile, writeJsonFile } from './util.js';
 import { fuzzing } from './fuzzing.js';
 import { BDD_OPTIMIZE_STATE_LOCATION, writeBddTemplate } from '../bdd/write-bdd-template.js';
-import { measurePerformanceOfStateFunctions, countStateSetOccurrences, getQualityOfBdd } from './calculate-bdd-quality.js';
+import { measurePerformanceOfStateFunctions, getBetterBdd, getQualityOfBdd } from './calculate-bdd-quality.js';
 import { orderedStateList } from '../states/index.js';
 /**
  * sort object attributes
@@ -31,61 +31,6 @@ function getQuality(bdd, perfMeasurement) {
     return getQualityOfBdd(bdd, perfMeasurement, getQueryVariations(), getTestProcedures());
 }
 const unknownValueActionId = 42;
-/**
- * Resolvers that read the boolean values directly from a state set string.
- */
-function getStateSetResolvers() {
-    const resolvers = {};
-    orderedStateList.forEach((_stateName, index) => {
-        resolvers[index] = (stateSet) => booleanStringToBoolean(stateSet[index]);
-    });
-    return resolvers;
-}
-/**
- * Double-check that the packed bdd
- * returns the same values as the truth table.
- */
-function ensurePackedBddMatchesTruthTable(packedBdd, truthTable) {
-    const resolvers = getStateSetResolvers();
-    for (const [key, value] of truthTable.entries()) {
-        const bddValue = resolveWithPackedBdd(packedBdd, resolvers, key);
-        if (value !== bddValue) {
-            console.error('# Error: packed bdd has different value compared to truth table ' + key);
-            console.dir({ value, bddValue });
-            process.exit(-1);
-        }
-    }
-}
-/**
- * Returns the ordering (ordering[level] = index of the state function)
- * of a packed bdd, so that the optimizer can start with it.
- * Because the bdd is ordered, the state function of a node
- * always comes before the state functions of its child nodes.
- */
-function getOrderingOfPackedBdd(packedBdd) {
-    const nodeAmount = packedBdd.length / 3;
-    const childLevels = orderedStateList.map(() => new Set());
-    for (let id = 0; id < nodeAmount; id++) {
-        const level = packedBdd[id * 3];
-        [packedBdd[id * 3 + 1], packedBdd[id * 3 + 2]].forEach(ref => {
-            if (ref < nodeAmount) {
-                childLevels[level].add(packedBdd[ref * 3]);
-            }
-        });
-    }
-    const parentAmount = orderedStateList.map(() => 0);
-    childLevels.forEach(children => children.forEach(child => parentAmount[child]++));
-    // topological sort, the position of state functions that the bdd never calls does not matter
-    const ordering = [];
-    const used = new Set();
-    while (ordering.length < orderedStateList.length) {
-        const next = orderedStateList.findIndex((_stateName, index) => !used.has(index) && parentAmount[index] === 0);
-        used.add(next);
-        ordering.push(next);
-        childLevels[next].forEach(child => parentAmount[child]--);
-    }
-    return ordering;
-}
 async function run() {
     if (!fs.existsSync(OUTPUT_FOLDER_PATH)) {
         fs.mkdirSync(OUTPUT_FOLDER_PATH);
@@ -218,69 +163,83 @@ async function run() {
                 bdd.log();
                 const performanceMeasurement = await measurePerformanceOfStateFunctions(2000);
                 const quality = getQuality(bdd, performanceMeasurement);
-                const packedBdd = bddToPackedBdd(bdd);
-                ensurePackedBddMatchesTruthTable(packedBdd, loadTruthTable());
-                writeBddTemplate(packedBddToBase64String(packedBdd), performanceMeasurement, quality);
+                const bddMinimalString = bddToMinimalString(bdd);
+                writeBddTemplate(bddMinimalString, performanceMeasurement, quality);
                 console.log('nodes after minify: ' + bdd.countNodes());
             })();
             break;
-        /**
-         * Optimizes the bdd to become small and fast.
-         * Finds the ordering of the state functions with the lowest expected
-         * cpu time per resolve, deterministically and in seconds.
-         * Saves the bdd when it is better than the current one.
-         */
+        // optimizes the bdd to become small and fast
         case 'optimize-bdd':
             (async function optimizeBdd() {
                 console.log('read table..');
+                let lastBetterFoundTime = new Date().getTime();
                 const truthTable = loadTruthTable();
                 console.log('table size: ' + truthTable.size);
                 // fill missing rows with unknown
                 fillTruthTable(truthTable, truthTable.keys().next().value.length, unknownValueActionId);
                 const optimizeState = JSON.parse(fs.readFileSync(BDD_OPTIMIZE_STATE_LOCATION, 'utf-8'));
                 const performanceMeasurement = optimizeState.performanceMeasurement;
-                const currentPackedBdd = packedBddFromBase64String(optimizeState.packedBddString);
-                console.log('count state set occurrences..');
-                const stateSetOccurrences = countStateSetOccurrences(getQueryVariations(), getTestProcedures());
-                console.log('optimize ordering..');
-                const result = await optimizeOrdering({
+                let currentBest;
+                const resolvers = {};
+                new Array(orderedStateList.length).fill(0).forEach((_x, index) => {
+                    const fn = (state) => booleanStringToBoolean(state[index]);
+                    resolvers[index] = fn;
+                });
+                await optimizeBruteForce({
                     truthTable,
-                    dontCareValue: unknownValueActionId,
-                    // average runtime of each state function
-                    functionCosts: orderedStateList.map(stateName => performanceMeasurement[stateName]),
-                    /**
-                     * State sets that occur often in the example queries
-                     * should be cheap to resolve, but every known state set
-                     * can occur in production.
-                     */
-                    rowWeight: (stateSet) => 1 + (stateSetOccurrences.get(stateSet) || 0),
-                    initialOrderings: [
-                        getOrderingOfPackedBdd(currentPackedBdd),
-                        orderedStateList.map((_stateName, index) => index)
-                    ],
-                    onImprovement: ({ nodeCount, expectedCost, phase }) => {
-                        console.log(phase + ': ' + nodeCount + ' nodes, expected cost ' + expectedCost);
-                    }
+                    iterations: 10000000,
+                    afterBddCreation: (bdd) => {
+                        const lastBetterAgo = new Date().getTime() - lastBetterFoundTime;
+                        const lastBetterHours = lastBetterAgo / 1000 / 60 / 60;
+                        console.log('Last better bdd found ' + roundToTwoDecimals(lastBetterHours) + 'hours ago');
+                        bdd.removeIrrelevantLeafNodes(unknownValueActionId);
+                        if (currentBest) {
+                            console.log('current best bdd has ' + currentBest.countNodes() + ' nodes ' +
+                                'and a quality of ' + getQuality(currentBest, performanceMeasurement) + ' ' +
+                                'while newly tested one has quality of ' + getQuality(bdd, performanceMeasurement));
+                        }
+                        else {
+                            currentBest = bdd;
+                        }
+                    },
+                    compareResults: (a, b) => {
+                        const betterOne = getBetterBdd(a, b, performanceMeasurement, getQueryVariations(), getTestProcedures());
+                        return betterOne;
+                    },
+                    onBetterBdd: async (res) => {
+                        console.log('#'.repeat(100));
+                        console.log('## Yeah! found better bdd ##');
+                        lastBetterFoundTime = new Date().getTime();
+                        const quality = getQuality(res.bdd, performanceMeasurement);
+                        console.log('nodes: ' + res.bdd.countNodes());
+                        console.log('quality(new): ' + quality);
+                        console.log('quality(old): ' + getQuality(currentBest, performanceMeasurement));
+                        const currentOptimizeState = JSON.parse(fs.readFileSync(BDD_OPTIMIZE_STATE_LOCATION, 'utf-8'));
+                        console.log('currentOptimizeState.quality' + currentOptimizeState.quality);
+                        currentBest = res.bdd;
+                        // ensure correctness to have a double-check that the bdd works correctly
+                        const bddMinimalString = bddToMinimalString(currentBest);
+                        const simpleBdd = minimalStringToSimpleBdd(bddMinimalString);
+                        for (const [key, value] of loadTruthTable().entries()) {
+                            const bddValue = resolveWithSimpleBdd(simpleBdd, resolvers, key);
+                            if (value !== bddValue) {
+                                console.error('# Error: minimalBdd has different value compared to truth table ' + key);
+                                console.dir({ value, bddValue });
+                                process.exit(-1);
+                            }
+                        }
+                        if (quality > currentOptimizeState.quality) {
+                            console.log('########## BETTER THEN BEFORE ! -> Save it');
+                            console.log('new string: ' + bddMinimalString);
+                            writeBddTemplate(bddMinimalString, performanceMeasurement, quality);
+                            console.log('-'.repeat(100));
+                        }
+                        else {
+                            console.log('# DROP BECAUSE has better one with quality ' + currentOptimizeState.quality);
+                        }
+                    },
+                    log: false
                 });
-                console.dir({
-                    ordering: result.ordering.map(index => orderedStateList[index]),
-                    nodeCount: result.nodeCount,
-                    expectedCost: result.expectedCost,
-                    optimal: result.optimal,
-                    stats: result.stats
-                });
-                const packedBdd = bddToPackedBdd(result.bdd);
-                ensurePackedBddMatchesTruthTable(packedBdd, loadTruthTable());
-                const quality = getQuality(result.bdd, performanceMeasurement);
-                console.log('quality(new): ' + quality);
-                console.log('quality(old): ' + optimizeState.quality);
-                if (quality > optimizeState.quality) {
-                    console.log('########## BETTER THEN BEFORE ! -> Save it');
-                    writeBddTemplate(packedBddToBase64String(packedBdd), performanceMeasurement, quality);
-                }
-                else {
-                    console.log('# DROP BECAUSE has better one with quality ' + optimizeState.quality);
-                }
             })();
             break;
         default:

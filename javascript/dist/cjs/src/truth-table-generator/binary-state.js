@@ -1,26 +1,49 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.oppositeBinary = exports.maxBinaryWithLength = exports.binaryToDecimal = exports.LAST_STATE_SET = exports.FIRST_STATE_SET = exports.STATE_SET_LENGTH = void 0;
+exports.LAST_STATE_SET = exports.FIRST_STATE_SET = exports.STATE_SET_LENGTH = void 0;
 exports.getNextStateSet = getNextStateSet;
 exports.decimalToPaddedBinary = decimalToPaddedBinary;
+exports.binaryToDecimal = binaryToDecimal;
+exports.maxBinaryWithLength = maxBinaryWithLength;
+exports.oppositeBinary = oppositeBinary;
 exports.stateSetToObject = stateSetToObject;
-const binary_decision_diagram_1 = require("binary-decision-diagram");
 const index_js_1 = require("../states/index.js");
 exports.STATE_SET_LENGTH = index_js_1.orderedStateList.length;
 exports.FIRST_STATE_SET = new Array(exports.STATE_SET_LENGTH).fill(0).map(() => '0').join('');
 exports.LAST_STATE_SET = new Array(exports.STATE_SET_LENGTH).fill(0).map(() => '1').join('');
-var binary_decision_diagram_2 = require("binary-decision-diagram");
-Object.defineProperty(exports, "binaryToDecimal", { enumerable: true, get: function () { return binary_decision_diagram_2.binaryToDecimal; } });
-Object.defineProperty(exports, "maxBinaryWithLength", { enumerable: true, get: function () { return binary_decision_diagram_2.maxBinaryWithLength; } });
-Object.defineProperty(exports, "oppositeBinary", { enumerable: true, get: function () { return binary_decision_diagram_2.oppositeBinary; } });
 function getNextStateSet(stateSet) {
     if (!stateSet) {
         return exports.FIRST_STATE_SET;
     }
-    return (0, binary_decision_diagram_1.getNextStateSet)(stateSet);
+    const decimal = binaryToDecimal(stateSet);
+    const increase = decimal + 1;
+    const binary = decimalToPaddedBinary(increase);
+    return binary;
 }
+/**
+ * @link https://stackoverflow.com/a/16155417
+ */
 function decimalToPaddedBinary(decimal, padding = exports.STATE_SET_LENGTH) {
-    return (0, binary_decision_diagram_1.decimalToPaddedBinary)(decimal, padding);
+    const binary = (decimal >>> 0).toString(2);
+    const padded = binary.padStart(padding, '0');
+    return padded;
+}
+function binaryToDecimal(binary) {
+    return parseInt(binary, 2);
+}
+function maxBinaryWithLength(length) {
+    return new Array(length).fill(0).map(() => '1').join('');
+}
+function oppositeBinary(i) {
+    if (i === '1') {
+        return '0';
+    }
+    else if (i === '0') {
+        return '1';
+    }
+    else {
+        throw new Error('non-binary given');
+    }
 }
 function stateSetToObject(stateSet) {
     const ret = {};

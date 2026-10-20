@@ -1,17 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resolveInput = exports.packedBddString = void 0;
-exports.getPackedBdd = getPackedBdd;
+exports.resolveInput = exports.minimalBddString = void 0;
+exports.getSimpleBdd = getSimpleBdd;
 const binary_decision_diagram_1 = require("binary-decision-diagram");
 const index_js_1 = require("../states/index.js");
-exports.packedBddString = '1AQECAAMEBgUGBgd+BggJCAoLBQwNCA4PBxARBQwSBxMUBxUWEX5/EBJ+BxcYB4GMBRkaBBscEX6MCx0eBB8gCSEiBCMkCyUmBCcoDykqDysqBSwtBS4tBRkvCTAxCzIzBS40BTU2BTc4BTk6CjuMBX48CYeCCyiMBX49EX4+EX6AEX4/D0B+DxJ+D0F+CkJDBURFBUZHBSxICUlKCktMCk1OCk1PEYGDCjdQClFSClGMEYyDDH5TDH5UDop/DoqMEX5VEX6DD1YqDBpXClhZClhaCltcCltdCl5fBWBhBWJjD2R+DC1lEYGFD2Y3D1A3EYGMEYyFD2eMEH6BEH6MDoyEECtoD2lqEYeIEYeLD2tZEYKGEYJsEYJtD25+DC1vCnBSCnBxCnJzCnKMEBJ0D2RUEYGLEYyLEXV2ECt3ECo3EYdtDouEDouMEBJ4D3lUEYyID3qMEYyGEYxVEYx+Dn6BDop+EYF7EXx7EBJ9EYxtDox+Dn6MEYx7';
-let packedBdd;
-function getPackedBdd() {
-    if (!packedBdd) {
-        packedBdd = (0, binary_decision_diagram_1.packedBddFromBase64String)(exports.packedBddString);
+exports.minimalBddString = '14a1b,c+d2e5f0g/h.i4j*k-l)m(n6oeh6pnm6qen6ril6snh6tin6ubo9vce9wmh9xns9yne9zmi9{cm9|ad9}cp9~aq9ae9¡bf9¢bq9£cg9¤ck9¥cn9¦nd9§np9¨nq9©nf9ªng9«nm9¬nk9­mr9®ms9¯mt9°mj9±mk9²ml9³mn9´mc8µ³{8¶¯}8·°¤8¸³§8¹mn8º³«8»³m8¼m´4½z²4¾³w4¿zµ4À¯¶4Á°·4Â³º4Ã³¸4Äm¹4Åv¤7Æyn7ÇÀÁ7È~7É¥¤7ÊÃÄ7Ë¨n7Ìº¹7Í­°7Î®m7Ï¯°7Ð±m7Ñ³m7Ò¼m5ÓÄm5Ô¹m5Õ½°5Ö¾m5×¿°5ØÇÏ5ÙÂm5ÚÊÑ5Û±m5Üºm5ÝÌÑ5ÞÕÍ2ß|2à¡u2á£Å2âÖÎ2ã¦Æ2ä©x2åªÆ2æ×Ø2ç|È2è¡¢2é£É2ê¤¥2ëÙÚ2ì¦Ë2í©n2îªn2ïÛÐ2ðÜÝ2ñ¬n2òÒÓ/óan/ôbn/õcn/öÞâ/÷ßã/øàä/ùáå/úæë/ûçì/üèí/ýéî/þÍÎ/ÿÏÑ/ĀòÔ,ācn,Ăöï,ă¤ñ,Ąúð,ąêñ,ĆþÐ,ćÿÑ,Ĉac0ĉbc0Ċóõ0ċôā0Čßá0čà¤0Ďçé0ďèê0Đ÷ù0đøă0Ēûý0ēüą0ĔmÒ-ĕmĀ-ĖÞæ-ėČĎ-Ęčď-ęĂĄ-ĚĐĒ-ěđē-Ĝ²»-ĝÍÏ-ĞĆć-ğ²³-ĠĔĈ3ġĕĊ3ĢĖė3ģęĚ3ĤĢĝ(ĥĜğ(ĦģĞ(ħĠġ+Ĩĉċ+ĩĤĦ+ĪĘě+īħĨ1ĬĩĪ1ĭĬī*Įĥm*ĭĮ.';
+let simpleBdd;
+function getSimpleBdd() {
+    if (!simpleBdd) {
+        simpleBdd = (0, binary_decision_diagram_1.minimalStringToSimpleBdd)(exports.minimalBddString);
     }
-    return packedBdd;
+    return simpleBdd;
 }
-const resolveInput = (input) => (0, binary_decision_diagram_1.resolveWithPackedBdd)(getPackedBdd(), index_js_1.stateResolveFunctionByIndex, input);
+const resolveInput = (input) => {
+    return (0, binary_decision_diagram_1.resolveWithSimpleBdd)(getSimpleBdd(), index_js_1.stateResolveFunctionByIndex, input);
+};
 exports.resolveInput = resolveInput;
 //# sourceMappingURL=bdd.generated.js.map

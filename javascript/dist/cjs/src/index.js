@@ -44,13 +44,9 @@ function calculateActionName(input) {
     const resolvedActionId = (0, bdd_generated_js_1.resolveInput)(input);
     return index_js_2.orderedActionList[resolvedActionId];
 }
-/**
- * Like calculateActionName() but returns the action function directly.
- * Prefer this one when bundle size matters, because it does not
- * pull the action names into the bundle.
- */
 function calculateActionFunction(input) {
-    return index_js_2.actionFunctionList[(0, bdd_generated_js_1.resolveInput)(input)];
+    const actionName = calculateActionName(input);
+    return index_js_2.actionFunctions[actionName];
 }
 /**
  * for performance reasons,
@@ -58,7 +54,7 @@ function calculateActionFunction(input) {
  * @returns the new results
  */
 function runAction(action, queryParams, changeEvent, previousResults, keyDocumentMap) {
-    const fn = index_js_2.actionFunctionList[index_js_2.orderedActionList.indexOf(action)];
+    const fn = index_js_2.actionFunctions[action];
     fn({
         queryParams,
         changeEvent,
