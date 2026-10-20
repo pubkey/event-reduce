@@ -15,6 +15,7 @@
 <p align="center">
   <a href="https://pubkey.github.io/event-reduce/">Live demo</a> ·
   <a href="./javascript/">JavaScript implementation</a> ·
+  <a href="./rust/">Rust implementation</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#faq">FAQ</a>
 </p>
@@ -65,6 +66,7 @@ if (action === 'runFullQueryAgain') {
 ```
 
 See the [JavaScript implementation](./javascript/) for the full API and a MongoDB-style example.
+A [Rust implementation](./rust/) that uses the same BDD is also available.
 
 ## The problem
 

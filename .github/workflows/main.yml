@@ -60,3 +60,19 @@ jobs:
       - name: lint
         working-directory: ./javascript
         run: npm run lint
+
+  rust:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: rust format
+        working-directory: ./rust
+        run: cargo fmt --check
+      - name: rust clippy
+        working-directory: ./rust
+        run: cargo clippy --all-targets -- -D warnings
+      - name: rust tests
+        working-directory: ./rust
+        run: cargo test
