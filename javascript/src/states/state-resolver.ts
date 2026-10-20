@@ -1,5 +1,5 @@
 import type { StateResolveFunction } from '../types/index.js';
-import { getDocumentId, getProperty } from '../util.js';
+import { getDocumentId, getProperty, indexOfDocumentId } from '../util.js';
 
 export const hasLimit: StateResolveFunction<any> = (input) => !!input.queryParams.limit;
 
@@ -49,13 +49,7 @@ export const wasInResult: StateResolveFunction<any> = (input) => {
     if (input.keyDocumentMap) {
         return input.keyDocumentMap.has(id);
     } else {
-        const results = input.previousResults;
-        for (let i = 0; i < results.length; i++) {
-            if (getDocumentId(input.queryParams, results[i]) === id) {
-                return true;
-            }
-        }
-        return false;
+        return indexOfDocumentId(input.queryParams, input.previousResults, id) >= 0;
     }
 };
 

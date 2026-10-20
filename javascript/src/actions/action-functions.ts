@@ -3,7 +3,7 @@ import {
 } from 'array-push-at-sort-position';
 
 import type { ActionFunction, ActionFunctionInput } from '../types/index.js';
-import { getDocumentId } from '../util.js';
+import { getDocumentId, indexOfDocumentId } from '../util.js';
 
 /**
  * Returns the index of the changed document inside of the previous results
@@ -28,12 +28,7 @@ function findIndexOfChangedDoc(input: ActionFunctionInput<any>): number {
             }
         }
     }
-    for (let i = 0; i < results.length; i++) {
-        if (getDocumentId(input.queryParams, results[i]) === id) {
-            return i;
-        }
-    }
-    return -1;
+    return indexOfDocumentId(input.queryParams, results, id);
 }
 
 export const doNothing: ActionFunction<any> = (_input) => { };
@@ -158,7 +153,7 @@ export const insertAtSortPosition: ActionFunction<any> = (input) => {
             doc
         );
     } else {
-        const isDocInResults = input.previousResults.find((d: any) => getDocumentId(input.queryParams, d) === docId);
+        const isDocInResults = indexOfDocumentId(input.queryParams, input.previousResults, docId) >= 0;
         /**
          * If document is already in results,
          * we cannot add it again because it would throw on non-deterministic ordering.
