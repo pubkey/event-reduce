@@ -52,7 +52,7 @@
         "testcafe": "3.7.6",
         "ts-loader": "9.6.2",
         "typescript": "6.0.3",
-        "typescript-eslint": "8.71.2",
+        "typescript-eslint": "8.72.0",
         "util": "0.12.5",
         "webpack-dev-server": "6.1.0"
     }
