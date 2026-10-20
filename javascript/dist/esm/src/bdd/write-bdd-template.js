@@ -3,10 +3,10 @@ import path from 'path';
 export const BDD_TEMPLATE_LOCATION = path.join(__dirname, './bdd.template.ts');
 export const BDD_OPTIMIZE_STATE_LOCATION = path.join(__dirname, './bdd.optimize.state.json');
 export const BDD_TEMPLATE_GOAL = path.join(__dirname, './bdd.generated.ts');
-export function writeBddTemplate(minimalBddString, performanceMeasurement, quality) {
+export function writeBddTemplate(packedBddString, performanceMeasurement, quality) {
     let templateString = fs.readFileSync(BDD_TEMPLATE_LOCATION, 'utf-8');
     const replaceVariables = {
-        minimalBddString: '\'' + minimalBddString + '\'',
+        packedBddString: '\'' + packedBddString + '\'',
     };
     Object.entries(replaceVariables).forEach(([key, content]) => {
         const contentString = content;
@@ -15,7 +15,7 @@ export function writeBddTemplate(minimalBddString, performanceMeasurement, quali
     });
     fs.writeFileSync(BDD_OPTIMIZE_STATE_LOCATION, JSON.stringify({
         performanceMeasurement,
-        minimalBddString,
+        packedBddString,
         quality
     }, null, 4), { encoding: 'utf8', flag: 'w' });
     fs.writeFileSync(BDD_TEMPLATE_GOAL, templateString, { encoding: 'utf8', flag: 'w' });

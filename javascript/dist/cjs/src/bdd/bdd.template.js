@@ -1,19 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resolveInput = exports.minimalBddString = void 0;
-exports.getSimpleBdd = getSimpleBdd;
+exports.resolveInput = exports.packedBddString = void 0;
+exports.getPackedBdd = getPackedBdd;
 const binary_decision_diagram_1 = require("binary-decision-diagram");
 const index_js_1 = require("../states/index.js");
-exports.minimalBddString = '${minimalBddString}';
-let simpleBdd;
-function getSimpleBdd() {
-    if (!simpleBdd) {
-        simpleBdd = (0, binary_decision_diagram_1.minimalStringToSimpleBdd)(exports.minimalBddString);
+exports.packedBddString = '${packedBddString}';
+let packedBdd;
+function getPackedBdd() {
+    if (!packedBdd) {
+        packedBdd = (0, binary_decision_diagram_1.packedBddFromBase64String)(exports.packedBddString);
     }
-    return simpleBdd;
+    return packedBdd;
 }
-const resolveInput = (input) => {
-    return (0, binary_decision_diagram_1.resolveWithSimpleBdd)(getSimpleBdd(), index_js_1.stateResolveFunctionByIndex, input);
-};
+const resolveInput = (input) => (0, binary_decision_diagram_1.resolveWithPackedBdd)(getPackedBdd(), index_js_1.stateResolveFunctionByIndex, input);
 exports.resolveInput = resolveInput;
 //# sourceMappingURL=bdd.template.js.map

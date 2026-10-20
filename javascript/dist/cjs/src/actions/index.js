@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.actionFunctions = exports.orderedActionList = void 0;
+exports.actionFunctions = exports.actionFunctionList = exports.orderedActionList = void 0;
 const action_functions_js_1 = require("./action-functions.js");
 __exportStar(require("./action-functions.js"), exports);
 /**
@@ -39,6 +39,29 @@ exports.orderedActionList = [
     'removeExistingAndInsertAtSortPosition',
     'runFullQueryAgain',
     'unknownAction'
+];
+/**
+ * The action functions in the same order as orderedActionList.
+ * Use this instead of actionFunctions to look up an action by its index,
+ * so the action names do not end up in the bundle of the user.
+ */
+exports.actionFunctionList = [
+    action_functions_js_1.doNothing,
+    action_functions_js_1.insertFirst,
+    action_functions_js_1.insertLast,
+    action_functions_js_1.removeFirstItem,
+    action_functions_js_1.removeLastItem,
+    action_functions_js_1.removeFirstInsertLast,
+    action_functions_js_1.removeLastInsertFirst,
+    action_functions_js_1.removeFirstInsertFirst,
+    action_functions_js_1.removeLastInsertLast,
+    action_functions_js_1.removeExisting,
+    action_functions_js_1.replaceExisting,
+    action_functions_js_1.alwaysWrong,
+    action_functions_js_1.insertAtSortPosition,
+    action_functions_js_1.removeExistingAndInsertAtSortPosition,
+    action_functions_js_1.runFullQueryAgain,
+    action_functions_js_1.unknownAction
 ];
 exports.actionFunctions = {
     doNothing: action_functions_js_1.doNothing,

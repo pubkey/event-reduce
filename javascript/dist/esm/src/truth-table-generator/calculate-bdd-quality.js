@@ -1,6 +1,6 @@
-import { resolveWithSimpleBdd } from 'binary-decision-diagram';
+import { bddToPackedBdd, resolveWithPackedBdd } from 'binary-decision-diagram';
 import { performanceNow, wait } from 'async-test-util';
-import { orderedStateList, stateResolveFunctions } from '../states/index.js';
+import { getStateSet, orderedStateList, stateResolveFunctions } from '../states/index.js';
 import { HUMAN_MAX_AGE, randomHuman } from './data-generator.js';
 import { flatClone, shuffleArray } from '../util.js';
 import { mingoCollectionCreator } from './database/mingo.js';
@@ -119,17 +119,11 @@ export async function getBetterBdd(a, b, perfMeasurement, queries, procedures) {
     }
 }
 const pseudoCollection = mingoCollectionCreator();
-export function countFunctionUsages(bdd, queries, procedures) {
-    const ret = {};
-    orderedStateList.forEach(stateName => ret[stateName] = 0);
-    const countingResolvers = {};
-    orderedStateList.forEach((stateName, index) => {
-        const fn = stateResolveFunctions[stateName];
-        countingResolvers[index] = (i) => {
-            ret[stateName] = ret[stateName] + 1;
-            return fn(i);
-        };
-    });
+/**
+ * Runs all procedures and calls the handler
+ * with the input of each query for each change event.
+ */
+function forEachExampleInput(queries, procedures, handler) {
     const queryParamsByQuery = new Map();
     queries.forEach(query => {
         queryParamsByQuery.set(query, pseudoCollection.getQueryParams(query));
@@ -147,15 +141,47 @@ export function countFunctionUsages(bdd, queries, procedures) {
             for (const query of queries) {
                 const params = queryParamsByQuery.get(query);
                 const previousResults = resultsBefore.get(query);
+                const keyDocumentMap = new Map();
+                previousResults.forEach(d => keyDocumentMap.set(d._id, d));
                 const input = {
                     changeEvent,
                     previousResults,
-                    queryParams: params
+                    queryParams: params,
+                    keyDocumentMap
                 };
-                const resolvedInput = resolveWithSimpleBdd(bdd.toSimpleBdd(), countingResolvers, input);
+                handler(input);
             }
         }
     }
+}
+export function countFunctionUsages(bdd, queries, procedures) {
+    const ret = {};
+    orderedStateList.forEach(stateName => ret[stateName] = 0);
+    const countingResolvers = {};
+    orderedStateList.forEach((stateName, index) => {
+        const fn = stateResolveFunctions[stateName];
+        countingResolvers[index] = (i) => {
+            ret[stateName] = ret[stateName] + 1;
+            return fn(i);
+        };
+    });
+    const packedBdd = bddToPackedBdd(bdd);
+    forEachExampleInput(queries, procedures, input => {
+        resolveWithPackedBdd(packedBdd, countingResolvers, input);
+    });
+    return ret;
+}
+/**
+ * Counts how often each state set occurs in the example queries and procedures.
+ * Used as row weights so that the bdd optimizer
+ * makes the common state sets cheap to resolve.
+ */
+export function countStateSetOccurrences(queries, procedures) {
+    const ret = new Map();
+    forEachExampleInput(queries, procedures, input => {
+        const stateSet = getStateSet(input);
+        ret.set(stateSet, (ret.get(stateSet) || 0) + 1);
+    });
     return ret;
 }
 /**

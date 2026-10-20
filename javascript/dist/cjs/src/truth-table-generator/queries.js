@@ -194,12 +194,12 @@ function randomQuery() {
     const skip = (0, async_test_util_1.randomBoolean)() ? (0, async_test_util_1.randomNumber)(1, 25) : undefined;
     const limit = (0, async_test_util_1.randomBoolean)() ? (0, async_test_util_1.randomNumber)(1, 25) : undefined;
     const sort = (0, util_js_1.randomOfArray)(exports.SORT_VARIATION);
-    const randomQuery = {
+    const query = {
         selector,
         skip,
         limit,
         sort: sort.sort
     };
-    return randomQuery;
+    return query;
 }
 //# sourceMappingURL=queries.js.map
