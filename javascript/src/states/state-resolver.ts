@@ -1,32 +1,31 @@
-import type { InternalFunction, StateResolveFunction } from '../types/index.js';
-import { getProperty, toPublicFunction } from '../util.js';
+import type { StateResolveFunction } from '../types/index.js';
+import { getProperty } from '../util.js';
 
 /**
- * The state functions are implemented on the positional InternalInput
- * so that minifiers can rename the input variables
- * and the long property names do not end up in the bundle.
+ * The input properties are destructured once at the top of each function
+ * so that minifiers can rename the local variables and the long
+ * property names only appear once per function in the bundle.
  */
-type InternalStateFunction = InternalFunction<any, boolean>;
 
-const hasLimitInternal: InternalStateFunction = ([queryParams]) => !!queryParams.limit;
+export const hasLimit: StateResolveFunction<any> = ({ queryParams }) => !!queryParams.limit;
 
-const isFindOneInternal: InternalStateFunction = ([queryParams]) => queryParams.limit === 1;
+export const isFindOne: StateResolveFunction<any> = ({ queryParams }) => queryParams.limit === 1;
 
-const hasSkipInternal: InternalStateFunction = ([queryParams]) => !!queryParams.skip && queryParams.skip > 0;
+export const hasSkip: StateResolveFunction<any> = ({ queryParams }) => !!queryParams.skip && queryParams.skip > 0;
 
-const isDeleteInternal: InternalStateFunction = ([, changeEvent]) => changeEvent.operation === 'DELETE';
+export const isDelete: StateResolveFunction<any> = ({ changeEvent }) => changeEvent.operation === 'DELETE';
 
-const isInsertInternal: InternalStateFunction = ([, changeEvent]) => changeEvent.operation === 'INSERT';
+export const isInsert: StateResolveFunction<any> = ({ changeEvent }) => changeEvent.operation === 'INSERT';
 
-const isUpdateInternal: InternalStateFunction = ([, changeEvent]) => changeEvent.operation === 'UPDATE';
+export const isUpdate: StateResolveFunction<any> = ({ changeEvent }) => changeEvent.operation === 'UPDATE';
 
 
-const wasLimitReachedInternal: InternalStateFunction = ([queryParams, , previousResults]) => {
+export const wasLimitReached: StateResolveFunction<any> = ({ queryParams, previousResults }) => {
     const limit = queryParams.limit;
     return !!limit && previousResults.length >= limit;
 };
 
-const sortParamsChangedInternal: InternalStateFunction = ([queryParams, changeEvent]) => {
+export const sortParamsChanged: StateResolveFunction<any> = ({ queryParams, changeEvent }) => {
     const sortFields = queryParams.sortFields;
     const prev = changeEvent.previous;
     const doc = changeEvent.doc;
@@ -51,7 +50,7 @@ const sortParamsChangedInternal: InternalStateFunction = ([queryParams, changeEv
     return false;
 };
 
-const wasInResultInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults, keyDocumentMap]) => {
+export const wasInResult: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults, keyDocumentMap }) => {
     const id = changeEvent.id;
     if (keyDocumentMap) {
         return keyDocumentMap.has(id);
@@ -66,18 +65,18 @@ const wasInResultInternal: InternalStateFunction = ([queryParams, changeEvent, p
     }
 };
 
-const wasFirstInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults]) => {
+export const wasFirst: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
     const first = previousResults[0];
     return !!first && first[queryParams.primaryKey] === changeEvent.id;
 };
 
-const wasLastInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults]) => {
+export const wasLast: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
     const last = previousResults[previousResults.length - 1];
     return !!last && last[queryParams.primaryKey] === changeEvent.id;
 };
 
 
-const wasSortedBeforeFirstInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults]) => {
+export const wasSortedBeforeFirst: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
     const prev = changeEvent.previous;
     if (!prev) {
         return false;
@@ -101,7 +100,7 @@ const wasSortedBeforeFirstInternal: InternalStateFunction = ([queryParams, chang
     return queryParams.sortComparator(prev, first) < 0;
 };
 
-const wasSortedAfterLastInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults]) => {
+export const wasSortedAfterLast: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
     const prev = changeEvent.previous;
     if (!prev) {
         return false;
@@ -119,7 +118,7 @@ const wasSortedAfterLastInternal: InternalStateFunction = ([queryParams, changeE
     return queryParams.sortComparator(prev, last) > 0;
 };
 
-const isSortedBeforeFirstInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults]) => {
+export const isSortedBeforeFirst: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
     const doc = changeEvent.doc;
     if (!doc) {
         return false;
@@ -137,7 +136,7 @@ const isSortedBeforeFirstInternal: InternalStateFunction = ([queryParams, change
     return queryParams.sortComparator(doc, first) < 0;
 };
 
-const isSortedAfterLastInternal: InternalStateFunction = ([queryParams, changeEvent, previousResults]) => {
+export const isSortedAfterLast: StateResolveFunction<any> = ({ queryParams, changeEvent, previousResults }) => {
     const doc = changeEvent.doc;
     if (!doc) {
         return false;
@@ -156,7 +155,7 @@ const isSortedAfterLastInternal: InternalStateFunction = ([queryParams, changeEv
 };
 
 
-const wasMatchingInternal: InternalStateFunction = ([queryParams, changeEvent]) => {
+export const wasMatching: StateResolveFunction<any> = ({ queryParams, changeEvent }) => {
     const prev = changeEvent.previous;
     if (!prev) {
         return false;
@@ -164,7 +163,7 @@ const wasMatchingInternal: InternalStateFunction = ([queryParams, changeEvent]) 
     return queryParams.queryMatcher(prev);
 };
 
-const doesMatchNowInternal: InternalStateFunction = ([queryParams, changeEvent]) => {
+export const doesMatchNow: StateResolveFunction<any> = ({ queryParams, changeEvent }) => {
     const doc = changeEvent.doc;
     if (!doc) {
         return false;
@@ -173,48 +172,4 @@ const doesMatchNowInternal: InternalStateFunction = ([queryParams, changeEvent])
 };
 
 
-const wasResultsEmptyInternal: InternalStateFunction = ([, , previousResults]) => previousResults.length === 0;
-
-/**
- * The internal state functions in the same order as orderedStateList.
- * The BDD resolves with these.
- */
-export const internalStateResolvers: InternalStateFunction[] = [
-    isInsertInternal,
-    isUpdateInternal,
-    isDeleteInternal,
-    hasLimitInternal,
-    isFindOneInternal,
-    hasSkipInternal,
-    wasResultsEmptyInternal,
-    wasLimitReachedInternal,
-    wasFirstInternal,
-    wasLastInternal,
-    sortParamsChangedInternal,
-    wasInResultInternal,
-    wasSortedBeforeFirstInternal,
-    wasSortedAfterLastInternal,
-    isSortedBeforeFirstInternal,
-    isSortedAfterLastInternal,
-    wasMatchingInternal,
-    doesMatchNowInternal
-];
-
-export const hasLimit: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(hasLimitInternal);
-export const isFindOne: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(isFindOneInternal);
-export const hasSkip: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(hasSkipInternal);
-export const isDelete: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(isDeleteInternal);
-export const isInsert: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(isInsertInternal);
-export const isUpdate: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(isUpdateInternal);
-export const wasLimitReached: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasLimitReachedInternal);
-export const sortParamsChanged: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(sortParamsChangedInternal);
-export const wasInResult: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasInResultInternal);
-export const wasFirst: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasFirstInternal);
-export const wasLast: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasLastInternal);
-export const wasSortedBeforeFirst: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasSortedBeforeFirstInternal);
-export const wasSortedAfterLast: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasSortedAfterLastInternal);
-export const isSortedBeforeFirst: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(isSortedBeforeFirstInternal);
-export const isSortedAfterLast: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(isSortedAfterLastInternal);
-export const wasMatching: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasMatchingInternal);
-export const doesMatchNow: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(doesMatchNowInternal);
-export const wasResultsEmpty: StateResolveFunction<any> = /* @__PURE__ */ toPublicFunction(wasResultsEmptyInternal);
+export const wasResultsEmpty: StateResolveFunction<any> = ({ previousResults }) => previousResults.length === 0;

@@ -2,15 +2,7 @@ import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
 
-import type { ActionFunction, InternalFunction, InternalInput } from '../types/index.js';
-import { toPublicFunction } from '../util.js';
-
-/**
- * The action functions are implemented on the positional InternalInput
- * so that minifiers can rename the input variables
- * and the long property names do not end up in the bundle.
- */
-type InternalActionFunction = InternalFunction<any, void>;
+import type { ActionFunction, ActionFunctionInput } from '../types/index.js';
 
 /**
  * Returns the index of the changed document inside of the previous results
@@ -22,8 +14,12 @@ type InternalActionFunction = InternalFunction<any, void>;
  * If the map holds a different object reference than the results array
  * (for example because the caller built the map from clones),
  * we fall back to the primary key comparison.
+ *
+ * The input properties are destructured once at the top of each function
+ * so that minifiers can rename the local variables and the long
+ * property names only appear once per function in the bundle.
  */
-function findIndexOfChangedDoc([queryParams, changeEvent, previousResults, keyDocumentMap]: InternalInput<any>): number {
+function findIndexOfChangedDoc({ queryParams, changeEvent, previousResults, keyDocumentMap }: ActionFunctionInput<any>): number {
     const id = changeEvent.id;
     if (keyDocumentMap) {
         const docInMap = keyDocumentMap.get(id);
@@ -43,9 +39,9 @@ function findIndexOfChangedDoc([queryParams, changeEvent, previousResults, keyDo
     return -1;
 }
 
-const doNothingInternal: InternalActionFunction = () => { };
+export const doNothing: ActionFunction<any> = (_input) => { };
 
-const insertFirstInternal: InternalActionFunction = ([, changeEvent, previousResults, keyDocumentMap]) => {
+export const insertFirst: ActionFunction<any> = ({ changeEvent, previousResults, keyDocumentMap }) => {
     previousResults.unshift(changeEvent.doc);
     if (keyDocumentMap) {
         keyDocumentMap.set(
@@ -54,7 +50,7 @@ const insertFirstInternal: InternalActionFunction = ([, changeEvent, previousRes
         );
     }
 };
-const insertLastInternal: InternalActionFunction = ([, changeEvent, previousResults, keyDocumentMap]) => {
+export const insertLast: ActionFunction<any> = ({ changeEvent, previousResults, keyDocumentMap }) => {
     previousResults.push(changeEvent.doc);
     if (keyDocumentMap) {
         keyDocumentMap.set(
@@ -63,7 +59,7 @@ const insertLastInternal: InternalActionFunction = ([, changeEvent, previousResu
         );
     }
 };
-const removeFirstItemInternal: InternalActionFunction = ([queryParams, , previousResults, keyDocumentMap]) => {
+export const removeFirstItem: ActionFunction<any> = ({ queryParams, previousResults, keyDocumentMap }) => {
     const first = previousResults.shift();
     if (keyDocumentMap && first) {
         keyDocumentMap.delete(
@@ -72,7 +68,7 @@ const removeFirstItemInternal: InternalActionFunction = ([queryParams, , previou
     }
 };
 
-const removeLastItemInternal: InternalActionFunction = ([queryParams, , previousResults, keyDocumentMap]) => {
+export const removeLastItem: ActionFunction<any> = ({ queryParams, previousResults, keyDocumentMap }) => {
     const last = previousResults.pop();
     if (keyDocumentMap && last) {
         keyDocumentMap.delete(
@@ -81,28 +77,28 @@ const removeLastItemInternal: InternalActionFunction = ([queryParams, , previous
     }
 };
 
-const removeFirstInsertLastInternal: InternalActionFunction = (input) => {
-    removeFirstItemInternal(input);
-    insertLastInternal(input);
+export const removeFirstInsertLast: ActionFunction<any> = (input) => {
+    removeFirstItem(input);
+    insertLast(input);
 };
 
-const removeLastInsertFirstInternal: InternalActionFunction = (input) => {
-    removeLastItemInternal(input);
-    insertFirstInternal(input);
+export const removeLastInsertFirst: ActionFunction<any> = (input) => {
+    removeLastItem(input);
+    insertFirst(input);
 };
 
-const removeFirstInsertFirstInternal: InternalActionFunction = (input) => {
-    removeFirstItemInternal(input);
-    insertFirstInternal(input);
+export const removeFirstInsertFirst: ActionFunction<any> = (input) => {
+    removeFirstItem(input);
+    insertFirst(input);
 };
 
-const removeLastInsertLastInternal: InternalActionFunction = (input) => {
-    removeLastItemInternal(input);
-    insertLastInternal(input);
+export const removeLastInsertLast: ActionFunction<any> = (input) => {
+    removeLastItem(input);
+    insertLast(input);
 };
 
-const removeExistingInternal: InternalActionFunction = (input) => {
-    const [, changeEvent, previousResults, keyDocumentMap] = input;
+export const removeExisting: ActionFunction<any> = (input) => {
+    const { changeEvent, previousResults, keyDocumentMap } = input;
     const index = findIndexOfChangedDoc(input);
     if (keyDocumentMap) {
         keyDocumentMap.delete(
@@ -114,8 +110,8 @@ const removeExistingInternal: InternalActionFunction = (input) => {
     }
 };
 
-const replaceExistingInternal: InternalActionFunction = (input) => {
-    const [, changeEvent, previousResults, keyDocumentMap] = input;
+export const replaceExisting: ActionFunction<any> = (input) => {
+    const { changeEvent, previousResults, keyDocumentMap } = input;
     const index = findIndexOfChangedDoc(input);
     if (index >= 0) {
         const doc = changeEvent.doc;
@@ -134,7 +130,7 @@ const replaceExistingInternal: InternalActionFunction = (input) => {
  * it must be later optimised out
  * otherwise there is something broken
  */
-const alwaysWrongInternal: InternalActionFunction = ([, , previousResults, keyDocumentMap]) => {
+export const alwaysWrong: ActionFunction<any> = ({ previousResults, keyDocumentMap }) => {
     const wrongHuman = {
         _id: 'wrongHuman' + new Date().getTime()
     };
@@ -149,7 +145,7 @@ const alwaysWrongInternal: InternalActionFunction = ([, , previousResults, keyDo
     }
 };
 
-const insertAtSortPositionInternal: InternalActionFunction = ([queryParams, changeEvent, previousResults, keyDocumentMap]) => {
+export const insertAtSortPosition: ActionFunction<any> = ({ queryParams, changeEvent, previousResults, keyDocumentMap }) => {
     const docId = changeEvent.id;
     const doc = changeEvent.doc;
     if (keyDocumentMap) {
@@ -186,54 +182,15 @@ const insertAtSortPositionInternal: InternalActionFunction = ([queryParams, chan
     );
 };
 
-const removeExistingAndInsertAtSortPositionInternal: InternalActionFunction = (input) => {
-    removeExistingInternal(input);
-    insertAtSortPositionInternal(input);
+export const removeExistingAndInsertAtSortPosition: ActionFunction<any> = (input) => {
+    removeExisting(input);
+    insertAtSortPosition(input);
 };
 
-const runFullQueryAgainInternal: InternalActionFunction = () => {
+export const runFullQueryAgain: ActionFunction<any> = (_input) => {
     throw new Error('EventReduce:RUN_FULL');
 };
 
-const unknownActionInternal: InternalActionFunction = () => {
+export const unknownAction: ActionFunction<any> = (_input) => {
     throw new Error('EventReduce:UNK_ACT');
 };
-
-/**
- * The internal action functions in the same order as orderedActionList.
- */
-export const internalActionFunctions: InternalActionFunction[] = [
-    doNothingInternal,
-    insertFirstInternal,
-    insertLastInternal,
-    removeFirstItemInternal,
-    removeLastItemInternal,
-    removeFirstInsertLastInternal,
-    removeLastInsertFirstInternal,
-    removeFirstInsertFirstInternal,
-    removeLastInsertLastInternal,
-    removeExistingInternal,
-    replaceExistingInternal,
-    alwaysWrongInternal,
-    insertAtSortPositionInternal,
-    removeExistingAndInsertAtSortPositionInternal,
-    runFullQueryAgainInternal,
-    unknownActionInternal
-];
-
-export const doNothing: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(doNothingInternal);
-export const insertFirst: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(insertFirstInternal);
-export const insertLast: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(insertLastInternal);
-export const removeFirstItem: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeFirstItemInternal);
-export const removeLastItem: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeLastItemInternal);
-export const removeFirstInsertLast: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeFirstInsertLastInternal);
-export const removeLastInsertFirst: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeLastInsertFirstInternal);
-export const removeFirstInsertFirst: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeFirstInsertFirstInternal);
-export const removeLastInsertLast: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeLastInsertLastInternal);
-export const removeExisting: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeExistingInternal);
-export const replaceExisting: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(replaceExistingInternal);
-export const alwaysWrong: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(alwaysWrongInternal);
-export const insertAtSortPosition: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(insertAtSortPositionInternal);
-export const removeExistingAndInsertAtSortPosition: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(removeExistingAndInsertAtSortPositionInternal);
-export const runFullQueryAgain: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(runFullQueryAgainInternal);
-export const unknownAction: ActionFunction<any> = /* @__PURE__ */ toPublicFunction(unknownActionInternal);

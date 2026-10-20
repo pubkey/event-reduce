@@ -3,9 +3,8 @@ import {
     packedBddFromBase64String,
     resolveWithPackedBdd
 } from 'binary-decision-diagram';
-import type { InternalInput, StateResolveFunctionInput } from '../types/index.js';
-import { internalStateResolvers } from '../states/index.js';
-import { toInternalInput } from '../util.js';
+import type { StateResolveFunctionInput } from '../types/index.js';
+import { stateResolveFunctionByIndex } from '../states/index.js';
 
 export const packedBddString = '1AQECAAMEBgUGBgd+BggJCAoLBQwNCA4PBxARBQwSBxMUBxUWEX5/EBJ+BxcYB4GMBRkaBBscEX6MCx0eBB8gCSEiBCMkCyUmBCcoDykqDysqBSwtBS4tBRkvCTAxCzIzBS40BTU2BTc4BTk6CjuMBX48CYeCCyiMBX49EX4+EX6AEX4/D0B+DxJ+D0F+CkJDBURFBUZHBSxICUlKCktMCk1OCk1PEYGDCjdQClFSClGMEYyDDH5TDH5UDop/DoqMEX5VEX6DD1YqDBpXClhZClhaCltcCltdCl5fBWBhBWJjD2R+DC1lEYGFD2Y3D1A3EYGMEYyFD2eMEH6BEH6MDoyEECtoD2lqEYeIEYeLD2tZEYKGEYJsEYJtD25+DC1vCnBSCnBxCnJzCnKMEBJ0D2RUEYGLEYyLEXV2ECt3ECo3EYdtDouEDouMEBJ4D3lUEYyID3qMEYyGEYxVEYx+Dn6BDop+EYF7EXx7EBJ9EYxtDox+Dn6MEYx7';
 
@@ -17,12 +16,8 @@ export function getPackedBdd(): PackedBdd {
     return packedBdd;
 }
 
-export const resolveInternalInput = (input: InternalInput<any>) => resolveWithPackedBdd(
+export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveWithPackedBdd(
         getPackedBdd(),
-        internalStateResolvers,
+        stateResolveFunctionByIndex,
         input
-    );
-
-export const resolveInput = (input: StateResolveFunctionInput<any>) => resolveInternalInput(
-        toInternalInput(input)
     );

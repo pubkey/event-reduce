@@ -81,21 +81,6 @@ export interface StateResolveFunctionInput<DocType> {
     keyDocumentMap?: ResultKeyDocumentMap<DocType>;
 }
 
-/**
- * Positional form of StateResolveFunctionInput that is used internally.
- * Minifiers can rename array destructuring variables but not
- * object properties, so the long property names do not end up
- * in the bundle of the user.
- */
-export type InternalInput<DocType> = [
-    queryParams: QueryParams<DocType>,
-    changeEvent: ChangeEvent<DocType>,
-    previousResults: DocType[],
-    keyDocumentMap: ResultKeyDocumentMap<DocType> | undefined
-];
-
-export type InternalFunction<DocType, R> = (input: InternalInput<DocType>) => R;
-
 export type StateResolveFunction<DocType> = (
     input: StateResolveFunctionInput<DocType>
 ) => boolean;

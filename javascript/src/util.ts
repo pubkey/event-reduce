@@ -1,26 +1,7 @@
 import type {
     MongoQuery,
-    DeepReadonlyObject,
-    InternalInput,
-    InternalFunction,
-    StateResolveFunctionInput
+    DeepReadonlyObject
 } from './types/index.js';
-
-export function toInternalInput<DocType>(
-    input: StateResolveFunctionInput<DocType>
-): InternalInput<DocType> {
-    return [input.queryParams, input.changeEvent, input.previousResults, input.keyDocumentMap];
-}
-
-/**
- * Wraps an internal function so that it can be called
- * with the public StateResolveFunctionInput object.
- */
-export function toPublicFunction<R>(
-    fn: InternalFunction<any, R>
-): (input: StateResolveFunctionInput<any>) => R {
-    return (input) => fn(toInternalInput(input));
-}
 
 
 export function lastOfArray<T>(ar: T[]): T {
