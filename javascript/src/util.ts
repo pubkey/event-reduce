@@ -1,6 +1,7 @@
 import type {
     MongoQuery,
-    DeepReadonlyObject
+    DeepReadonlyObject,
+    QueryParams
 } from './types/index.js';
 
 
@@ -144,4 +145,13 @@ export function getProperty(object: any, path: string | string[], value?: any) {
         object = object[pathArray[i]];
     }
     return object === undefined ? value : object;
+}
+
+/**
+ * Returns the id of the document,
+ * from queryParams.getDocumentId() if set,
+ * otherwise from document[queryParams.primaryKey].
+ */
+export function getDocumentId<DocType>(queryParams: QueryParams<DocType>, doc: DocType): string {
+    return queryParams.getDocumentId ? queryParams.getDocumentId(doc) : (doc as any)[queryParams.primaryKey];
 }

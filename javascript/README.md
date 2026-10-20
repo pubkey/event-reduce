@@ -67,6 +67,10 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
     return {
         // primary key of the documents
         primaryKey: '_id',
+        // (optional) a function that returns the id of a document,
+        // for ids that are not stored in a single top-level field,
+        // like compound or nested primary keys. Overrides primaryKey.
+        // getDocumentId: doc => doc.key.team + '|' + doc.key.num,
         // a string[] with all fields that are used in the sorting
         sortFields: getSortFieldsOfQuery(query),
         skip: query.skip ? query.skip : undefined,
