@@ -104,7 +104,7 @@ export function flatClone<T>(obj: T | DeepReadonlyObject<T>): T {
 
 export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
     if (!obj) {
-        throw new Error('ensureNotFalsy() is falsy');
+        throw new Error('EventReduce:FALSY');
     }
     return obj;
 }

@@ -1,8 +1,6 @@
 # event-reduce minimal bundle
 
-A tiny demo that depends only on `event-reduce-js` and bundles everything into a single minified file with [esbuild](https://esbuild.github.io/).
-
-It runs 2000 random INSERT/UPDATE/DELETE events against an in-memory store, keeps the query results up to date with EventReduce and checks every result against a full query run.
+A minimal demo that only depends on `event-reduce-js`. It loads the packed BDD and runs a single resolution for one change event. [esbuild](https://esbuild.github.io/) bundles it into one minified file.
 
 ```bash
 # build the library first (the example links to ../../javascript)
@@ -12,5 +10,3 @@ npm install
 npm run build   # -> dist/bundle.min.js
 npm start       # build + run the bundle in Node.js
 ```
-
-Open `index.html` in a browser to run the same bundle there.

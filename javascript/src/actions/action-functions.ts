@@ -182,9 +182,9 @@ export const removeExistingAndInsertAtSortPosition: ActionFunction<any> = (input
 };
 
 export const runFullQueryAgain: ActionFunction<any> = (_input) => {
-    throw new Error('Action runFullQueryAgain must be implemented by yourself');
+    throw new Error('EventReduce:RUN_FULL');
 };
 
 export const unknownAction: ActionFunction<any> = (_input) => {
-    throw new Error('Action unknownAction should never be called');
+    throw new Error('EventReduce:UNK_ACT');
 };

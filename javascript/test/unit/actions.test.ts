@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import {
     orderedActionList,
-    actionFunctions
+    actionFunctions,
+    actionFunctionList
 } from '../../src/actions/index.js';
 import {
     ActionFunction,
@@ -73,6 +74,12 @@ describe('actions.test.ts', () => {
                 orderedActionList.length,
                 Object.keys(actionFunctions).length
             );
+        });
+        it('actionFunctionList must have same sorting as orderedActionList', () => {
+            assert.strictEqual(actionFunctionList.length, orderedActionList.length);
+            orderedActionList.forEach((name, index) => {
+                assert.strictEqual(actionFunctionList[index], actionFunctions[name], name);
+            });
         });
         it('all functions should not crash on whatever input', () => {
             Object.entries(actionFunctions)

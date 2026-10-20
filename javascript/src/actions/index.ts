@@ -49,6 +49,30 @@ export const orderedActionList: ActionName[] = [
 ];
 
 
+/**
+ * The action functions in the same order as orderedActionList.
+ * Use this instead of actionFunctions to look up an action by its index,
+ * so the action names do not end up in the bundle of the user.
+ */
+export const actionFunctionList: ActionFunction<any>[] = [
+    doNothing,
+    insertFirst,
+    insertLast,
+    removeFirstItem,
+    removeLastItem,
+    removeFirstInsertLast,
+    removeLastInsertFirst,
+    removeFirstInsertFirst,
+    removeLastInsertLast,
+    removeExisting,
+    replaceExisting,
+    alwaysWrong,
+    insertAtSortPosition,
+    removeExistingAndInsertAtSortPosition,
+    runFullQueryAgain,
+    unknownAction
+];
+
 export const actionFunctions: {
     [k in ActionName]: ActionFunction<any>
 } = {

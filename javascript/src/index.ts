@@ -9,7 +9,7 @@ import type {
     StateResolveFunctionInput
 } from './types/index.js';
 import { getStateSet } from './states/index.js';
-import { actionFunctions, orderedActionList } from './actions/index.js';
+import { actionFunctionList, orderedActionList } from './actions/index.js';
 import { resolveInput } from './bdd/bdd.generated.js';
 
 /**
@@ -74,11 +74,15 @@ export function calculateActionName<DocType>(
     return orderedActionList[resolvedActionId];
 }
 
+/**
+ * Like calculateActionName() but returns the action function directly.
+ * Prefer this one when bundle size matters, because it does not
+ * pull the action names into the bundle.
+ */
 export function calculateActionFunction<DocType>(
     input: StateResolveFunctionInput<DocType>
 ): ActionFunction<DocType> {
-    const actionName = calculateActionName(input);
-    return actionFunctions[actionName];
+    return actionFunctionList[resolveInput(input)];
 }
 
 /**
@@ -93,7 +97,7 @@ export function runAction<DocType>(
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): DocType[] {
-    const fn: ActionFunction<DocType> = actionFunctions[action];
+    const fn: ActionFunction<DocType> = actionFunctionList[orderedActionList.indexOf(action)];
     fn({
         queryParams,
         changeEvent,

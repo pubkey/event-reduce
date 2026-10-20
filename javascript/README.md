@@ -140,3 +140,29 @@ if (action === 'runFullQueryAgain') {
 // the functions of event-reduce will mutate the input variables
 console.dir(currentResults);
 ```
+
+## Smaller bundles
+
+`calculateActionName()` and `runAction()` work with action names, so the names of all actions end up in your bundle. If bundle size matters, use `calculateActionFunction()` instead. It returns the action function directly:
+
+```typescript
+import { calculateActionFunction, runFullQueryAgain } from 'event-reduce-js';
+
+const action = calculateActionFunction(input);
+if (action === runFullQueryAgain) {
+    // run the query over the database again
+} else {
+    action(input); // mutates input.previousResults
+}
+```
+
+## Error codes
+
+To keep the bundle small, errors only contain a short code:
+
+| Code | Meaning |
+| --- | --- |
+| `EventReduce:RUN_FULL` | The `runFullQueryAgain` action was called. You have to re-run the query yourself. |
+| `EventReduce:UNK_ACT` | The `unknownAction` action was called. This should never happen. |
+| `EventReduce:UNK_STATE` | `resolveState()` was called with an unknown state name. |
+| `EventReduce:FALSY` | `ensureNotFalsy()` got a falsy value. |
