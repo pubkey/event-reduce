@@ -126,16 +126,16 @@ export const replaceExisting: ActionFunction<any> = (input) => {
  * otherwise there is something broken
  */
 export const alwaysWrong: ActionFunction<any> = (input) => {
-    const wrongHuman = {
-        _id: 'wrongHuman' + new Date().getTime()
+    const wrong = {
+        _id: 'wrong' + new Date().getTime()
     };
     input.previousResults.length = 0; // clear array
-    input.previousResults.push(wrongHuman);
+    input.previousResults.push(wrong);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.clear();
         input.keyDocumentMap.set(
-            wrongHuman._id,
-            wrongHuman
+            wrong._id,
+            wrong
         );
     }
 };

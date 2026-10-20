@@ -78,7 +78,8 @@ describe('actions.test.ts', () => {
         it('actionFunctionList must have same sorting as orderedActionList', () => {
             assert.strictEqual(actionFunctionList.length, orderedActionList.length);
             orderedActionList.forEach((name, index) => {
-                assert.strictEqual(actionFunctionList[index], actionFunctions[name], name);
+                const expected = name === 'alwaysWrong' ? actionFunctions.unknownAction : actionFunctions[name];
+                assert.strictEqual(actionFunctionList[index], expected, name);
             });
         });
         it('all functions should not crash on whatever input', () => {

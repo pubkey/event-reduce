@@ -163,6 +163,6 @@ To keep the bundle small, errors only contain a short code:
 | Code | Meaning |
 | --- | --- |
 | `EventReduce:RUN_FULL` | The `runFullQueryAgain` action was called. You have to re-run the query yourself. |
-| `EventReduce:UNK_ACT` | The `unknownAction` action was called. This should never happen. |
+| `EventReduce:UNK_ACT` | The `unknownAction` action was called, or `runAction()` was called with `alwaysWrong`. This should never happen. |
 | `EventReduce:UNK_STATE` | `resolveState()` was called with an unknown state name. |
 | `EventReduce:FALSY` | `ensureNotFalsy()` got a falsy value. |
