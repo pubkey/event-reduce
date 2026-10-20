@@ -108,7 +108,7 @@ export function resolveState<DocType>(
 ): boolean {
     const fn: StateResolveFunction<DocType> = stateResolveFunctions[stateName];
     if (!fn) {
-        throw new Error('resolveState() has no function for ' + stateName);
+        throw new Error('EventReduce:UNK_STATE ' + stateName);
     }
     return fn(input);
 }

@@ -11,8 +11,7 @@ import type {
     ActionFunctionInput,
     MongoQuery
 } from '../types/index.js';
-import { runAction } from '../index.js';
-import { orderedActionList } from '../actions/index.js';
+import { actionFunctions, orderedActionList } from '../actions/index.js';
 import { getStateSet } from '../states/index.js';
 import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
@@ -185,12 +184,16 @@ export function doesActionWork(
         return true;
     }
 
-    const calculatedResults = runAction(
-        actionName,
-        input.queryParams,
-        input.changeEvent,
-        input.previousResults.slice()
-    );
+    /**
+     * Use actionFunctions instead of runAction()
+     * because runAction() does not run alwaysWrong.
+     */
+    const calculatedResults = input.previousResults.slice();
+    actionFunctions[actionName]({
+        queryParams: input.queryParams,
+        changeEvent: input.changeEvent,
+        previousResults: calculatedResults
+    });
 
     if (
         // optimisation shortcut, this is faster because we know we have two arrays
