@@ -76,3 +76,26 @@ jobs:
       - name: rust tests
         working-directory: ./rust
         run: cargo test
+
+  dart:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+      - name: dart install
+        working-directory: ./dart
+        run: dart pub get
+      - name: dart format
+        working-directory: ./dart
+        run: dart format --set-exit-if-changed .
+      - name: dart analyze
+        working-directory: ./dart
+        run: dart analyze --fatal-infos
+      - name: dart tests
+        working-directory: ./dart
+        run: dart test
+      - name: dart example
+        working-directory: ./dart
+        run: dart run example/example.dart
