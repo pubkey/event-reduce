@@ -99,3 +99,32 @@ jobs:
       - name: dart example
         working-directory: ./dart
         run: dart run example/example.dart
+
+  kotlin:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: kotlin tests
+        working-directory: ./kotlin
+        run: ./gradlew test
+
+  swift:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    container:
+      image: swift:6.1
+    steps:
+      - uses: actions/checkout@v7
+      - name: swift format
+        working-directory: ./swift
+        run: swift format lint -r -s Package.swift Sources Tests
+      - name: swift tests
+        working-directory: ./swift
+        run: swift test
