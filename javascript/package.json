@@ -1,6 +1,6 @@
 {
   "name": "event-reduce-js",
-  "version": "7.1.0",
+  "version": "7.2.0",
   "description": "Update live query results from database change events without re-running the query. Fast reactive and realtime queries for any database.",
   "keywords": [
     "event-reduce",
