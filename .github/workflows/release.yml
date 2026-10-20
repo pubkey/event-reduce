@@ -65,4 +65,10 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add javascript/package.json
           git commit -m "release: ${{ steps.bump.outputs.version }}"
-          git push
+          git tag ${{ steps.bump.outputs.version }}
+          git push --atomic origin HEAD ${{ steps.bump.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create ${{ steps.bump.outputs.version }} --title ${{ steps.bump.outputs.version }} --generate-notes --verify-tag
