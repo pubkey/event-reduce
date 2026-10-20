@@ -9,7 +9,7 @@ import type {
     StateResolveFunctionInput
 } from './types/index.js';
 import { getStateSet } from './states/index.js';
-import { actionFunctionList, orderedActionList } from './actions/index.js';
+import { actionFunctionList, internalActionFunctions, orderedActionList } from './actions/index.js';
 import { resolveInput } from './bdd/bdd.generated.js';
 
 /**
@@ -31,6 +31,8 @@ export type {
     QueryParams,
     ResultKeyDocumentMap,
     DeterministicSortComparator,
+    InternalFunction,
+    InternalInput,
     StateName,
     StateResolveFunction,
     StateResolveFunctionInput,
@@ -97,12 +99,8 @@ export function runAction<DocType>(
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): DocType[] {
-    const fn: ActionFunction<DocType> = actionFunctionList[orderedActionList.indexOf(action)];
-    fn({
-        queryParams,
-        changeEvent,
-        previousResults,
-        keyDocumentMap
-    });
+    internalActionFunctions[orderedActionList.indexOf(action)](
+        [queryParams, changeEvent, previousResults, keyDocumentMap]
+    );
     return previousResults;
 }
