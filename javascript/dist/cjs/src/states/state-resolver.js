@@ -2,29 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
 const util_js_1 = require("../util.js");
-const hasLimit = (input) => {
-    return !!input.queryParams.limit;
-};
+const hasLimit = (input) => !!input.queryParams.limit;
 exports.hasLimit = hasLimit;
-const isFindOne = (input) => {
-    return input.queryParams.limit === 1;
-};
+const isFindOne = (input) => input.queryParams.limit === 1;
 exports.isFindOne = isFindOne;
-const hasSkip = (input) => {
-    return !!input.queryParams.skip && input.queryParams.skip > 0;
-};
+const hasSkip = (input) => !!input.queryParams.skip && input.queryParams.skip > 0;
 exports.hasSkip = hasSkip;
-const isDelete = (input) => {
-    return input.changeEvent.operation === 'DELETE';
-};
+const isDelete = (input) => input.changeEvent.operation === 'DELETE';
 exports.isDelete = isDelete;
-const isInsert = (input) => {
-    return input.changeEvent.operation === 'INSERT';
-};
+const isInsert = (input) => input.changeEvent.operation === 'INSERT';
 exports.isInsert = isInsert;
-const isUpdate = (input) => {
-    return input.changeEvent.operation === 'UPDATE';
-};
+const isUpdate = (input) => input.changeEvent.operation === 'UPDATE';
 exports.isUpdate = isUpdate;
 const wasLimitReached = (input) => {
     const limit = input.queryParams.limit;
@@ -171,8 +159,6 @@ const doesMatchNow = (input) => {
     return input.queryParams.queryMatcher(doc);
 };
 exports.doesMatchNow = doesMatchNow;
-const wasResultsEmpty = (input) => {
-    return input.previousResults.length === 0;
-};
+const wasResultsEmpty = (input) => input.previousResults.length === 0;
 exports.wasResultsEmpty = wasResultsEmpty;
 //# sourceMappingURL=state-resolver.js.map

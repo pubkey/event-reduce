@@ -1,22 +1,10 @@
 import { getProperty } from '../util.js';
-export const hasLimit = (input) => {
-    return !!input.queryParams.limit;
-};
-export const isFindOne = (input) => {
-    return input.queryParams.limit === 1;
-};
-export const hasSkip = (input) => {
-    return !!input.queryParams.skip && input.queryParams.skip > 0;
-};
-export const isDelete = (input) => {
-    return input.changeEvent.operation === 'DELETE';
-};
-export const isInsert = (input) => {
-    return input.changeEvent.operation === 'INSERT';
-};
-export const isUpdate = (input) => {
-    return input.changeEvent.operation === 'UPDATE';
-};
+export const hasLimit = (input) => !!input.queryParams.limit;
+export const isFindOne = (input) => input.queryParams.limit === 1;
+export const hasSkip = (input) => !!input.queryParams.skip && input.queryParams.skip > 0;
+export const isDelete = (input) => input.changeEvent.operation === 'DELETE';
+export const isInsert = (input) => input.changeEvent.operation === 'INSERT';
+export const isUpdate = (input) => input.changeEvent.operation === 'UPDATE';
 export const wasLimitReached = (input) => {
     const limit = input.queryParams.limit;
     return !!limit && input.previousResults.length >= limit;
@@ -151,7 +139,5 @@ export const doesMatchNow = (input) => {
     }
     return input.queryParams.queryMatcher(doc);
 };
-export const wasResultsEmpty = (input) => {
-    return input.previousResults.length === 0;
-};
+export const wasResultsEmpty = (input) => input.previousResults.length === 0;
 //# sourceMappingURL=state-resolver.js.map

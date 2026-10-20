@@ -1,5 +1,5 @@
 import { RootNode } from 'binary-decision-diagram';
-import type { MongoQuery, StateName } from '../types/index.js';
+import type { MongoQuery, StateSet, StateName } from '../types/index.js';
 import type { Procedure } from './types.js';
 export type PerformanceMeasurement = {
     [k in StateName]: number;
@@ -21,6 +21,12 @@ export type FunctionUsageCount = {
     [k in StateName]: number;
 };
 export declare function countFunctionUsages(bdd: RootNode, queries: MongoQuery[], procedures: Procedure[]): FunctionUsageCount;
+/**
+ * Counts how often each state set occurs in the example queries and procedures.
+ * Used as row weights so that the bdd optimizer
+ * makes the common state sets cheap to resolve.
+ */
+export declare function countStateSetOccurrences(queries: MongoQuery[], procedures: Procedure[]): Map<StateSet, number>;
 /**
  * returns the quality of the BDD,
  * the higher the better

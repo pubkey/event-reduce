@@ -1,4 +1,35 @@
 import { pushAtSortPosition } from 'array-push-at-sort-position';
+/**
+ * Returns the index of the changed document inside of the previous results
+ * or -1 if it is not found.
+ *
+ * When a keyDocumentMap is given, we get the document reference from the map
+ * and use the native indexOf(), which is about 10x faster than
+ * comparing the primary key of each result item in a loop.
+ * If the map holds a different object reference than the results array
+ * (for example because the caller built the map from clones),
+ * we fall back to the primary key comparison.
+ */
+function findIndexOfChangedDoc(input) {
+    const id = input.changeEvent.id;
+    const results = input.previousResults;
+    if (input.keyDocumentMap) {
+        const docInMap = input.keyDocumentMap.get(id);
+        if (docInMap) {
+            const index = results.indexOf(docInMap);
+            if (index >= 0) {
+                return index;
+            }
+        }
+    }
+    const primary = input.queryParams.primaryKey;
+    for (let i = 0; i < results.length; i++) {
+        if (results[i][primary] === id) {
+            return i;
+        }
+    }
+    return -1;
+}
 export const doNothing = (_input) => { };
 export const insertFirst = (input) => {
     input.previousResults.unshift(input.changeEvent.doc);
@@ -41,35 +72,21 @@ export const removeLastInsertLast = (input) => {
     insertLast(input);
 };
 export const removeExisting = (input) => {
+    const index = findIndexOfChangedDoc(input);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(input.changeEvent.id);
     }
-    // find index of document
-    const primary = input.queryParams.primaryKey;
-    const results = input.previousResults;
-    for (let i = 0; i < results.length; i++) {
-        const item = results[i];
-        // remove
-        if (item[primary] === input.changeEvent.id) {
-            results.splice(i, 1);
-            break;
-        }
+    if (index >= 0) {
+        input.previousResults.splice(index, 1);
     }
 };
 export const replaceExisting = (input) => {
-    // find index of document
-    const doc = input.changeEvent.doc;
-    const primary = input.queryParams.primaryKey;
-    const results = input.previousResults;
-    for (let i = 0; i < results.length; i++) {
-        const item = results[i];
-        // replace
-        if (item[primary] === input.changeEvent.id) {
-            results[i] = doc;
-            if (input.keyDocumentMap) {
-                input.keyDocumentMap.set(input.changeEvent.id, doc);
-            }
-            break;
+    const index = findIndexOfChangedDoc(input);
+    if (index >= 0) {
+        const doc = input.changeEvent.doc;
+        input.previousResults[index] = doc;
+        if (input.keyDocumentMap) {
+            input.keyDocumentMap.set(input.changeEvent.id, doc);
         }
     }
 };
