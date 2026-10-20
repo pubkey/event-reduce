@@ -45,7 +45,19 @@ export type StateName =
     'doesMatchNow';
 
 export interface QueryParams<DocType> {
+    /**
+     * Field of the document that contains its id.
+     * Not used when getDocumentId is set.
+     */
     primaryKey: string;
+    /**
+     * Returns the id of a document.
+     * Use this when the id is not stored in a single top-level field,
+     * for example for compound or nested primary keys.
+     * Must return the same value as the id of the change events.
+     * If not set, document[primaryKey] is used.
+     */
+    getDocumentId?: (doc: DocType) => string;
     sortFields: string[];
     skip?: number;
     limit?: number;

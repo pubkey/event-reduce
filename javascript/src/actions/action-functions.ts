@@ -3,6 +3,7 @@ import {
 } from 'array-push-at-sort-position';
 
 import type { ActionFunction, ActionFunctionInput } from '../types/index.js';
+import { getDocumentId, indexOfDocumentId } from '../util.js';
 
 /**
  * Returns the index of the changed document inside of the previous results
@@ -27,13 +28,7 @@ function findIndexOfChangedDoc(input: ActionFunctionInput<any>): number {
             }
         }
     }
-    const primary = input.queryParams.primaryKey;
-    for (let i = 0; i < results.length; i++) {
-        if (results[i][primary] === id) {
-            return i;
-        }
-    }
-    return -1;
+    return indexOfDocumentId(input.queryParams, results, id);
 }
 
 export const doNothing: ActionFunction<any> = (_input) => { };
@@ -60,7 +55,7 @@ export const removeFirstItem: ActionFunction<any> = (input) => {
     const first = input.previousResults.shift();
     if (input.keyDocumentMap && first) {
         input.keyDocumentMap.delete(
-            first[input.queryParams.primaryKey]
+            getDocumentId(input.queryParams, first)
         );
     }
 };
@@ -69,7 +64,7 @@ export const removeLastItem: ActionFunction<any> = (input) => {
     const last = input.previousResults.pop();
     if (input.keyDocumentMap && last) {
         input.keyDocumentMap.delete(
-            last[input.queryParams.primaryKey]
+            getDocumentId(input.queryParams, last)
         );
     }
 };
@@ -158,7 +153,7 @@ export const insertAtSortPosition: ActionFunction<any> = (input) => {
             doc
         );
     } else {
-        const isDocInResults = input.previousResults.find((d: any) => d[input.queryParams.primaryKey] === docId);
+        const isDocInResults = indexOfDocumentId(input.queryParams, input.previousResults, docId) >= 0;
         /**
          * If document is already in results,
          * we cannot add it again because it would throw on non-deterministic ordering.

@@ -1,5 +1,5 @@
 import type { StateResolveFunction } from '../types/index.js';
-import { getProperty } from '../util.js';
+import { getDocumentId, getProperty, indexOfDocumentId } from '../util.js';
 
 export const hasLimit: StateResolveFunction<any> = (input) => !!input.queryParams.limit;
 
@@ -49,26 +49,19 @@ export const wasInResult: StateResolveFunction<any> = (input) => {
     if (input.keyDocumentMap) {
         return input.keyDocumentMap.has(id);
     } else {
-        const primary = input.queryParams.primaryKey;
-        const results = input.previousResults;
-        for (let i = 0; i < results.length; i++) {
-            if (results[i][primary] === id) {
-                return true;
-            }
-        }
-        return false;
+        return indexOfDocumentId(input.queryParams, input.previousResults, id) >= 0;
     }
 };
 
 export const wasFirst: StateResolveFunction<any> = (input) => {
     const first = input.previousResults[0];
-    return !!first && first[input.queryParams.primaryKey] === input.changeEvent.id;
+    return !!first && getDocumentId(input.queryParams, first) === input.changeEvent.id;
 };
 
 export const wasLast: StateResolveFunction<any> = (input) => {
     const results = input.previousResults;
     const last = results[results.length - 1];
-    return !!last && last[input.queryParams.primaryKey] === input.changeEvent.id;
+    return !!last && getDocumentId(input.queryParams, last) === input.changeEvent.id;
 };
 
 
@@ -89,8 +82,7 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
      * sort order. Because both document could be equal.
      * So instead we have to return true.
      */
-    const primaryKey = input.queryParams.primaryKey;
-    if (first[primaryKey] === input.changeEvent.id) {
+    if (getDocumentId(input.queryParams, first) === input.changeEvent.id) {
         return true;
     }
 
@@ -109,8 +101,7 @@ export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    const primaryKey = input.queryParams.primaryKey;
-    if (last[primaryKey] === input.changeEvent.id) {
+    if (getDocumentId(input.queryParams, last) === input.changeEvent.id) {
         return true;
     }
 
@@ -128,8 +119,7 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    const primaryKey = input.queryParams.primaryKey;
-    if (first[primaryKey] === input.changeEvent.id) {
+    if (getDocumentId(input.queryParams, first) === input.changeEvent.id) {
         return true;
     }
 
@@ -148,8 +138,7 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    const primaryKey = input.queryParams.primaryKey;
-    if (last[primaryKey] === input.changeEvent.id) {
+    if (getDocumentId(input.queryParams, last) === input.changeEvent.id) {
         return true;
     }
 
