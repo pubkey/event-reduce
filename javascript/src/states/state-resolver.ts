@@ -114,13 +114,23 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         return false;
     }
 
-    const first = input.previousResults[0];
+    const results = input.previousResults;
+    let first = results[0];
     if (!first) {
         return false;
     }
 
+    /**
+     * If the changed document is the first one,
+     * compare with the next document instead,
+     * so we know if the changed document is still sorted first.
+     * If there is no other document, it is still the first.
+     */
     if (getDocumentId(input.queryParams, first) === input.changeEvent.id) {
-        return true;
+        first = results[1];
+        if (!first) {
+            return true;
+        }
     }
 
     return input.queryParams.sortComparator(doc, first) < 0;
@@ -133,13 +143,22 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
     }
 
     const results = input.previousResults;
-    const last = results[results.length - 1];
+    let last = results[results.length - 1];
     if (!last) {
         return false;
     }
 
+    /**
+     * If the changed document is the last one,
+     * compare with the previous document instead,
+     * so we know if the changed document is still sorted last.
+     * If there is no other document, it is still the last.
+     */
     if (getDocumentId(input.queryParams, last) === input.changeEvent.id) {
-        return true;
+        last = results[results.length - 2];
+        if (!last) {
+            return true;
+        }
     }
 
     return input.queryParams.sortComparator(doc, last) > 0;

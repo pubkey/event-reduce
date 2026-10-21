@@ -15,7 +15,8 @@ import {
     sortParamsChanged,
     wasLimitReached,
     wasMatching,
-    isSortedBeforeFirst
+    isSortedBeforeFirst,
+    isSortedAfterLast
 } from '../../src/states/state-resolver.js';
 import { randomHuman } from '../../src/truth-table-generator/data-generator.js';
 import { Human } from '../../src/truth-table-generator/types.js';
@@ -267,6 +268,49 @@ describe('states.test.ts', () => {
 
             const ok = isSortedBeforeFirst(input);
             assert.ok(ok);
+        });
+    });
+    describe('sort position when the changed document is the first or last', () => {
+        function getInput(previousAges: number[], changedIndex: number, newAge: number): StateResolveFunctionInput<Human> {
+            const previousResults: Human[] = previousAges.map((age, i) => randomHuman({ _id: 'id' + i, age }));
+            const previous = previousResults[changedIndex];
+            return {
+                changeEvent: {
+                    operation: 'UPDATE',
+                    doc: Object.assign({}, previous, { age: newAge }),
+                    previous,
+                    id: previous._id
+                },
+                previousResults,
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['age', '_id']
+                })
+            };
+        }
+        it('isSortedAfterLast() should be false when the last document moves forward', () => {
+            assert.strictEqual(isSortedAfterLast(getInput([10, 20, 30], 2, 15)), false);
+        });
+        it('isSortedAfterLast() should be true when the last document stays last', () => {
+            assert.strictEqual(isSortedAfterLast(getInput([10, 20, 30], 2, 25)), true);
+            assert.strictEqual(isSortedAfterLast(getInput([10, 20, 30], 2, 50)), true);
+        });
+        it('isSortedAfterLast() should be true when the last document is the only one', () => {
+            assert.strictEqual(isSortedAfterLast(getInput([10], 0, 5)), true);
+        });
+        it('isSortedBeforeFirst() should be false when the first document moves backward', () => {
+            assert.strictEqual(isSortedBeforeFirst(getInput([10, 20, 30], 0, 25)), false);
+        });
+        it('isSortedBeforeFirst() should be true when the first document stays first', () => {
+            assert.strictEqual(isSortedBeforeFirst(getInput([10, 20, 30], 0, 15)), true);
+            assert.strictEqual(isSortedBeforeFirst(getInput([10, 20, 30], 0, 1)), true);
+        });
+        it('isSortedBeforeFirst() should be true when the first document is the only one', () => {
+            assert.strictEqual(isSortedBeforeFirst(getInput([10], 0, 50)), true);
+        });
+        it('wasSortedBeforeFirst() and wasSortedAfterLast() should be true for the first and last document', () => {
+            assert.strictEqual(wasSortedBeforeFirst(getInput([10, 20, 30], 0, 25)), true);
+            assert.strictEqual(wasSortedAfterLast(getInput([10, 20, 30], 2, 15)), true);
         });
     });
     describe('.wasInResult()', () => {
