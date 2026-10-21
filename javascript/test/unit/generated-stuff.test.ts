@@ -475,3 +475,67 @@ describe('generated-stuff.test.ts', () => {
         });
     });
 });
+
+describe('generated-stuff.test.ts (insert into a full limit window)', () => {
+    type Doc = { id: string; age: number; };
+    function getQueryParams(limit: number): QueryParams<Doc> {
+        return {
+            primaryKey: 'id',
+            sortFields: ['age', 'id'],
+            limit,
+            queryMatcher: doc => doc.age > 18,
+            sortComparator: (a, b) => {
+                if (a.age !== b.age) {
+                    return a.age < b.age ? -1 : 1;
+                }
+                return a.id < b.id ? -1 : 1;
+            }
+        };
+    }
+    function run(limit: number, changeEvent: ChangeEvent<Doc>) {
+        const queryParams = getQueryParams(limit);
+        const previousResults: Doc[] = [{ id: '1', age: 20 }, { id: '3', age: 40 }];
+        const keyDocumentMap = new Map(previousResults.map(d => [d.id, d]));
+        const action = calculateActionName({
+            queryParams,
+            changeEvent,
+            previousResults,
+            keyDocumentMap
+        });
+        const results = action === 'runFullQueryAgain' ? [] : runAction(
+            action,
+            queryParams,
+            changeEvent,
+            previousResults,
+            keyDocumentMap
+        );
+        return { action, ids: results.map(d => d.id), keyDocumentMap };
+    }
+    const insertEvent: ChangeEvent<Doc> = {
+        operation: 'INSERT',
+        id: '2',
+        doc: { id: '2', age: 30 },
+        previous: null
+    };
+    it('should insert at the sort position when the limit is not reached', () => {
+        const { action, ids } = run(3, insertEvent);
+        assert.strictEqual(action, 'insertAtSortPosition');
+        assert.deepStrictEqual(ids, ['1', '2', '3']);
+    });
+    it('should insert at the sort position and remove the last when the limit is reached', () => {
+        const { action, ids, keyDocumentMap } = run(2, insertEvent);
+        assert.strictEqual(action, 'insertAtSortPositionRemoveLast');
+        assert.deepStrictEqual(ids, ['1', '2']);
+        assert.deepStrictEqual([...keyDocumentMap.keys()].sort(), ['1', '2']);
+    });
+    it('should do the same for an update of a document that did not match before', () => {
+        const { action, ids } = run(2, {
+            operation: 'UPDATE',
+            id: '2',
+            doc: { id: '2', age: 30 },
+            previous: { id: '2', age: 10 }
+        });
+        assert.strictEqual(action, 'insertAtSortPositionRemoveLast');
+        assert.deepStrictEqual(ids, ['1', '2']);
+    });
+});

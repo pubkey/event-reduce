@@ -21,6 +21,8 @@ export type ActionName =
     'alwaysWrong' | // this should be optimised out by later steps
     'insertAtSortPosition' |
     'removeExistingAndInsertAtSortPosition' |
+    'insertAtSortPositionRemoveLast' |
+    'insertAtSortPositionRemoveFirst' |
     'runFullQueryAgain' |
     'unknownAction' // if a state was never reached, we do not know the correct action
     ;
