@@ -110,6 +110,13 @@ From this state-action combinations we create a big truth table that is used to 
 
 The resulting optimized BDD is then shipped as the EventReduce algorithm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [JavaScript implementation](https://github.com/pubkey/event-reduce/tree/master/javascript)
 
+## Queries with a limit: the limit buffer
+
+For a query with a limit, most `runFullQueryAgain` results happen when a row leaves a full window,
+because the next row after the window is unknown. If you keep `limit + bufferSize` rows in memory and show only the first `limit`,
+that row can come from memory instead. In our benchmark, a buffer of 20 rows cut the full queries of a `limit: 20` query from 1,429 to 62 per 5,000 events.
+This is a usage pattern on top of EventReduce, not part of the package. See [docs/limit-buffer.md](./docs/limit-buffer.md) for how it works, the code and the measurements.
+
 ## When to use this
 
 Use EventReduce whenever you observe query results and need to keep them up to date, for example for reactive UIs, realtime dashboards, live queries in local-first apps or server-push subscriptions. You can use it to

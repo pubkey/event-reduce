@@ -57,6 +57,44 @@
             </p>
             <br /><br />
         </div>
+        <div
+            class="panel"
+            id="limitBufferPanel"
+        >
+            <h4>Limit buffer:</h4>
+            <p>
+                Runs 100 random events on the current query and updates its result in three ways:
+                a full query after each event, EventReduce,
+                and EventReduce with a <a href="https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md">limit buffer</a>
+                that keeps more rows in memory than the limit, so rows that leave the window can be refilled without a query.
+                The query must have a limit.
+            </p>
+            <div class="list-item">
+                <div class="key">Buffer size</div>
+                <div class="value">
+                    <select id="limitBufferSizeSelect">
+                        <option value="5">5</option>
+                        <option
+                            value="10"
+                            selected
+                        >10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+            <br />
+            <div
+                id="testLimitBufferButton"
+                class="button"
+            >100 events (compare limit buffer)</div>
+            <br />
+            <div id="limit-buffer-message"></div>
+            <table
+                id="limit-buffer-results"
+                border="1"
+            ></table>
+        </div>
         <div class="panel">
             Sponsored by <a href="https://rxdb.info/" target="_blank">RxDB</a>
         </div>

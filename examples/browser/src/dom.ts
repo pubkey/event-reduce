@@ -14,6 +14,10 @@ export const $test100EventsButton = document.getElementById('test100EventsButton
 export const $test100EventsEventReduceButton = document.getElementById('test100EventsEventReduceButton');
 
 export const $techSelectionSelect: HTMLSelectElement = document.getElementById('techSelectionSelect') as HTMLSelectElement;
+export const $testLimitBufferButton = document.getElementById('testLimitBufferButton');
+export const $limitBufferSizeSelect: HTMLSelectElement = document.getElementById('limitBufferSizeSelect') as HTMLSelectElement;
+const $limitBufferMessage = document.getElementById('limit-buffer-message');
+const $limitBufferResults = document.getElementById('limit-buffer-results');
 
 export function setResults(docs: Human[]) {
 
@@ -139,4 +143,46 @@ export function setButtonsDisableState(to: boolean) {
             buttons[i].classList.remove('disabled');
         }
     }
+}
+
+export type LimitBufferComparisonRow = {
+    name: string;
+    fullQueries: number;
+    timeInMs: number;
+    // amount of events after which the result differed from the full query
+    wrongResults: number;
+};
+
+export function setLimitBufferMessage(message: string = '') {
+    $limitBufferMessage.innerHTML = message;
+}
+
+export function setLimitBufferResults(eventsAmount: number, rows: LimitBufferComparisonRow[]) {
+    $limitBufferResults.innerHTML = '';
+
+    function addCell(tr: HTMLElement, text: string, tagName: 'td' | 'th' = 'td') {
+        const cell = document.createElement(tagName);
+        cell.innerHTML = text;
+        tr.appendChild(cell);
+        return cell;
+    }
+
+    const headTr = document.createElement('tr');
+    addCell(headTr, 'Strategy', 'th');
+    addCell(headTr, 'Full queries', 'th');
+    addCell(headTr, 'Total time', 'th');
+    addCell(headTr, 'Same as full query', 'th');
+    $limitBufferResults.appendChild(headTr);
+
+    rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.classList.add('limit-buffer-row');
+        addCell(tr, row.name);
+        addCell(tr, row.fullQueries + ' / ' + eventsAmount).classList.add('number', 'full-queries');
+        addCell(tr, row.timeInMs.toFixed(1) + ' ms').classList.add('number');
+        const identical = row.wrongResults === 0;
+        const identicalCell = addCell(tr, identical ? 'yes' : 'no (' + row.wrongResults + ' wrong)');
+        identicalCell.classList.add('identical', identical ? 'identical-yes' : 'identical-no');
+        $limitBufferResults.appendChild(tr);
+    });
 }

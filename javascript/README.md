@@ -145,6 +145,12 @@ if (action === 'runFullQueryAgain') {
 console.dir(currentResults);
 ```
 
+## Queries with a limit
+
+For a query with a limit, EventReduce returns `runFullQueryAgain` when a row leaves a full window, because it does not know the next row after the window.
+You can avoid most of these full queries by keeping more rows in memory than the limit (a "limit buffer").
+See [Limit buffer](https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md) for the pattern, example code and measurements.
+
 ## Smaller bundles
 
 `calculateActionName()` and `runAction()` work with action names, so the names of all actions end up in your bundle. If bundle size matters, use `calculateActionFunction()` instead. It returns the action function directly:

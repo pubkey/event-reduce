@@ -47,5 +47,21 @@ for (const tech of techs) {
                 const state = await getLoadingState();
                 return state === DEFAULT_LOADING_STATE;
             });
+
+            // limit buffer comparison, the first example query has a limit
+            await t.click('#testLimitBufferButton');
+            await wait(100);
+
+            await waitUntil(async () => {
+                const state = await getLoadingState();
+                return state === DEFAULT_LOADING_STATE;
+            });
+
+            const rows = Selector('#limit-buffer-results .limit-buffer-row');
+            await t.expect(rows.count).eql(3);
+            const identicalCells = Selector('#limit-buffer-results .identical');
+            for (let i = 0; i < 3; i++) {
+                await t.expect(identicalCells.nth(i).innerText).eql('yes');
+            }
         });
 }

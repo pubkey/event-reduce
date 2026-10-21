@@ -9,20 +9,44 @@ import {
     setExampleQueries,
     $queryTextArea,
     $invalidQuery,
-    buttonsDisabled
+    buttonsDisabled,
+    $testLimitBufferButton,
+    $limitBufferSizeSelect,
+    setLimitBufferMessage,
+    setLimitBufferResults,
+    LimitBufferComparisonRow
 } from './dom';
 
 import {
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
-import { Human, IdToDocumentMap, DatabaseImplementation, Query } from './types';
+import { Human, IdToDocumentMap, DatabaseImplementation, Query, MongoQuery } from './types';
 import { idToDocMapFromList, removeOptions, getParameterByName, getImplementations } from './util';
 import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
 
 import '../style.less';
 import { appendToLog } from './logs';
+import {
+    applyChangeEventToLimitBuffer,
+    createLimitBuffer,
+    getLimitBufferQueryLimit,
+    getLimitBufferResults,
+    resetLimitBuffer
+} from './limit-buffer';
+
+/**
+ * Compares two results of the same query.
+ * Rows that the sort comparator sees as equal may be in any order,
+ * because the databases do not all break ties the same way.
+ */
+function isSameResult(a: Human[], b: Human[], sortComparator: (a: Human, b: Human) => number): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    return a.every((doc, i) => doc._id === b[i]._id || sortComparator(doc, b[i]) === 0);
+}
 
 async function run() {
     const implementations = getImplementations();
@@ -91,6 +115,9 @@ async function run() {
         async (clickedQuery: Query) => {
             $invalidQuery.style.display = 'none';
             currentResults = await implementation.getRawResults(clickedQuery);
+            // only use the query for the actions when the database could run it
+            query = clickedQuery;
+            currentDocMap = idToDocMapFromList(currentResults);
             setResults(currentResults);
         }
     );
@@ -201,6 +228,102 @@ async function run() {
         setButtonsDisableState(false);
         setLoadingState();
     };
+
+    // compare full query, EventReduce and EventReduce with a limit buffer
+    $testLimitBufferButton.onclick = async () => {
+        if (buttonsDisabled()) return;
+
+        const mongoQuery = query as MongoQuery;
+        if (!mongoQuery.limit) {
+            setLimitBufferMessage('The current query has no limit. Select a query with a limit, like Query #1.');
+            return;
+        }
+        setLimitBufferMessage();
+        setButtonsDisableState(true);
+        setLoadingState('Run limit buffer comparison..');
+        try {
+            await runLimitBufferComparison(mongoQuery);
+        } catch (err) {
+            console.error(err);
+            setLimitBufferMessage('Error: ' + err.message);
+        }
+        setButtonsDisableState(false);
+        setLoadingState();
+    };
+
+    async function runLimitBufferComparison(mongoQuery: MongoQuery) {
+
+        const bufferSize = parseInt($limitBufferSizeSelect.value, 10);
+        const queryParams = implementation.getQueryParams(query);
+        const bufferQuery: MongoQuery = { ...mongoQuery, limit: mongoQuery.limit + bufferSize };
+        const eventsAmount = 100;
+        const events = await getRandomChangeEvents(await implementation.getAll(), eventsAmount);
+
+        const fullQueryRow: LimitBufferComparisonRow = { name: 'Full query after each event', fullQueries: 0, timeInMs: 0, wrongResults: 0 };
+        const eventReduceRow: LimitBufferComparisonRow = { name: 'EventReduce', fullQueries: 0, timeInMs: 0, wrongResults: 0 };
+        const limitBufferRow: LimitBufferComparisonRow = {
+            name: 'EventReduce + limit buffer (' + bufferSize + ')',
+            fullQueries: 0,
+            timeInMs: 0,
+            wrongResults: 0
+        };
+
+        // the initial queries are not measured
+        let eventReduceResults = await implementation.getRawResults(query);
+        let eventReduceDocMap = idToDocMapFromList(eventReduceResults);
+        const limitBuffer = createLimitBuffer(queryParams, bufferSize, await implementation.getRawResults(bufferQuery));
+
+        let timeStart: number;
+        for (const changeEvent of events) {
+            await implementation.handleEvent(changeEvent);
+
+            // 1. full query
+            timeStart = performanceNow();
+            const fullQueryResults = await implementation.getRawResults(query);
+            fullQueryRow.timeInMs += performanceNow() - timeStart;
+            fullQueryRow.fullQueries++;
+
+            // 2. EventReduce
+            timeStart = performanceNow();
+            const action = calculateActionName({
+                changeEvent,
+                queryParams,
+                previousResults: eventReduceResults,
+                keyDocumentMap: eventReduceDocMap
+            });
+            if (action === 'runFullQueryAgain') {
+                eventReduceRow.fullQueries++;
+                eventReduceResults = await implementation.getRawResults(query);
+                eventReduceDocMap = idToDocMapFromList(eventReduceResults);
+            } else {
+                runAction(action, queryParams, changeEvent, eventReduceResults, eventReduceDocMap);
+            }
+            eventReduceRow.timeInMs += performanceNow() - timeStart;
+
+            // 3. EventReduce + limit buffer
+            timeStart = performanceNow();
+            if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
+                limitBufferRow.fullQueries++;
+                bufferQuery.limit = getLimitBufferQueryLimit(limitBuffer);
+                resetLimitBuffer(limitBuffer, await implementation.getRawResults(bufferQuery));
+            }
+            const limitBufferResults = getLimitBufferResults(limitBuffer);
+            limitBufferRow.timeInMs += performanceNow() - timeStart;
+
+            if (!isSameResult(eventReduceResults, fullQueryResults, queryParams.sortComparator)) {
+                eventReduceRow.wrongResults++;
+            }
+            if (!isSameResult(limitBufferResults, fullQueryResults, queryParams.sortComparator)) {
+                limitBufferRow.wrongResults++;
+            }
+
+            currentResults = fullQueryResults;
+            setResults(limitBufferResults);
+        }
+        currentDocMap = idToDocMapFromList(currentResults);
+
+        setLimitBufferResults(eventsAmount, [fullQueryRow, eventReduceRow, limitBufferRow]);
+    }
 
     setLoadingState();
 }
