@@ -2,7 +2,8 @@ import * as assert from 'assert';
 
 import {
     fuzzing,
-    doesProcedureFail
+    doesProcedureFail,
+    makeProcedureConsistent
 } from '../../src/truth-table-generator/fuzzing.js';
 import { doesActionWork } from '../../src/truth-table-generator/index.js';
 import { orderedActionList, actionFunctions } from '../../src/actions/index.js';
@@ -35,8 +36,13 @@ describe('fuzzing.test.ts', () => {
         );
         assert.strictEqual(result.ok, false);
         assert.ok(doesProcedureFail(map, result.query, result.procedure));
-        // doNothing is wrong for any change of the results, so one or two events are enough
-        assert.ok(result.procedure.length <= 2, 'procedure has ' + result.procedure.length + ' events');
+        // it cannot be shrunk any further: without any one of the events, it does not fail anymore
+        result.procedure.forEach((_event, index) => {
+            const without = makeProcedureConsistent(
+                result.procedure.filter((_e, i) => i !== index)
+            );
+            assert.strictEqual(doesProcedureFail(map, result.query, without), false);
+        });
     });
     it('doesActionWork() should find wrong handling of the keyDocumentMap', () => {
         const insertMe = randomHuman();

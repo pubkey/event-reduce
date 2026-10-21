@@ -293,7 +293,7 @@ export function doesProcedureFail(
  * Drops inserts of existing documents and updates or deletes of missing documents,
  * and sets the previous document of updates and deletes to the current one.
  */
-function makeProcedureConsistent(procedure: Procedure): Procedure {
+export function makeProcedureConsistent(procedure: Procedure): Procedure {
     const docs = new Map<string, Human>();
     const ret: Procedure = [];
     for (const changeEvent of procedure) {
