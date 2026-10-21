@@ -29,6 +29,8 @@ fn action_names_match_the_javascript_order() {
             "alwaysWrong",
             "insertAtSortPosition",
             "removeExistingAndInsertAtSortPosition",
+            "insertAtSortPositionRemoveLast",
+            "insertAtSortPositionRemoveFirst",
             "runFullQueryAgain",
             "unknownAction"
         ]
@@ -185,4 +187,43 @@ fn remove_first_insert_last_with_map() {
     let mut keys: Vec<&String> = map.keys().collect();
     keys.sort();
     assert_eq!(keys, vec!["b", "c"]);
+}
+
+#[test]
+fn insert_at_sort_position_remove_last_and_first() {
+    let params = query_params(0, None, Some(3));
+    let mut results = vec![human("a", 1), human("c", 3), human("e", 5)];
+    let mut map: HashMap<String, Human> =
+        results.iter().map(|d| (d.id.clone(), d.clone())).collect();
+    run_action(
+        ActionName::InsertAtSortPositionRemoveLast,
+        &params,
+        &insert(human("b", 2)),
+        &mut results,
+        Some(&mut map),
+    )
+    .unwrap();
+    assert_eq!(ids(&results), vec!["a", "b", "c"]);
+    run_action(
+        ActionName::InsertAtSortPositionRemoveFirst,
+        &params,
+        &insert(human("d", 4)),
+        &mut results,
+        Some(&mut map),
+    )
+    .unwrap();
+    assert_eq!(ids(&results), vec!["b", "c", "d"]);
+    let mut keys: Vec<&String> = map.keys().collect();
+    keys.sort();
+    assert_eq!(keys, vec!["b", "c", "d"]);
+    // a document that is already in the results is not inserted, so nothing is removed
+    run_action(
+        ActionName::InsertAtSortPositionRemoveLast,
+        &params,
+        &insert(human("c", 3)),
+        &mut results,
+        None,
+    )
+    .unwrap();
+    assert_eq!(ids(&results), vec!["b", "c", "d"]);
 }

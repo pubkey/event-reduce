@@ -116,6 +116,8 @@ public enum ActionName: String, CaseIterable {
     case alwaysWrong
     case insertAtSortPosition
     case removeExistingAndInsertAtSortPosition
+    case insertAtSortPositionRemoveLast
+    case insertAtSortPositionRemoveFirst
     case runFullQueryAgain
     /// If a state was never reached, we do not know the correct action.
     case unknownAction

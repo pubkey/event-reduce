@@ -29,6 +29,8 @@ public fun <D> actionFunction(action: ActionName): ActionFunction<D> =
         ActionName.AlwaysWrong -> ::unknownAction
         ActionName.InsertAtSortPosition -> ::insertAtSortPosition
         ActionName.RemoveExistingAndInsertAtSortPosition -> ::removeExistingAndInsertAtSortPosition
+        ActionName.InsertAtSortPositionRemoveLast -> ::insertAtSortPositionRemoveLast
+        ActionName.InsertAtSortPositionRemoveFirst -> ::insertAtSortPositionRemoveFirst
         ActionName.RunFullQueryAgain -> ::runFullQueryAgain
         ActionName.UnknownAction -> ::unknownAction
     }
@@ -137,6 +139,35 @@ public fun <D> insertAtSortPosition(input: ActionFunctionInput<D>) {
 public fun <D> removeExistingAndInsertAtSortPosition(input: ActionFunctionInput<D>) {
     removeExisting(input)
     insertAtSortPosition(input)
+}
+
+/**
+ * Inserts the document at its sort position and then removes the last document.
+ * Used when the limit was reached and the new document
+ * sorts in between the first and the last document,
+ * so the previous last document is pushed out of the results.
+ */
+public fun <D> insertAtSortPositionRemoveLast(input: ActionFunctionInput<D>) {
+    val sizeBefore = input.previousResults.size
+    insertAtSortPosition(input)
+    // insertAtSortPosition() does nothing if the document is already in the results
+    if (input.previousResults.size > sizeBefore) {
+        removeLastItem(input)
+    }
+}
+
+/**
+ * Inserts the document at its sort position and then removes the first document.
+ * Used when a document moves out of the skipped documents into the results,
+ * so the previous first document is pushed into the skipped documents.
+ */
+public fun <D> insertAtSortPositionRemoveFirst(input: ActionFunctionInput<D>) {
+    val sizeBefore = input.previousResults.size
+    insertAtSortPosition(input)
+    // insertAtSortPosition() does nothing if the document is already in the results
+    if (input.previousResults.size > sizeBefore) {
+        removeFirstItem(input)
+    }
 }
 
 public fun <D> runFullQueryAgain(@Suppress("UNUSED_PARAMETER") input: ActionFunctionInput<D>) {

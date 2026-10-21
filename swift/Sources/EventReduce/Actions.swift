@@ -29,6 +29,8 @@ public func actionFunction<D>(_ action: ActionName) -> ActionFunction<D> {
     case .alwaysWrong: return unknownAction
     case .insertAtSortPosition: return insertAtSortPosition
     case .removeExistingAndInsertAtSortPosition: return removeExistingAndInsertAtSortPosition
+    case .insertAtSortPositionRemoveLast: return insertAtSortPositionRemoveLast
+    case .insertAtSortPositionRemoveFirst: return insertAtSortPositionRemoveFirst
     case .runFullQueryAgain: return runFullQueryAgain
     case .unknownAction: return unknownAction
     }
@@ -175,6 +177,37 @@ public func removeExistingAndInsertAtSortPosition<D>(
 ) throws {
     try removeExisting(queryParams, changeEvent, &results, &map)
     try insertAtSortPosition(queryParams, changeEvent, &results, &map)
+}
+
+/// Inserts the document at its sort position and then removes the last document.
+/// Used when the limit was reached and the new document
+/// sorts in between the first and the last document,
+/// so the previous last document is pushed out of the results.
+public func insertAtSortPositionRemoveLast<D>(
+    _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
+    _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
+) throws {
+    let countBefore = results.count
+    try insertAtSortPosition(queryParams, changeEvent, &results, &map)
+    // insertAtSortPosition() does nothing if the document is already in the results
+    if results.count > countBefore {
+        try removeLastItem(queryParams, changeEvent, &results, &map)
+    }
+}
+
+/// Inserts the document at its sort position and then removes the first document.
+/// Used when a document moves out of the skipped documents into the results,
+/// so the previous first document is pushed into the skipped documents.
+public func insertAtSortPositionRemoveFirst<D>(
+    _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
+    _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
+) throws {
+    let countBefore = results.count
+    try insertAtSortPosition(queryParams, changeEvent, &results, &map)
+    // insertAtSortPosition() does nothing if the document is already in the results
+    if results.count > countBefore {
+        try removeFirstItem(queryParams, changeEvent, &results, &map)
+    }
 }
 
 public func runFullQueryAgain<D>(

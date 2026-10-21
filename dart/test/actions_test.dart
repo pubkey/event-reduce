@@ -10,7 +10,8 @@ void main() {
       'removeLastItem', 'removeFirstInsertLast', 'removeLastInsertFirst',
       'removeFirstInsertFirst', 'removeLastInsertLast', 'removeExisting',
       'replaceExisting', 'alwaysWrong', 'insertAtSortPosition',
-      'removeExistingAndInsertAtSortPosition', 'runFullQueryAgain',
+      'removeExistingAndInsertAtSortPosition', 'insertAtSortPositionRemoveLast',
+      'insertAtSortPositionRemoveFirst', 'runFullQueryAgain',
       'unknownAction', //
     ]);
   });
@@ -110,5 +111,23 @@ void main() {
         insert(Human('c', 3)), results, map);
     expect(ids(results), ['b', 'c']);
     expect(map.keys.toSet(), {'b', 'c'});
+  });
+
+  test('insertAtSortPositionRemoveLast and insertAtSortPositionRemoveFirst',
+      () {
+    final params = queryParams(0, limit: 3);
+    final results = [Human('a', 1), Human('c', 3), Human('e', 5)];
+    final map = toMap(results);
+    runAction(ActionName.insertAtSortPositionRemoveLast, params,
+        insert(Human('b', 2)), results, map);
+    expect(ids(results), ['a', 'b', 'c']);
+    runAction(ActionName.insertAtSortPositionRemoveFirst, params,
+        insert(Human('d', 4)), results, map);
+    expect(ids(results), ['b', 'c', 'd']);
+    expect(map.keys.toSet(), {'b', 'c', 'd'});
+    // a document that is already in the results is not inserted, so nothing is removed
+    runAction(ActionName.insertAtSortPositionRemoveLast, params,
+        insert(Human('c', 3)), results);
+    expect(ids(results), ['b', 'c', 'd']);
   });
 }

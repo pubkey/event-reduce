@@ -13,7 +13,8 @@ class ActionsTest {
                 "doNothing", "insertFirst", "insertLast", "removeFirstItem", "removeLastItem",
                 "removeFirstInsertLast", "removeLastInsertFirst", "removeFirstInsertFirst",
                 "removeLastInsertLast", "removeExisting", "replaceExisting", "alwaysWrong",
-                "insertAtSortPosition", "removeExistingAndInsertAtSortPosition", "runFullQueryAgain",
+                "insertAtSortPosition", "removeExistingAndInsertAtSortPosition",
+                "insertAtSortPositionRemoveLast", "insertAtSortPositionRemoveFirst", "runFullQueryAgain",
                 "unknownAction",
             ),
             orderedActionList.map { it.jsName },
@@ -96,5 +97,20 @@ class ActionsTest {
         runAction(ActionName.RemoveFirstInsertLast, queryParams(0, limit = 2), insert(Human("c", 3)), results, map)
         assertEquals(listOf("b", "c"), ids(results))
         assertEquals(setOf("b", "c"), map.keys)
+    }
+
+    @Test
+    fun insertAtSortPositionRemoveLastAndFirst() {
+        val params = queryParams(0, limit = 3)
+        val results = mutableListOf(Human("a", 1), Human("c", 3), Human("e", 5))
+        val map = toMap(results)
+        runAction(ActionName.InsertAtSortPositionRemoveLast, params, insert(Human("b", 2)), results, map)
+        assertEquals(listOf("a", "b", "c"), ids(results))
+        runAction(ActionName.InsertAtSortPositionRemoveFirst, params, insert(Human("d", 4)), results, map)
+        assertEquals(listOf("b", "c", "d"), ids(results))
+        assertEquals(setOf("b", "c", "d"), map.keys)
+        // a document that is already in the results is not inserted, so nothing is removed
+        runAction(ActionName.InsertAtSortPositionRemoveLast, params, insert(Human("c", 3)), results)
+        assertEquals(listOf("b", "c", "d"), ids(results))
     }
 }

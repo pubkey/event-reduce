@@ -100,6 +100,8 @@ enum ActionName {
   alwaysWrong,
   insertAtSortPosition,
   removeExistingAndInsertAtSortPosition,
+  insertAtSortPositionRemoveLast,
+  insertAtSortPositionRemoveFirst,
   runFullQueryAgain,
 
   /// If a state was never reached, we do not know the correct action.

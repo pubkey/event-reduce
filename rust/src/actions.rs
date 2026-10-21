@@ -7,7 +7,7 @@ pub type ActionFunction<D, K> = fn(&mut ActionFunctionInput<D, K>) -> Result<(),
 
 /// All actions, in the same order as the JavaScript implementation.
 /// The BDD references the actions by their index in this list.
-pub const ORDERED_ACTION_LIST: [ActionName; 16] = [
+pub const ORDERED_ACTION_LIST: [ActionName; 18] = [
     ActionName::DoNothing,
     ActionName::InsertFirst,
     ActionName::InsertLast,
@@ -22,6 +22,8 @@ pub const ORDERED_ACTION_LIST: [ActionName; 16] = [
     ActionName::AlwaysWrong,
     ActionName::InsertAtSortPosition,
     ActionName::RemoveExistingAndInsertAtSortPosition,
+    ActionName::InsertAtSortPositionRemoveLast,
+    ActionName::InsertAtSortPositionRemoveFirst,
     ActionName::RunFullQueryAgain,
     ActionName::UnknownAction,
 ];
@@ -47,6 +49,8 @@ pub fn action_function<D: Clone, K: Eq + Hash + Clone>(action: ActionName) -> Ac
         ActionName::RemoveExistingAndInsertAtSortPosition => {
             remove_existing_and_insert_at_sort_position
         }
+        ActionName::InsertAtSortPositionRemoveLast => insert_at_sort_position_remove_last,
+        ActionName::InsertAtSortPositionRemoveFirst => insert_at_sort_position_remove_first,
         ActionName::RunFullQueryAgain => run_full_query_again,
         ActionName::UnknownAction => unknown_action,
     }
@@ -210,6 +214,37 @@ pub fn remove_existing_and_insert_at_sort_position<D: Clone, K: Eq + Hash + Clon
 ) -> Result<(), EventReduceError> {
     remove_existing(input)?;
     insert_at_sort_position(input)
+}
+
+/// Inserts the document at its sort position and then removes the last document.
+/// Used when the limit was reached and the new document
+/// sorts in between the first and the last document,
+/// so the previous last document is pushed out of the results.
+pub fn insert_at_sort_position_remove_last<D: Clone, K: Eq + Hash + Clone>(
+    input: &mut ActionFunctionInput<D, K>,
+) -> Result<(), EventReduceError> {
+    let length_before = input.previous_results.len();
+    insert_at_sort_position(input)?;
+    // insert_at_sort_position() does nothing if the document is already in the results
+    if input.previous_results.len() > length_before {
+        remove_last_item(input)?;
+    }
+    Ok(())
+}
+
+/// Inserts the document at its sort position and then removes the first document.
+/// Used when a document moves out of the skipped documents into the results,
+/// so the previous first document is pushed into the skipped documents.
+pub fn insert_at_sort_position_remove_first<D: Clone, K: Eq + Hash + Clone>(
+    input: &mut ActionFunctionInput<D, K>,
+) -> Result<(), EventReduceError> {
+    let length_before = input.previous_results.len();
+    insert_at_sort_position(input)?;
+    // insert_at_sort_position() does nothing if the document is already in the results
+    if input.previous_results.len() > length_before {
+        remove_first_item(input)?;
+    }
+    Ok(())
 }
 
 pub fn run_full_query_again<D, K>(

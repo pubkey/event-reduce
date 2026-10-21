@@ -97,4 +97,21 @@ final class StatesTests: XCTestCase {
                 queryParams: queryParams(0), changeEvent: insert(Human("a", 1)), previousResults: []))
         XCTAssertEqual(set, "100000100010000001")
     }
+
+    func testIsSortedComparesWithTheNeighborWhenTheChangedDocumentIsFirstOrLast() {
+        let params = queryParams(0)
+        let results = [Human("a", 1), Human("b", 5), Human("c", 10)]
+        // the first document moves behind the second one
+        XCTAssertFalse(resolve(.isSortedBeforeFirst, params, update(Human("a", 1), Human("a", 7)), results))
+        // the first document stays first
+        XCTAssertTrue(resolve(.isSortedBeforeFirst, params, update(Human("a", 1), Human("a", 2)), results))
+        // the last document moves before the second last one
+        XCTAssertFalse(resolve(.isSortedAfterLast, params, update(Human("c", 10), Human("c", 3)), results))
+        // the last document stays last
+        XCTAssertTrue(resolve(.isSortedAfterLast, params, update(Human("c", 10), Human("c", 20)), results))
+        // without a neighbor, the changed document is still first and last
+        let event = update(Human("a", 1), Human("a", 7))
+        XCTAssertTrue(resolve(.isSortedBeforeFirst, params, event, Array(results.prefix(1))))
+        XCTAssertTrue(resolve(.isSortedAfterLast, params, event, Array(results.prefix(1))))
+    }
 }

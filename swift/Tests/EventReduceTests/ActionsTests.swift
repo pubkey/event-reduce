@@ -9,7 +9,8 @@ final class ActionsTests: XCTestCase {
                 "doNothing", "insertFirst", "insertLast", "removeFirstItem", "removeLastItem",
                 "removeFirstInsertLast", "removeLastInsertFirst", "removeFirstInsertFirst",
                 "removeLastInsertLast", "removeExisting", "replaceExisting", "alwaysWrong",
-                "insertAtSortPosition", "removeExistingAndInsertAtSortPosition", "runFullQueryAgain",
+                "insertAtSortPosition", "removeExistingAndInsertAtSortPosition",
+                "insertAtSortPositionRemoveLast", "insertAtSortPositionRemoveFirst", "runFullQueryAgain",
                 "unknownAction",
             ])
     }
@@ -95,5 +96,25 @@ final class ActionsTests: XCTestCase {
             previousResults: &results, keyDocumentMap: &map)
         XCTAssertEqual(ids(results), ["b", "c"])
         XCTAssertEqual(Set(map!.keys), ["b", "c"])
+    }
+
+    func testInsertAtSortPositionRemoveLastAndFirst() throws {
+        let params = queryParams(0, limit: 3)
+        var results = [Human("a", 1), Human("c", 3), Human("e", 5)]
+        var map: [String: Human]? = toMap(results)
+        try runAction(
+            .insertAtSortPositionRemoveLast, queryParams: params, changeEvent: insert(Human("b", 2)),
+            previousResults: &results, keyDocumentMap: &map)
+        XCTAssertEqual(ids(results), ["a", "b", "c"])
+        try runAction(
+            .insertAtSortPositionRemoveFirst, queryParams: params, changeEvent: insert(Human("d", 4)),
+            previousResults: &results, keyDocumentMap: &map)
+        XCTAssertEqual(ids(results), ["b", "c", "d"])
+        XCTAssertEqual(Set(map!.keys), ["b", "c", "d"])
+        // a document that is already in the results is not inserted, so nothing is removed
+        try runAction(
+            .insertAtSortPositionRemoveLast, queryParams: params, changeEvent: insert(Human("c", 3)),
+            previousResults: &results)
+        XCTAssertEqual(ids(results), ["b", "c", "d"])
     }
 }

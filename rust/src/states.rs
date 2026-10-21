@@ -200,22 +200,38 @@ pub fn was_sorted_after_last<D, K: Eq>(input: &StateResolveFunctionInput<D, K>) 
     )
 }
 
+/// Like compare_with_result(), but if the changed document is the result item itself,
+/// it compares with the neighbor of the result item instead,
+/// so we know if the changed document still sorts first or last.
+/// If there is no neighbor, the changed document is still first or last.
+fn compare_new_doc_with_result<D, K: Eq>(
+    input: &StateResolveFunctionInput<D, K>,
+    result_item: Option<&D>,
+    neighbor: Option<&D>,
+    expected: Ordering,
+) -> bool {
+    let (doc, mut result_item) = match (input.change_event.doc(), result_item) {
+        (Some(doc), Some(result_item)) => (doc, result_item),
+        _ => return false,
+    };
+    if input.query_params.document_id(result_item) == input.change_event.id() {
+        match neighbor {
+            Some(neighbor) => result_item = neighbor,
+            None => return true,
+        }
+    }
+    (input.query_params.sort_comparator)(doc, result_item) == expected
+}
+
 pub fn is_sorted_before_first<D, K: Eq>(input: &StateResolveFunctionInput<D, K>) -> bool {
-    compare_with_result(
-        input,
-        input.change_event.doc(),
-        input.previous_results.first(),
-        Ordering::Less,
-    )
+    let results = input.previous_results;
+    compare_new_doc_with_result(input, results.first(), results.get(1), Ordering::Less)
 }
 
 pub fn is_sorted_after_last<D, K: Eq>(input: &StateResolveFunctionInput<D, K>) -> bool {
-    compare_with_result(
-        input,
-        input.change_event.doc(),
-        input.previous_results.last(),
-        Ordering::Greater,
-    )
+    let results = input.previous_results;
+    let neighbor = results.len().checked_sub(2).and_then(|i| results.get(i));
+    compare_new_doc_with_result(input, results.last(), neighbor, Ordering::Greater)
 }
 
 pub fn was_matching<D, K>(input: &StateResolveFunctionInput<D, K>) -> bool {

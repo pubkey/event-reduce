@@ -77,14 +77,28 @@ public func wasSortedAfterLast<D>(_ input: StateResolveFunctionInput<D>) -> Bool
     return isChangedDoc(input, last) || input.queryParams.areInIncreasingOrder(last, prev)
 }
 
+/// If the changed document is the first or last document,
+/// the new document is compared with the neighbor instead,
+/// so we know if the changed document still sorts first or last.
+/// If there is no neighbor, the changed document is still first or last.
 public func isSortedBeforeFirst<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
-    guard let doc = input.changeEvent.doc, let first = input.previousResults.first else { return false }
-    return isChangedDoc(input, first) || input.queryParams.areInIncreasingOrder(doc, first)
+    let results = input.previousResults
+    guard let doc = input.changeEvent.doc, var first = results.first else { return false }
+    if isChangedDoc(input, first) {
+        guard results.count > 1 else { return true }
+        first = results[1]
+    }
+    return input.queryParams.areInIncreasingOrder(doc, first)
 }
 
 public func isSortedAfterLast<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
-    guard let doc = input.changeEvent.doc, let last = input.previousResults.last else { return false }
-    return isChangedDoc(input, last) || input.queryParams.areInIncreasingOrder(last, doc)
+    let results = input.previousResults
+    guard let doc = input.changeEvent.doc, var last = results.last else { return false }
+    if isChangedDoc(input, last) {
+        guard results.count > 1 else { return true }
+        last = results[results.count - 2]
+    }
+    return input.queryParams.areInIncreasingOrder(last, doc)
 }
 
 public func wasMatching<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
