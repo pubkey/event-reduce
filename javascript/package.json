@@ -91,6 +91,8 @@
     "create-bdd": "tsx ./src/truth-table-generator/runner.node.ts create-bdd",
     "optimize-bdd": "tsx ./src/truth-table-generator/runner.node.ts optimize-bdd",
     "iterative-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing",
+    "iterative-fuzzing-all-cores": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing-parallel",
+    "fuzzing-parallel-48": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing-parallel 48",
     "fuzzing-parallel": "npm-run-all --parallel iterative-fuzzing:*",
     "iterative-fuzzing:1": "npm run iterative-fuzzing",
     "iterative-fuzzing:2": "npm run iterative-fuzzing",

@@ -9,9 +9,15 @@ export function writeJsonFile(
     path: string,
     data: any
 ) {
+    /**
+     * Write to a temporary file and rename it,
+     * so that parallel fuzzing processes never read a half written file.
+     */
+    const tmpPath = path + '.' + process.pid + '.tmp';
     fs.writeFileSync(
-        path,
+        tmpPath,
         JSON.stringify(data, null, 2),
         { encoding: 'utf8', flag: 'w' }
     );
+    fs.renameSync(tmpPath, path);
 }
