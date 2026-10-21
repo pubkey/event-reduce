@@ -13,6 +13,7 @@ import type {
 } from '../types/index.js';
 import { actionFunctions, orderedActionList } from '../actions/index.js';
 import { getStateSet } from '../states/index.js';
+import { getDocumentId } from '../util.js';
 import { mingoCollectionCreator } from './database/mingo.js';
 import { applyChangeEvent } from './database/index.js';
 
@@ -188,23 +189,45 @@ export function doesActionWork(
      * Use actionFunctions instead of runAction()
      * because runAction() does not run alwaysWrong.
      */
+    const actionFunction = actionFunctions[actionName];
     const calculatedResults = input.previousResults.slice();
-    actionFunctions[actionName]({
+    actionFunction({
         queryParams: input.queryParams,
         changeEvent: input.changeEvent,
         previousResults: calculatedResults
     });
+    if (!isSameResult(calculatedResults, resultAfter)) {
+        return false;
+    }
 
-    if (
-        // optimisation shortcut, this is faster because we know we have two arrays
-        calculatedResults.length === resultAfter.length &&
+    /**
+     * Also run the action with a keyDocumentMap,
+     * like a user that keeps the map up to date,
+     * so that wrong handling of the map is found, too.
+     */
+    const resultsWithMap = input.previousResults.slice();
+    const keyDocumentMap = new Map(
+        resultsWithMap.map(doc => [getDocumentId(input.queryParams, doc), doc])
+    );
+    actionFunction({
+        queryParams: input.queryParams,
+        changeEvent: input.changeEvent,
+        previousResults: resultsWithMap,
+        keyDocumentMap
+    });
+    if (!isSameResult(resultsWithMap, resultAfter)) {
+        return false;
+    }
+    // the map must hold exactly the documents of the results
+    return keyDocumentMap.size === resultsWithMap.length &&
+        resultsWithMap.every(doc => keyDocumentMap.get(getDocumentId(input.queryParams, doc)) === doc);
+}
+
+function isSameResult(calculatedResults: Human[], resultAfter: Human[]): boolean {
+    // optimisation shortcut, this is faster because we know we have two arrays
+    return calculatedResults.length === resultAfter.length &&
         deepEqual(
             calculatedResults,
             resultAfter
-        )
-    ) {
-        return true;
-    } else {
-        return false;
-    }
+        );
 }

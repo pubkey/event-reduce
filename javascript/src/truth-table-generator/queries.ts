@@ -211,10 +211,19 @@ export function randomSelector() {
 
 
 
+/**
+ * The fuzzing collections only hold a few documents,
+ * so mostly use small values. Otherwise the results of queries
+ * with skip are nearly always empty and the limit is never reached.
+ */
+export function randomSkipOrLimit(): number {
+    return randomNumber(1, 10) === 1 ? randomNumber(7, 25) : randomNumber(1, 6);
+}
+
 export function randomQuery(): MongoQuery {
     const selector = randomSelector();
-    const skip = randomBoolean() ? randomNumber(1, 25) : undefined;
-    const limit = randomBoolean() ? randomNumber(1, 25) : undefined;
+    const skip = randomBoolean() ? randomSkipOrLimit() : undefined;
+    const limit = randomBoolean() ? randomSkipOrLimit() : undefined;
     const sort = randomOfArray(SORT_VARIATION);
     const query = {
         selector,

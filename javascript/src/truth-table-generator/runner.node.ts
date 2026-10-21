@@ -186,7 +186,7 @@ async function run() {
                 const result = fuzzing(
                     truthTable,
                     20, // queries
-                    20 // events
+                    60 // events
                 );
                 console.dir(result);
             })();
@@ -245,7 +245,7 @@ async function run() {
                         const result = fuzzing(
                             truthTable,
                             40, // queries
-                            20 // events
+                            60 // events
                         );
                         totalAmountOfHandled = totalAmountOfHandled + result.amountOfHandled;
                         totalAmountOfOptimized = totalAmountOfOptimized + result.amountOfOptimized;
