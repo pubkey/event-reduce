@@ -1,4 +1,7 @@
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import { spawn } from 'child_process';
 import {
     createBddFromTruthTable,
     TruthTable,
@@ -183,7 +186,7 @@ async function run() {
                 const result = fuzzing(
                     truthTable,
                     20, // queries
-                    20 // events
+                    60 // events
                 );
                 console.dir(result);
             })();
@@ -242,7 +245,7 @@ async function run() {
                         const result = fuzzing(
                             truthTable,
                             40, // queries
-                            20 // events
+                            60 // events
                         );
                         totalAmountOfHandled = totalAmountOfHandled + result.amountOfHandled;
                         totalAmountOfOptimized = totalAmountOfOptimized + result.amountOfOptimized;
@@ -409,6 +412,55 @@ async function run() {
                 } else {
                     console.log('# DROP BECAUSE has better one with quality ' + optimizeState.quality);
                 }
+            })();
+            break;
+
+        /**
+         * Runs the iterative-fuzzing in multiple processes.
+         * The amount of processes can be given as argument,
+         * by default it is one per cpu core, except one core
+         * that is left free for the system.
+         * Each process writes into its own log file
+         * and is restarted when it exits.
+         */
+        case 'iterative-fuzzing-parallel':
+            (function iterativeFuzzingParallel() {
+                const cores = os.availableParallelism ? os.availableParallelism() : os.cpus().length;
+                const amount = args[3] ? parseInt(args[3], 10) : Math.max(1, cores - 1);
+                const logFolder = path.join(process.cwd(), 'fuzzing-logs');
+                if (!fs.existsSync(logFolder)) {
+                    fs.mkdirSync(logFolder);
+                }
+                const children = new Set<ReturnType<typeof spawn>>();
+                let stopping = false;
+                const startProcess = (nr: number) => {
+                    const logFile = fs.openSync(path.join(logFolder, nr + '.log'), 'a');
+                    const child = spawn(
+                        process.execPath,
+                        [...process.execArgv, process.argv[1], 'iterative-fuzzing'],
+                        { stdio: ['ignore', logFile, logFile] }
+                    );
+                    children.add(child);
+                    child.on('exit', (code) => {
+                        children.delete(child);
+                        fs.closeSync(logFile);
+                        if (!stopping) {
+                            console.log('fuzzing process ' + nr + ' exited with code ' + code + ', restarting');
+                            setTimeout(() => startProcess(nr), 1000);
+                        }
+                    });
+                };
+                const stop = () => {
+                    stopping = true;
+                    children.forEach(child => child.kill());
+                    process.exit(0);
+                };
+                process.on('SIGINT', stop);
+                process.on('SIGTERM', stop);
+                for (let nr = 0; nr < amount; nr++) {
+                    startProcess(nr);
+                }
+                console.log('started ' + amount + ' fuzzing processes, logs are in ' + logFolder);
             })();
             break;
 

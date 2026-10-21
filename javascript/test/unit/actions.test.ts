@@ -12,7 +12,15 @@ import {
 } from '../../src/types/index.js';
 import { randomChangeEvent, randomHuman, randomHumans } from '../../src/truth-table-generator/data-generator.js';
 import { Human } from '../../src/truth-table-generator/types.js';
-import { insertFirst, insertLast, removeExisting, replaceExisting, insertAtSortPosition } from '../../src/actions/action-functions.js';
+import {
+    insertFirst,
+    insertLast,
+    removeExisting,
+    replaceExisting,
+    insertAtSortPosition,
+    insertAtSortPositionRemoveLast,
+    insertAtSortPositionRemoveFirst
+} from '../../src/actions/action-functions.js';
 import { mingoCollectionCreator } from '../../src/truth-table-generator/database/mingo.js';
 
 const pseudoCollection = mingoCollectionCreator();
@@ -366,6 +374,150 @@ describe('actions.test.ts', () => {
             runCheckedAction(insertAtSortPosition, input);
             const doc = input.previousResults[0];
             assert.deepStrictEqual(doc, insertMe);
+        });
+    });
+    describe('.insertAtSortPositionRemoveLast()', () => {
+        function getInput(previousResults: Human[], insertMe: Human): ActionFunctionInput<Human> {
+            return {
+                previousResults,
+                changeEvent: {
+                    operation: 'INSERT',
+                    doc: insertMe,
+                    id: insertMe._id,
+                    previous: null
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['age', '_id'],
+                    limit: previousResults.length
+                })
+            };
+        }
+        it('should insert in the middle and remove the last document', () => {
+            const previousResults = [10, 20, 30, 40].map(age => randomHuman({ age }));
+            const last = previousResults[3];
+            const insertMe = randomHuman({ age: 25 });
+            const input = getInput(previousResults, insertMe);
+            runCheckedAction(insertAtSortPositionRemoveLast, input);
+            assert.deepStrictEqual(
+                input.previousResults.map(d => d.age),
+                [10, 20, 25, 30]
+            );
+            assert.deepStrictEqual(input.previousResults[2], insertMe);
+            assert.ok(input.keyDocumentMap?.has(insertMe._id));
+            assert.ok(!input.keyDocumentMap?.has(last._id));
+        });
+        it('should do nothing if the document is already in the results', () => {
+            const previousResults = [10, 20, 30].map(age => randomHuman({ age }));
+            const input = getInput(previousResults, previousResults[1]);
+            runCheckedAction(insertAtSortPositionRemoveLast, input);
+            assert.deepStrictEqual(
+                input.previousResults.map(d => d.age),
+                [10, 20, 30]
+            );
+        });
+        it('should use getDocumentId to remove the last document from the keyDocumentMap', () => {
+            type Doc = { key: { id: string }; age: number; };
+            const getDocumentId = (doc: Doc) => doc.key.id;
+            const previousResults: Doc[] = [
+                { key: { id: 'a' }, age: 1 },
+                { key: { id: 'c' }, age: 3 }
+            ];
+            const keyDocumentMap = new Map(previousResults.map(d => [getDocumentId(d), d]));
+            const insertMe: Doc = { key: { id: 'b' }, age: 2 };
+            const input: ActionFunctionInput<Doc> = {
+                previousResults,
+                keyDocumentMap,
+                changeEvent: {
+                    operation: 'INSERT',
+                    doc: insertMe,
+                    id: 'b',
+                    previous: null
+                },
+                queryParams: {
+                    primaryKey: 'unused',
+                    getDocumentId,
+                    sortFields: ['age'],
+                    limit: 2,
+                    queryMatcher: () => true,
+                    sortComparator: (a, b) => a.age < b.age ? -1 : 1
+                }
+            };
+            insertAtSortPositionRemoveLast(input);
+            assert.deepStrictEqual(previousResults.map(getDocumentId), ['a', 'b']);
+            assert.deepStrictEqual([...keyDocumentMap.keys()].sort(), ['a', 'b']);
+        });
+    });
+    describe('.insertAtSortPositionRemoveFirst()', () => {
+        function getInput(previousResults: Human[], insertMe: Human): ActionFunctionInput<Human> {
+            return {
+                previousResults,
+                changeEvent: {
+                    operation: 'INSERT',
+                    doc: insertMe,
+                    id: insertMe._id,
+                    previous: null
+                },
+                queryParams: pseudoCollection.getQueryParams({
+                    selector: {},
+                    sort: ['age', '_id'],
+                    skip: 1
+                })
+            };
+        }
+        it('should insert in the middle and remove the first document', () => {
+            const previousResults = [10, 20, 30, 40].map(age => randomHuman({ age }));
+            const first = previousResults[0];
+            const insertMe = randomHuman({ age: 25 });
+            const input = getInput(previousResults, insertMe);
+            runCheckedAction(insertAtSortPositionRemoveFirst, input);
+            assert.deepStrictEqual(
+                input.previousResults.map(d => d.age),
+                [20, 25, 30, 40]
+            );
+            assert.deepStrictEqual(input.previousResults[1], insertMe);
+            assert.ok(input.keyDocumentMap?.has(insertMe._id));
+            assert.ok(!input.keyDocumentMap?.has(first._id));
+        });
+        it('should do nothing if the document is already in the results', () => {
+            const previousResults = [10, 20, 30].map(age => randomHuman({ age }));
+            const input = getInput(previousResults, previousResults[1]);
+            runCheckedAction(insertAtSortPositionRemoveFirst, input);
+            assert.deepStrictEqual(
+                input.previousResults.map(d => d.age),
+                [10, 20, 30]
+            );
+        });
+        it('should use getDocumentId to remove the first document from the keyDocumentMap', () => {
+            type Doc = { key: { id: string }; age: number; };
+            const getDocumentId = (doc: Doc) => doc.key.id;
+            const previousResults: Doc[] = [
+                { key: { id: 'a' }, age: 1 },
+                { key: { id: 'c' }, age: 3 }
+            ];
+            const keyDocumentMap = new Map(previousResults.map(d => [getDocumentId(d), d]));
+            const insertMe: Doc = { key: { id: 'b' }, age: 2 };
+            const input: ActionFunctionInput<Doc> = {
+                previousResults,
+                keyDocumentMap,
+                changeEvent: {
+                    operation: 'INSERT',
+                    doc: insertMe,
+                    id: 'b',
+                    previous: null
+                },
+                queryParams: {
+                    primaryKey: 'unused',
+                    getDocumentId,
+                    sortFields: ['age'],
+                    skip: 1,
+                    queryMatcher: () => true,
+                    sortComparator: (a, b) => a.age < b.age ? -1 : 1
+                }
+            };
+            insertAtSortPositionRemoveFirst(input);
+            assert.deepStrictEqual(previousResults.map(getDocumentId), ['b', 'c']);
+            assert.deepStrictEqual([...keyDocumentMap.keys()].sort(), ['b', 'c']);
         });
     });
 

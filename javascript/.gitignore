@@ -2,3 +2,4 @@
 /src/logic-generator/logic-map-output/
 *.out
 /dist
+/fuzzing-logs
