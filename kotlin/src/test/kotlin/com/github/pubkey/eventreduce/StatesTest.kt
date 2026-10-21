@@ -103,4 +103,22 @@ class StatesTest {
         val set = getStateSet(StateResolveFunctionInput(queryParams(0), insert(Human("a", 1)), emptyList()))
         assertEquals("100000100010000001", set)
     }
+
+    @Test
+    fun isSortedComparesWithTheNeighborWhenTheChangedDocumentIsFirstOrLast() {
+        val params = queryParams(0)
+        val results = listOf(Human("a", 1), Human("b", 5), Human("c", 10))
+        // the first document moves behind the second one
+        assertFalse(resolve(StateName.IsSortedBeforeFirst, params, update(Human("a", 1), Human("a", 7)), results))
+        // the first document stays first
+        assertTrue(resolve(StateName.IsSortedBeforeFirst, params, update(Human("a", 1), Human("a", 2)), results))
+        // the last document moves before the second last one
+        assertFalse(resolve(StateName.IsSortedAfterLast, params, update(Human("c", 10), Human("c", 3)), results))
+        // the last document stays last
+        assertTrue(resolve(StateName.IsSortedAfterLast, params, update(Human("c", 10), Human("c", 20)), results))
+        // without a neighbor, the changed document is still first and last
+        val event = update(Human("a", 1), Human("a", 7))
+        assertTrue(resolve(StateName.IsSortedBeforeFirst, params, event, results.subList(0, 1)))
+        assertTrue(resolve(StateName.IsSortedAfterLast, params, event, results.subList(0, 1)))
+    }
 }

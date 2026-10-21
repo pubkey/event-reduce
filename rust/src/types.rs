@@ -134,6 +134,8 @@ pub enum ActionName {
     AlwaysWrong,
     InsertAtSortPosition,
     RemoveExistingAndInsertAtSortPosition,
+    InsertAtSortPositionRemoveLast,
+    InsertAtSortPositionRemoveFirst,
     RunFullQueryAgain,
     /// If a state was never reached, we do not know the correct action.
     UnknownAction,
@@ -159,6 +161,8 @@ impl ActionName {
             ActionName::RemoveExistingAndInsertAtSortPosition => {
                 "removeExistingAndInsertAtSortPosition"
             }
+            ActionName::InsertAtSortPositionRemoveLast => "insertAtSortPositionRemoveLast",
+            ActionName::InsertAtSortPositionRemoveFirst => "insertAtSortPositionRemoveFirst",
             ActionName::RunFullQueryAgain => "runFullQueryAgain",
             ActionName::UnknownAction => "unknownAction",
         }

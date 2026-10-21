@@ -209,3 +209,55 @@ fn state_set() {
     });
     assert_eq!(set, "100000100010000001");
 }
+
+#[test]
+fn is_sorted_compares_with_the_neighbor_when_the_changed_document_is_first_or_last() {
+    let params = query_params(0, None, None);
+    let results = vec![human("a", 1), human("b", 5), human("c", 10)];
+    // the first document moves behind the second one
+    let event = update(human("a", 1), human("a", 7));
+    assert!(!resolve(
+        StateName::IsSortedBeforeFirst,
+        &params,
+        &event,
+        &results
+    ));
+    // the first document stays first
+    let event = update(human("a", 1), human("a", 2));
+    assert!(resolve(
+        StateName::IsSortedBeforeFirst,
+        &params,
+        &event,
+        &results
+    ));
+    // the last document moves before the second last one
+    let event = update(human("c", 10), human("c", 3));
+    assert!(!resolve(
+        StateName::IsSortedAfterLast,
+        &params,
+        &event,
+        &results
+    ));
+    // the last document stays last
+    let event = update(human("c", 10), human("c", 20));
+    assert!(resolve(
+        StateName::IsSortedAfterLast,
+        &params,
+        &event,
+        &results
+    ));
+    // without a neighbor, the changed document is still first and last
+    let event = update(human("a", 1), human("a", 7));
+    assert!(resolve(
+        StateName::IsSortedBeforeFirst,
+        &params,
+        &event,
+        &results[..1]
+    ));
+    assert!(resolve(
+        StateName::IsSortedAfterLast,
+        &params,
+        &event,
+        &results[..1]
+    ));
+}

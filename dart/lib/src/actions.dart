@@ -40,6 +40,10 @@ ActionFunction<D> actionFunction<D>(ActionName action) {
       return insertAtSortPosition;
     case ActionName.removeExistingAndInsertAtSortPosition:
       return removeExistingAndInsertAtSortPosition;
+    case ActionName.insertAtSortPositionRemoveLast:
+      return insertAtSortPositionRemoveLast;
+    case ActionName.insertAtSortPositionRemoveFirst:
+      return insertAtSortPositionRemoveFirst;
     case ActionName.runFullQueryAgain:
       return runFullQueryAgain;
     case ActionName.unknownAction:
@@ -160,6 +164,31 @@ void insertAtSortPosition<D>(ActionFunctionInput<D> input) {
 void removeExistingAndInsertAtSortPosition<D>(ActionFunctionInput<D> input) {
   removeExisting(input);
   insertAtSortPosition(input);
+}
+
+/// Inserts the document at its sort position and then removes the last document.
+/// Used when the limit was reached and the new document
+/// sorts in between the first and the last document,
+/// so the previous last document is pushed out of the results.
+void insertAtSortPositionRemoveLast<D>(ActionFunctionInput<D> input) {
+  final lengthBefore = input.previousResults.length;
+  insertAtSortPosition(input);
+  // insertAtSortPosition() does nothing if the document is already in the results
+  if (input.previousResults.length > lengthBefore) {
+    removeLastItem(input);
+  }
+}
+
+/// Inserts the document at its sort position and then removes the first document.
+/// Used when a document moves out of the skipped documents into the results,
+/// so the previous first document is pushed into the skipped documents.
+void insertAtSortPositionRemoveFirst<D>(ActionFunctionInput<D> input) {
+  final lengthBefore = input.previousResults.length;
+  insertAtSortPosition(input);
+  // insertAtSortPosition() does nothing if the document is already in the results
+  if (input.previousResults.length > lengthBefore) {
+    removeFirstItem(input);
+  }
 }
 
 void runFullQueryAgain<D>(ActionFunctionInput<D> input) {

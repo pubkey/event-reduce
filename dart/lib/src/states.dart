@@ -96,11 +96,35 @@ bool wasSortedBeforeFirst<D>(StateResolveFunctionInput<D> input) =>
 bool wasSortedAfterLast<D>(StateResolveFunctionInput<D> input) =>
     _compareWithResult(input, input.changeEvent.previous, false, (c) => c > 0);
 
+/// Like [_compareWithResult], but if the changed document is the result item itself,
+/// it compares with the neighbor of the result item instead,
+/// so we know if the changed document still sorts first or last.
+/// If there is no neighbor, the changed document is still first or last.
+bool _compareNewDocWithResult<D>(
+  StateResolveFunctionInput<D> input,
+  bool first,
+  bool Function(int comparison) expected,
+) {
+  final doc = input.changeEvent.doc;
+  final results = input.previousResults;
+  if (doc == null || results.isEmpty) {
+    return false;
+  }
+  var resultItem = first ? results.first : results.last;
+  if (input.queryParams.getDocumentId(resultItem) == input.changeEvent.id) {
+    if (results.length < 2) {
+      return true;
+    }
+    resultItem = first ? results[1] : results[results.length - 2];
+  }
+  return expected(input.queryParams.sortComparator(doc, resultItem));
+}
+
 bool isSortedBeforeFirst<D>(StateResolveFunctionInput<D> input) =>
-    _compareWithResult(input, input.changeEvent.doc, true, (c) => c < 0);
+    _compareNewDocWithResult(input, true, (c) => c < 0);
 
 bool isSortedAfterLast<D>(StateResolveFunctionInput<D> input) =>
-    _compareWithResult(input, input.changeEvent.doc, false, (c) => c > 0);
+    _compareNewDocWithResult(input, false, (c) => c > 0);
 
 bool wasMatching<D>(StateResolveFunctionInput<D> input) {
   final prev = input.changeEvent.previous;

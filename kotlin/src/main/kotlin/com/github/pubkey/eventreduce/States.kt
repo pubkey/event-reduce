@@ -76,11 +76,37 @@ public fun <D> wasSortedBeforeFirst(input: StateResolveFunctionInput<D>): Boolea
 public fun <D> wasSortedAfterLast(input: StateResolveFunctionInput<D>): Boolean =
     compareWithResult(input, input.changeEvent.previous, false) { it > 0 }
 
+/**
+ * Like [compareWithResult], but if the changed document is the result item itself,
+ * it compares with the neighbor of the result item instead,
+ * so we know if the changed document still sorts first or last.
+ * If there is no neighbor, the changed document is still first or last.
+ */
+private inline fun <D> compareNewDocWithResult(
+    input: StateResolveFunctionInput<D>,
+    first: Boolean,
+    expected: (Int) -> Boolean,
+): Boolean {
+    val doc = input.changeEvent.doc
+    val results = input.previousResults
+    if (doc == null || results.isEmpty()) {
+        return false
+    }
+    var resultItem = if (first) results.first() else results.last()
+    if (input.queryParams.getDocumentId(resultItem) == input.changeEvent.id) {
+        if (results.size < 2) {
+            return true
+        }
+        resultItem = if (first) results[1] else results[results.size - 2]
+    }
+    return expected(input.queryParams.sortComparator.compare(doc, resultItem))
+}
+
 public fun <D> isSortedBeforeFirst(input: StateResolveFunctionInput<D>): Boolean =
-    compareWithResult(input, input.changeEvent.doc, true) { it < 0 }
+    compareNewDocWithResult(input, true) { it < 0 }
 
 public fun <D> isSortedAfterLast(input: StateResolveFunctionInput<D>): Boolean =
-    compareWithResult(input, input.changeEvent.doc, false) { it > 0 }
+    compareNewDocWithResult(input, false) { it > 0 }
 
 public fun <D> wasMatching(input: StateResolveFunctionInput<D>): Boolean {
     val prev = input.changeEvent.previous ?: return false

@@ -122,4 +122,41 @@ void main() {
     ));
     expect(set, '100000100010000001');
   });
+
+  test(
+      'isSorted compares with the neighbor if the changed document is first or last',
+      () {
+    final params = queryParams(0);
+    final results = [Human('a', 1), Human('b', 5), Human('c', 10)];
+    // the first document moves behind the second one
+    expect(
+        resolve(StateName.isSortedBeforeFirst, params,
+            update(Human('a', 1), Human('a', 7)), results),
+        isFalse);
+    // the first document stays first
+    expect(
+        resolve(StateName.isSortedBeforeFirst, params,
+            update(Human('a', 1), Human('a', 2)), results),
+        isTrue);
+    // the last document moves before the second last one
+    expect(
+        resolve(StateName.isSortedAfterLast, params,
+            update(Human('c', 10), Human('c', 3)), results),
+        isFalse);
+    // the last document stays last
+    expect(
+        resolve(StateName.isSortedAfterLast, params,
+            update(Human('c', 10), Human('c', 20)), results),
+        isTrue);
+    // without a neighbor, the changed document is still first and last
+    final event = update(Human('a', 1), Human('a', 7));
+    expect(
+        resolve(StateName.isSortedBeforeFirst, params, event,
+            results.sublist(0, 1)),
+        isTrue);
+    expect(
+        resolve(
+            StateName.isSortedAfterLast, params, event, results.sublist(0, 1)),
+        isTrue);
+  });
 }
