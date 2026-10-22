@@ -130,7 +130,8 @@ const BUFFER_SIZES: ResultWindowBufferSizes[] = [
     { limitBufferSize: 5, skipBufferSize: 0 },
     { limitBufferSize: 0, skipBufferSize: 5 },
     { limitBufferSize: 20, skipBufferSize: 3 },
-    { limitBufferSize: 50, skipBufferSize: 20 }
+    { limitBufferSize: 50, skipBufferSize: 20 },
+    { limitBufferSize: Infinity, skipBufferSize: Infinity }
 ];
 const INITIAL_ROWS = [0, 30, 300];
 const EVENTS_PER_RUN = 600;
@@ -166,6 +167,18 @@ describe('result-window-buffer.test.ts', () => {
             );
             assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 0, limit: 22 });
         });
+        it('should use whole numbers as buffer sizes', () => {
+            const query = (size: number) => getResultWindowBufferQuery(createResultWindowBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
+                { limitBufferSize: size, skipBufferSize: size }
+            ));
+            assert.deepStrictEqual(query(2.5), { skip: 8, limit: 24 });
+            // negative sizes and NaN mean no buffer
+            assert.deepStrictEqual(query(-3), { skip: 10, limit: 20 });
+            assert.deepStrictEqual(query(NaN), { skip: 10, limit: 20 });
+            // Infinity keeps all rows
+            assert.deepStrictEqual(query(Infinity), { skip: 0, limit: undefined });
+        });
         it('should have no limit for a query without a limit', () => {
             const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 10 }),
@@ -181,6 +194,10 @@ describe('result-window-buffer.test.ts', () => {
                 operation: 'INSERT', id: 'a', doc: doc('a', 1), previous: null
             });
             assert.strictEqual(result, 'runFullQueryAgain');
+        });
+        it('should throw when the results are read before the buffer got rows', () => {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), {});
+            assert.throws(() => getResultWindowBufferResults(resultWindowBuffer), /RWB_OUTDATED/);
         });
         it('should be complete when the query returned fewer rows than requested', () => {
             const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
@@ -233,6 +250,15 @@ describe('result-window-buffer.test.ts', () => {
                 operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
             });
             assert.strictEqual(result, 'runFullQueryAgain');
+        });
+        it('should throw when the results are read after runFullQueryAgain without running the query again', () => {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', skip: 1, limit: 1 }), { limitBufferSize: 1 });
+            resetResultWindowBuffer(resultWindowBuffer, [doc('b', 2), doc('c', 3)]);
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
+                operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
+            });
+            assert.strictEqual(result, 'runFullQueryAgain');
+            assert.throws(() => getResultWindowBufferResults(resultWindowBuffer), /RWB_OUTDATED/);
         });
         it('should take the row from the skip buffer when a row is added in front of the window', () => {
             const resultWindowBuffer = createResultWindowBuffer(

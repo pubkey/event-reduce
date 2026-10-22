@@ -110,8 +110,8 @@ export function createResultWindowBuffer<DocType>(
 ): ResultWindowBuffer<DocType> {
     return {
         queryParams,
-        limitBufferSize: sizes.limitBufferSize ? sizes.limitBufferSize : 0,
-        skipBufferSize: sizes.skipBufferSize ? sizes.skipBufferSize : 0,
+        limitBufferSize: toBufferSize(sizes.limitBufferSize),
+        skipBufferSize: toBufferSize(sizes.skipBufferSize),
         buffer: [],
         keyDocumentMap: new Map(),
         offset: 0,
@@ -120,16 +120,25 @@ export function createResultWindowBuffer<DocType>(
 }
 
 /**
+ * Buffer sizes are whole numbers.
+ * Negative sizes and NaN mean no buffer, Infinity keeps all rows on that side.
+ */
+function toBufferSize(size?: number): number {
+    return size && size > 0 ? Math.floor(size) : 0;
+}
+
+/**
  * The skip and limit to use when running the query for the buffer.
- * limit is undefined if the query has no limit.
+ * limit is undefined if all rows after the skip are needed.
  */
 export function getResultWindowBufferQuery(resultWindowBuffer: ResultWindowBuffer<any>): { skip: number; limit: number | undefined; } {
     const skip = getSkip(resultWindowBuffer);
     const bufferSkip = Math.max(0, skip - resultWindowBuffer.skipBufferSize);
     const limit = resultWindowBuffer.queryParams.limit;
+    const bufferLimit = limit ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize : undefined;
     return {
         skip: bufferSkip,
-        limit: limit ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize : undefined
+        limit: bufferLimit !== undefined && Number.isFinite(bufferLimit) ? bufferLimit : undefined
     };
 }
 
@@ -152,8 +161,15 @@ export function resetResultWindowBuffer<DocType>(
 
 /**
  * The result that is shown to the user.
+ * Throws if the result window is not in the buffer, which happens
+ * before resetResultWindowBuffer() was called
+ * or when applyChangeEventToResultWindowBuffer() returned 'runFullQueryAgain'
+ * and the query did not run again.
  */
 export function getResultWindowBufferResults<DocType>(resultWindowBuffer: ResultWindowBuffer<DocType>): DocType[] {
+    if (!isResultWindowInBuffer(resultWindowBuffer)) {
+        throw new Error('EventReduce:RWB_OUTDATED');
+    }
     const start = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
     const limit = resultWindowBuffer.queryParams.limit;
     return resultWindowBuffer.buffer.slice(start, limit ? start + limit : undefined);
@@ -209,15 +225,25 @@ export function applyChangeEventToResultWindowBuffer<DocType>(
     trimBuffer(resultWindowBuffer);
 
     // 4. Run the query again if the result window does not fit into the buffer anymore.
-    const start = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
-    const limit = resultWindowBuffer.queryParams.limit;
-    if (
-        start < 0 ||
-        (!resultWindowBuffer.complete && (!limit || buffer.length < start + limit))
-    ) {
+    if (!isResultWindowInBuffer(resultWindowBuffer)) {
         return 'runFullQueryAgain';
     }
     return result;
+}
+
+/**
+ * True if all rows of the result window are in the buffer.
+ */
+function isResultWindowInBuffer(resultWindowBuffer: ResultWindowBuffer<any>): boolean {
+    const start = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
+    if (start < 0) {
+        return false;
+    }
+    if (resultWindowBuffer.complete) {
+        return true;
+    }
+    const limit = resultWindowBuffer.queryParams.limit;
+    return !!limit && resultWindowBuffer.buffer.length >= start + limit;
 }
 
 function getSkip(resultWindowBuffer: ResultWindowBuffer<any>): number {

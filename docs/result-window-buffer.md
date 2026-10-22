@@ -146,11 +146,11 @@ db.changes$.subscribe(async changeEvent => {
 
 | Function | Description |
 |---|---|
-| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. |
+| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. Sizes are rounded down, negative sizes and `NaN` mean 0, and `Infinity` keeps all rows on that side. |
 | `getResultWindowBufferQuery(resultWindowBuffer)` | The `skip` and `limit` to run the query with: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. `limit` is `undefined` if the query has no limit. |
 | `resetResultWindowBuffer(resultWindowBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
 | `applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |
-| `getResultWindowBufferResults(resultWindowBuffer)` | The visible result, the rows of the original skip and limit. |
+| `getResultWindowBufferResults(resultWindowBuffer)` | The visible result, the rows of the original skip and limit. Throws `EventReduce:RWB_OUTDATED` if the query must run first: before the first `resetResultWindowBuffer()` or after `'runFullQueryAgain'`. |
 
 The functions mutate the `resultWindowBuffer` object. Treat its fields as read only.
 It works for any query: with a limit, with a skip, with both or with neither.
