@@ -50,7 +50,6 @@ jobs:
           npm install
           npm run lint
           npm run build
-          npm run test:unit
 
       - name: test examples
         uses: GabrielBB/xvfb-action@v1.7

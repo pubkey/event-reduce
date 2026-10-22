@@ -23,18 +23,21 @@ import {
 } from './data-generator';
 import { Human, IdToDocumentMap, DatabaseImplementation, Query, MongoQuery } from './types';
 import { idToDocMapFromList, removeOptions, getParameterByName, getImplementations } from './util';
-import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
-import { performanceNow } from 'async-test-util';
-
-import '../style.less';
-import { appendToLog } from './logs';
 import {
+    ChangeEvent,
+    calculateActionName,
+    StateResolveFunctionInput,
+    runAction,
     applyChangeEventToLimitBuffer,
     createLimitBuffer,
     getLimitBufferQueryLimit,
     getLimitBufferResults,
     resetLimitBuffer
-} from './limit-buffer';
+} from 'event-reduce-js';
+import { performanceNow } from 'async-test-util';
+
+import '../style.less';
+import { appendToLog } from './logs';
 
 /**
  * Compares two results of the same query.

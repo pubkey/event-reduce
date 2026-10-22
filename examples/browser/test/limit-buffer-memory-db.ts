@@ -3,7 +3,7 @@ import type { Human } from '../src/types';
 
 /**
  * A small in-memory "database" with a seeded random event generator,
- * used by the randomized limit buffer test and the benchmark.
+ * used by the limit buffer benchmark.
  * It runs in Node.js, so it does not use the browser databases of the demo.
  */
 

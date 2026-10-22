@@ -1,12 +1,15 @@
-import { calculateActionName, runAction, ChangeEvent, QueryParams } from 'event-reduce-js';
 import {
+    calculateActionName,
+    runAction,
+    ChangeEvent,
+    QueryParams,
     applyChangeEventToLimitBuffer,
     createLimitBuffer,
     getLimitBufferQueryLimit,
     getLimitBufferResults,
     LimitBuffer,
     resetLimitBuffer
-} from '../src/limit-buffer';
+} from 'event-reduce-js';
 import type { Human } from '../src/types';
 import {
     EventGenerator,

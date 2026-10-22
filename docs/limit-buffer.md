@@ -1,11 +1,10 @@
 # Limit buffer
 
-The limit buffer is a usage pattern on top of EventReduce, not a feature of the `event-reduce-js` package.
-For a query with a limit, you keep more rows in memory than the limit and show only the first `limit` of them.
+For a query with a limit, the limit buffer of `event-reduce-js` keeps more rows in memory than the limit and shows only the first `limit` of them.
 When a visible row leaves the window, the next row comes from memory instead of a new query.
 
-- Helper code: [`examples/browser/src/limit-buffer.ts`](../examples/browser/src/limit-buffer.ts)
-- Randomized test: [`examples/browser/test/limit-buffer.test.ts`](../examples/browser/test/limit-buffer.test.ts)
+- Source: [`javascript/src/limit-buffer.ts`](../javascript/src/limit-buffer.ts)
+- Randomized test: [`javascript/test/unit/limit-buffer.test.ts`](../javascript/test/unit/limit-buffer.test.ts)
 - Benchmark: [`examples/browser/test/limit-buffer.benchmark.ts`](../examples/browser/test/limit-buffer.benchmark.ts)
 - Demo: the "Limit buffer" section of the [browser demo](https://pubkey.github.io/event-reduce/)
 
@@ -39,7 +38,7 @@ With these event mixes, nearly every full query of a limited query happens becau
 The other full queries with skip come from changes in front of the window, where a row from the skipped part moves into the window.
 The exact share depends on your writes, for example how often rows are inserted in front of a skip window.
 
-## How the pattern works
+## How it works
 
 1. Run the query with `limit + bufferSize` (same selector, sort and skip) and keep the rows as the **buffer**.
 2. The visible result is `buffer.slice(0, limit)`.
@@ -61,15 +60,15 @@ the buffer holds the whole result, and rows can be appended at its end.
 
 ### How EventReduce is used
 
-The helper runs two steps for each change event.
+The limit buffer runs these steps for each change event.
 
 **Step 1: EventReduce on the buffer.** A prefix of length `n` is exactly the result of the same query with `limit: n`.
-So the helper calls `calculateActionName()` with `queryParams.limit` set to `buffer.length`,
+So the limit buffer runs the EventReduce decision diagram with `queryParams.limit` set to `buffer.length`,
 and EventReduce works on the buffer like on any other query result.
-If the buffer is complete, the helper uses `buffer.length + 1`.
+If the buffer is complete, it uses `buffer.length + 1`.
 Then EventReduce knows that the limit is not reached and that no more rows exist,
 so it can, for example, append an inserted row at the end.
-If EventReduce returns an action, the helper runs it with `runAction()`. The new buffer is the exact result for that limit, so it is still a prefix.
+If EventReduce returns an action, the limit buffer runs it. The new buffer is the exact result for that limit, so it is still a prefix.
 
 **Step 2: the prefix rule, when EventReduce returns `runFullQueryAgain`.**
 EventReduce has to keep the length `n` of the result, and for that it needs the next row.
@@ -86,36 +85,34 @@ A row that sorts after the last row is left out, so the buffer shrinks.
 With `skip`, exactly `skip` rows sort before the first row of the buffer:
 
 - If one of them leaves (deleted, no longer matching, or moved into or behind the buffer), every row moves one position up.
-  The first row of the buffer moves into the skipped part, so the helper removes it.
+  The first row of the buffer moves into the skipped part, so it is removed.
 - If a row is added in front, the last skipped row moves into the window. That row is unknown, so the query must run again.
 
 **The prefix rule also lets the buffer grow again.** EventReduce keeps the length, so when a row comes into a full result,
 it drops the last row (`insertAtSortPositionRemoveLast` and the other `removeLast…` actions).
 If the buffer has shrunk below `limit + bufferSize`, that row does not have to be dropped:
 the prefix rule keeps it, and the buffer gets one row longer.
-So for these actions the helper uses the prefix rule instead, as long as the buffer is not full.
+So for these actions the limit buffer uses the prefix rule instead, as long as the buffer is not full.
 In the benchmark, this saved 5 to 11 % of the full queries compared to always running the action of EventReduce.
 
-**Step 3:** if the buffer is longer than `limit + bufferSize`, the helper cuts its end and marks it as not complete.
-If it is not complete and shorter than `limit`, the helper returns `runFullQueryAgain`.
+**Step 3:** if the buffer is longer than `limit + bufferSize`, its end is cut off and it is marked as not complete.
+If it is not complete and shorter than `limit`, `applyChangeEventToLimitBuffer()` returns `runFullQueryAgain`.
 
 You could use the prefix rule alone, because it can handle every event that EventReduce handles.
 We tried that: it needed the same number of full queries, but took 2 to 8 times as long in the uniform mix, where most events do not touch the window,
 because it compares the changed row with the first and last row of the buffer, while the EventReduce decision diagram
 often answers `doNothing` after a few checks.
-So the helper keeps EventReduce in front. Its actions are verified by the EventReduce fuzzing, and the prefix rule only handles the rest.
-For `bufferSize: 0`, the helper behaves like plain EventReduce (see the table below).
+So the limit buffer keeps EventReduce in front. Its actions are verified by the EventReduce fuzzing, and the prefix rule only handles the rest.
+For `bufferSize: 0`, the limit buffer behaves like plain EventReduce (see the table below).
 
 ### Requirements
 
 - The sort order must be deterministic. Rows with the same sort values must be ordered by the primary key.
-  The helper breaks ties with the primary key when the comparator returns `0`, and the database must sort the same way.
+  The limit buffer breaks ties with the primary key when the comparator returns `0`, and the database must sort the same way.
 - Every write must reach the buffer as a change event, in order, with `previous` set for updates and deletes.
   These are the same requirements as for EventReduce itself.
 
-## The code
-
-Copy [`examples/browser/src/limit-buffer.ts`](../examples/browser/src/limit-buffer.ts) into your project. It only depends on `event-reduce-js`.
+## Usage
 
 ```ts
 import {
@@ -124,13 +121,14 @@ import {
     getLimitBufferQueryLimit,
     getLimitBufferResults,
     resetLimitBuffer
-} from './limit-buffer';
+} from 'event-reduce-js';
 
 // queryParams as for EventReduce, with the limit that the user sees, for example 20
 const bufferSize = 20;
 const limitBuffer = createLimitBuffer(
     queryParams,
     bufferSize,
+    // same query with limit + bufferSize (and the same skip)
     await db.find({ ...query, limit: query.limit + bufferSize })
 );
 render(getLimitBufferResults(limitBuffer));
@@ -145,66 +143,19 @@ db.changes$.subscribe(async changeEvent => {
 });
 ```
 
-`applyChangeEventToLimitBuffer()` returns `'eventReduce'` (step 1 handled the event), `'buffer'` (the prefix rule handled it)
-or `'runFullQueryAgain'`. This is the core of it:
+| Function | Description |
+|---|---|
+| `createLimitBuffer(queryParams, bufferSize, rows)` | Creates the buffer from the rows of the query, run with `limit + bufferSize`. Throws `EventReduce:LB_NO_LIMIT` if `queryParams.limit` is not set. |
+| `applyChangeEventToLimitBuffer(limitBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the prefix rule did it) or `'runFullQueryAgain'`. |
+| `getLimitBufferQueryLimit(limitBuffer)` | The limit to use when you run the query for the buffer: `limit + bufferSize`. |
+| `resetLimitBuffer(limitBuffer, rows)` | Sets the buffer to the rows of a new query, after `'runFullQueryAgain'`. |
+| `getLimitBufferResults(limitBuffer)` | The visible result, the first `limit` rows of the buffer. |
 
-```ts
-export function applyChangeEventToLimitBuffer<DocType>(
-    limitBuffer: LimitBuffer<DocType>,
-    changeEvent: ChangeEvent<DocType>
-): LimitBufferResult {
-    const buffer = limitBuffer.buffer;
-    if (!limitBuffer.complete && buffer.length === 0) {
-        return 'runFullQueryAgain';
-    }
-    // 1. EventReduce, with the buffer length as limit
-    const queryParams = {
-        ...limitBuffer.queryParams,
-        limit: limitBuffer.complete ? buffer.length + 1 : buffer.length
-    };
-    const action = calculateActionName({
-        queryParams,
-        changeEvent,
-        previousResults: buffer,
-        keyDocumentMap: limitBuffer.keyDocumentMap
-    });
-    let result: LimitBufferResult;
-    if (action === 'runFullQueryAgain') {
-        // 2. let the buffer shrink instead of asking for the next row
-        if (!applyPrefixRule(limitBuffer, changeEvent)) {
-            return 'runFullQueryAgain';
-        }
-        result = 'buffer';
-    } else if (
-        ACTIONS_THAT_DROP_THE_LAST_ROW.has(action) &&
-        buffer.length < getLimitBufferQueryLimit(limitBuffer) &&
-        applyPrefixRule(limitBuffer, changeEvent)
-    ) {
-        // keep the last row and let the buffer grow again
-        result = 'buffer';
-    } else {
-        runAction(action, queryParams, changeEvent, buffer, limitBuffer.keyDocumentMap);
-        result = 'eventReduce';
-    }
-    // 3. cut the end, and run the query when the visible window cannot be filled
-    const maxLength = getLimitBufferQueryLimit(limitBuffer);
-    while (buffer.length > maxLength) {
-        const removed = buffer.pop();
-        limitBuffer.keyDocumentMap.delete(getDocumentId(limitBuffer.queryParams, removed));
-        limitBuffer.complete = false;
-    }
-    if (!limitBuffer.complete && buffer.length < limitBuffer.queryParams.limit) {
-        return 'runFullQueryAgain';
-    }
-    return result;
-}
-```
-
-See the [source file](../examples/browser/src/limit-buffer.ts) for `applyPrefixRule()` and the other functions.
+The functions mutate the `limitBuffer` object. Treat its fields as read only.
 
 ### Proof by test
 
-[`limit-buffer.test.ts`](../examples/browser/test/limit-buffer.test.ts) runs seeded random inserts, updates
+[`limit-buffer.test.ts`](../javascript/test/unit/limit-buffer.test.ts) runs seeded random inserts, updates
 (including changes of the sort field and of the matching field) and deletes.
 The queries use a limit, skip + limit, and ascending and descending sort, with `bufferSize` 0, 5, 20 and 50,
 and start with 0, 30 or 300 rows, so the result grows, moves and shrinks to nothing.
@@ -214,8 +165,7 @@ After **every** event the test checks that:
 - the buffer equals the first `buffer.length` rows of the full result;
 - a complete buffer holds all rows of the full result.
 
-It runs 72 combinations with 1,500 events each. If you break any part of the prefix rule, the test fails.
-Run it with `npm run test:unit` in `examples/browser`.
+It runs 72 combinations with 1,000 events each, as part of `npm run test` in `javascript`. If you break any part of the prefix rule, the test fails.
 
 ## Choosing `bufferSize`
 
@@ -259,48 +209,48 @@ The rest are random events on any row.
 
 | Query | Strategy | Full queries | Share | Time | Rows read |
 |---|---|---:|---:|---:|---:|
-| limit 20 | full query each time | 5,000 | 100 % | 8,899 ms | 100,000 |
-| limit 20 | EventReduce | 1,429 | 28.58 % | 2,579 ms | 28,580 |
-| limit 20 | bufferSize 0 | 1,429 | 28.58 % | 2,633 ms | 28,580 |
-| limit 20 | bufferSize 5 | 220 | 4.40 % | 422 ms | 5,500 |
-| limit 20 | bufferSize 20 | 62 | 1.24 % | 129 ms | 2,480 |
-| limit 20 | bufferSize 50 | 25 | 0.50 % | 59 ms | 1,750 |
-| limit 100 | full query each time | 5,000 | 100 % | 8,883 ms | 500,000 |
-| limit 100 | EventReduce | 1,436 | 28.72 % | 2,618 ms | 143,600 |
-| limit 100 | bufferSize 0 | 1,436 | 28.72 % | 2,621 ms | 143,600 |
-| limit 100 | bufferSize 5 | 220 | 4.40 % | 432 ms | 23,100 |
-| limit 100 | bufferSize 20 | 61 | 1.22 % | 124 ms | 7,320 |
-| limit 100 | bufferSize 50 | 25 | 0.50 % | 57 ms | 3,750 |
-| skip 20 + limit 20 | full query each time | 5,000 | 100 % | 9,186 ms | 100,000 |
-| skip 20 + limit 20 | EventReduce | 1,502 | 30.04 % | 2,857 ms | 30,040 |
-| skip 20 + limit 20 | bufferSize 0 | 1,501 | 30.02 % | 2,837 ms | 30,020 |
-| skip 20 + limit 20 | bufferSize 5 | 267 | 5.34 % | 549 ms | 6,675 |
-| skip 20 + limit 20 | bufferSize 20 | 102 | 2.04 % | 205 ms | 4,080 |
-| skip 20 + limit 20 | bufferSize 50 | 75 | 1.50 % | 154 ms | 5,250 |
+| limit 20 | full query each time | 5,000 | 100 % | 8,172 ms | 100,000 |
+| limit 20 | EventReduce | 1,429 | 28.58 % | 2,355 ms | 28,580 |
+| limit 20 | bufferSize 0 | 1,429 | 28.58 % | 2,368 ms | 28,580 |
+| limit 20 | bufferSize 5 | 220 | 4.40 % | 372 ms | 5,500 |
+| limit 20 | bufferSize 20 | 62 | 1.24 % | 111 ms | 2,480 |
+| limit 20 | bufferSize 50 | 25 | 0.50 % | 47 ms | 1,750 |
+| limit 100 | full query each time | 5,000 | 100 % | 8,219 ms | 500,000 |
+| limit 100 | EventReduce | 1,436 | 28.72 % | 2,398 ms | 143,600 |
+| limit 100 | bufferSize 0 | 1,436 | 28.72 % | 2,409 ms | 143,600 |
+| limit 100 | bufferSize 5 | 220 | 4.40 % | 379 ms | 23,100 |
+| limit 100 | bufferSize 20 | 61 | 1.22 % | 114 ms | 7,320 |
+| limit 100 | bufferSize 50 | 25 | 0.50 % | 51 ms | 3,750 |
+| skip 20 + limit 20 | full query each time | 5,000 | 100 % | 8,299 ms | 100,000 |
+| skip 20 + limit 20 | EventReduce | 1,502 | 30.04 % | 2,487 ms | 30,040 |
+| skip 20 + limit 20 | bufferSize 0 | 1,501 | 30.02 % | 2,492 ms | 30,020 |
+| skip 20 + limit 20 | bufferSize 5 | 267 | 5.34 % | 453 ms | 6,675 |
+| skip 20 + limit 20 | bufferSize 20 | 102 | 2.04 % | 181 ms | 4,080 |
+| skip 20 + limit 20 | bufferSize 50 | 75 | 1.50 % | 133 ms | 5,250 |
 
 **Uniform events:** every row is equally likely to change. With 10,000 rows, few events touch the first 20 or 100 rows,
 so EventReduce alone already needs very few full queries. The buffer still removes most of the rest.
 
 | Query | Strategy | Full queries | Share | Time | Rows read |
 |---|---|---:|---:|---:|---:|
-| limit 20 | full query each time | 5,000 | 100 % | 9,793 ms | 100,000 |
-| limit 20 | EventReduce | 4 | 0.08 % | 37 ms | 80 |
-| limit 20 | bufferSize 0 | 4 | 0.08 % | 23 ms | 80 |
-| limit 20 | bufferSize 5 | 0 | 0 % | 6 ms | 0 |
-| limit 20 | bufferSize 20 | 0 | 0 % | 7 ms | 0 |
-| limit 20 | bufferSize 50 | 0 | 0 % | 6 ms | 0 |
-| limit 100 | full query each time | 5,000 | 100 % | 10,206 ms | 500,000 |
-| limit 100 | EventReduce | 25 | 0.50 % | 83 ms | 2,500 |
-| limit 100 | bufferSize 0 | 25 | 0.50 % | 72 ms | 2,500 |
-| limit 100 | bufferSize 5 | 2 | 0.04 % | 13 ms | 210 |
-| limit 100 | bufferSize 20 | 0 | 0 % | 11 ms | 0 |
-| limit 100 | bufferSize 50 | 0 | 0 % | 9 ms | 0 |
-| skip 20 + limit 20 | full query each time | 5,000 | 100 % | 9,989 ms | 100,000 |
-| skip 20 + limit 20 | EventReduce | 17 | 0.34 % | 83 ms | 340 |
-| skip 20 + limit 20 | bufferSize 0 | 17 | 0.34 % | 53 ms | 340 |
-| skip 20 + limit 20 | bufferSize 5 | 6 | 0.12 % | 18 ms | 150 |
-| skip 20 + limit 20 | bufferSize 20 | 6 | 0.12 % | 18 ms | 240 |
-| skip 20 + limit 20 | bufferSize 50 | 6 | 0.12 % | 18 ms | 420 |
+| limit 20 | full query each time | 5,000 | 100 % | 9,514 ms | 100,000 |
+| limit 20 | EventReduce | 4 | 0.08 % | 29 ms | 80 |
+| limit 20 | bufferSize 0 | 4 | 0.08 % | 17 ms | 80 |
+| limit 20 | bufferSize 5 | 0 | 0 % | 5 ms | 0 |
+| limit 20 | bufferSize 20 | 0 | 0 % | 4 ms | 0 |
+| limit 20 | bufferSize 50 | 0 | 0 % | 4 ms | 0 |
+| limit 100 | full query each time | 5,000 | 100 % | 9,505 ms | 500,000 |
+| limit 100 | EventReduce | 25 | 0.50 % | 67 ms | 2,500 |
+| limit 100 | bufferSize 0 | 25 | 0.50 % | 59 ms | 2,500 |
+| limit 100 | bufferSize 5 | 2 | 0.04 % | 9 ms | 210 |
+| limit 100 | bufferSize 20 | 0 | 0 % | 5 ms | 0 |
+| limit 100 | bufferSize 50 | 0 | 0 % | 5 ms | 0 |
+| skip 20 + limit 20 | full query each time | 5,000 | 100 % | 9,253 ms | 100,000 |
+| skip 20 + limit 20 | EventReduce | 17 | 0.34 % | 57 ms | 340 |
+| skip 20 + limit 20 | bufferSize 0 | 17 | 0.34 % | 43 ms | 340 |
+| skip 20 + limit 20 | bufferSize 5 | 6 | 0.12 % | 15 ms | 150 |
+| skip 20 + limit 20 | bufferSize 20 | 6 | 0.12 % | 15 ms | 240 |
+| skip 20 + limit 20 | bufferSize 50 | 6 | 0.12 % | 15 ms | 420 |
 
 The times are dominated by the full queries, so a database where queries are slower (for example IndexedDB) gains more.
 Run the benchmark with `npm run benchmark:limit-buffer` in `examples/browser`.

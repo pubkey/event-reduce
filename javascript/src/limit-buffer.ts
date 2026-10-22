@@ -1,22 +1,29 @@
-import {
-    ActionName,
+import type {
+    ActionFunction,
+    ActionFunctionInput,
     ChangeEvent,
     QueryParams,
-    calculateActionName,
-    runAction,
-    getDocumentId
-} from 'event-reduce-js';
+    ResultKeyDocumentMap
+} from './types/index.js';
+import { resolveInput } from './bdd/bdd.generated.js';
+import { actionFunctionList } from './actions/index.js';
+import {
+    insertAtSortPositionRemoveLast,
+    removeLastInsertFirst,
+    removeLastInsertLast,
+    removeLastItem,
+    runFullQueryAgain
+} from './actions/action-functions.js';
+import { getDocumentId } from './util.js';
 
 /**
  * Limit buffer
  * ------------
- * A usage pattern on top of EventReduce, not part of the event-reduce-js API.
- * See docs/limit-buffer.md for the explanation.
- *
- * For a query with a limit, we keep `limit + bufferSize` rows in memory
- * but only show the first `limit` of them. When a visible row leaves the window
- * (deleted, moved behind the last row, no longer matching), the next row
- * is taken from the buffer instead of running the query again.
+ * For a query with a limit, EventReduce returns runFullQueryAgain
+ * when a row leaves a full window, because the next row after the window is unknown.
+ * The limit buffer keeps `limit + bufferSize` rows in memory
+ * but only shows the first `limit` of them, so that row can be taken from memory.
+ * See docs/limit-buffer.md for the explanation and measurements.
  *
  * Invariant: `buffer` is always an exact prefix of the true sorted result
  * (after the skip). It may be shorter than `limit + bufferSize`,
@@ -32,36 +39,40 @@ export type LimitBuffer<DocType> = {
     queryParams: QueryParams<DocType>;
     bufferSize: number;
     buffer: DocType[];
-    keyDocumentMap: Map<string, DocType>;
+    keyDocumentMap: ResultKeyDocumentMap<DocType>;
     complete: boolean;
 };
 
 /**
  * What applyChangeEventToLimitBuffer() did:
- * - 'eventReduce': EventReduce calculated the new buffer
- * - 'buffer': EventReduce could not do it, but the prefix rule could
+ * - 'eventReduce': an EventReduce action calculated the new buffer
+ * - 'buffer': EventReduce could not do it (or would have dropped a row), the prefix rule did it
  * - 'runFullQueryAgain': the caller must run the query with
- *   getLimitBufferQueryLimit() and pass the rows to resetLimitBuffer()
+ *   getLimitBufferQueryLimit() as limit and pass the rows to resetLimitBuffer()
  */
 export type LimitBufferResult = 'eventReduce' | 'buffer' | 'runFullQueryAgain';
 
 /**
  * Actions that keep the length of the result by dropping its last row.
  */
-const ACTIONS_THAT_DROP_THE_LAST_ROW: Set<ActionName> = new Set([
-    'removeLastItem',
-    'removeLastInsertFirst',
-    'removeLastInsertLast',
-    'insertAtSortPositionRemoveLast'
-] as ActionName[]);
+const ACTIONS_THAT_DROP_THE_LAST_ROW: Set<ActionFunction<any>> = new Set([
+    removeLastItem,
+    removeLastInsertFirst,
+    removeLastInsertLast,
+    insertAtSortPositionRemoveLast
+]);
 
+/**
+ * @param queryParams the params of the query, with the limit that is shown to the user
+ * @param rows the result of the query, run with getLimitBufferQueryLimit() as limit
+ */
 export function createLimitBuffer<DocType>(
     queryParams: QueryParams<DocType>,
     bufferSize: number,
     rows: DocType[]
 ): LimitBuffer<DocType> {
     if (!queryParams.limit) {
-        throw new Error('the limit buffer only makes sense for queries with a limit');
+        throw new Error('EventReduce:LB_NO_LIMIT');
     }
     const limitBuffer: LimitBuffer<DocType> = {
         queryParams,
@@ -79,7 +90,7 @@ export function createLimitBuffer<DocType>(
  * The skip stays the same as in the original query.
  */
 export function getLimitBufferQueryLimit(limitBuffer: LimitBuffer<any>): number {
-    return limitBuffer.queryParams.limit + limitBuffer.bufferSize;
+    return getLimit(limitBuffer) + limitBuffer.bufferSize;
 }
 
 /**
@@ -89,7 +100,7 @@ export function getLimitBufferQueryLimit(limitBuffer: LimitBuffer<any>): number 
 export function resetLimitBuffer<DocType>(
     limitBuffer: LimitBuffer<DocType>,
     rows: DocType[]
-) {
+): void {
     limitBuffer.buffer = rows.slice(0);
     limitBuffer.keyDocumentMap.clear();
     rows.forEach(doc => limitBuffer.keyDocumentMap.set(getDocumentId(limitBuffer.queryParams, doc), doc));
@@ -101,7 +112,7 @@ export function resetLimitBuffer<DocType>(
  * The result that is shown to the user.
  */
 export function getLimitBufferResults<DocType>(limitBuffer: LimitBuffer<DocType>): DocType[] {
-    return limitBuffer.buffer.slice(0, limitBuffer.queryParams.limit);
+    return limitBuffer.buffer.slice(0, getLimit(limitBuffer));
 }
 
 /**
@@ -124,18 +135,18 @@ export function applyChangeEventToLimitBuffer<DocType>(
      * If the buffer is complete, we use buffer.length + 1, so EventReduce
      * knows that the limit is not reached and there are no more rows.
      */
-    const queryParams: QueryParams<DocType> = {
-        ...limitBuffer.queryParams,
-        limit: limitBuffer.complete ? buffer.length + 1 : buffer.length
-    };
-    const action = calculateActionName({
-        queryParams,
+    const input: ActionFunctionInput<DocType> = {
+        queryParams: {
+            ...limitBuffer.queryParams,
+            limit: limitBuffer.complete ? buffer.length + 1 : buffer.length
+        },
         changeEvent,
         previousResults: buffer,
         keyDocumentMap: limitBuffer.keyDocumentMap
-    });
+    };
+    const action: ActionFunction<DocType> = actionFunctionList[resolveInput(input)];
     let result: LimitBufferResult;
-    if (action === 'runFullQueryAgain') {
+    if (action === runFullQueryAgain) {
         /**
          * 2. EventReduce needs the row after the buffer, which it does not know.
          * But we do not have to keep the length, only the prefix,
@@ -157,23 +168,27 @@ export function applyChangeEventToLimitBuffer<DocType>(
          */
         result = 'buffer';
     } else {
-        runAction(action, queryParams, changeEvent, buffer, limitBuffer.keyDocumentMap);
+        action(input);
         result = 'eventReduce';
     }
 
     // 3. Do not let the buffer grow without bounds.
     const maxLength = getLimitBufferQueryLimit(limitBuffer);
     while (buffer.length > maxLength) {
-        const removed = buffer.pop();
+        const removed = buffer.pop() as DocType;
         limitBuffer.keyDocumentMap.delete(getDocumentId(limitBuffer.queryParams, removed));
         limitBuffer.complete = false;
     }
 
     // 4. Not enough rows left to fill the visible window.
-    if (!limitBuffer.complete && buffer.length < limitBuffer.queryParams.limit) {
+    if (!limitBuffer.complete && buffer.length < getLimit(limitBuffer)) {
         return 'runFullQueryAgain';
     }
     return result;
+}
+
+function getLimit(limitBuffer: LimitBuffer<any>): number {
+    return limitBuffer.queryParams.limit as number;
 }
 
 /**
@@ -190,7 +205,8 @@ export function applyChangeEventToLimitBuffer<DocType>(
  * - If one is added, the row that moves into the window is the last of the skipped rows,
  *   which we do not know. Then we must run the query again.
  *
- * Returns false if the change cannot be applied without breaking the invariant.
+ * Returns false, without changing the buffer, if the change cannot be applied
+ * without breaking the invariant.
  * @mutates limitBuffer
  */
 function applyPrefixRule<DocType>(
@@ -212,7 +228,7 @@ function applyPrefixRule<DocType>(
             // There are at most skip rows, but we do not know how many.
             return !doesMatchNow;
         }
-        if (doesMatchNow) {
+        if (doc && doesMatchNow) {
             insertAtSortPosition(limitBuffer, doc);
         }
         return true;
@@ -221,7 +237,8 @@ function applyPrefixRule<DocType>(
     const first = buffer[0];
     const last = buffer[buffer.length - 1];
     const isInFront = (d: DocType) => skip > 0 && compareRows(queryParams, d, first) < 0;
-    const addedInFront = (doesMatchNow && isInFront(doc) ? 1 : 0) - (wasMatching && isInFront(previous) ? 1 : 0);
+    const addedInFront = (doc && doesMatchNow && isInFront(doc) ? 1 : 0) -
+        (previous && wasMatching && isInFront(previous) ? 1 : 0);
     if (addedInFront > 0) {
         return false;
     }
@@ -237,6 +254,7 @@ function applyPrefixRule<DocType>(
         keyDocumentMap.delete(id);
     }
     if (
+        doc &&
         doesMatchNow &&
         !isInFront(doc) &&
         (limitBuffer.complete || compareRows(queryParams, doc, last) <= 0)
@@ -244,7 +262,7 @@ function applyPrefixRule<DocType>(
         insertAtSortPosition(limitBuffer, doc);
     }
     if (addedInFront < 0 && buffer.length > 0) {
-        const movedInFront = buffer.shift();
+        const movedInFront = buffer.shift() as DocType;
         keyDocumentMap.delete(getDocumentId(queryParams, movedInFront));
     }
     return true;
@@ -275,7 +293,7 @@ function compareRows<DocType>(queryParams: QueryParams<DocType>, a: DocType, b: 
     return idA < idB ? -1 : 1;
 }
 
-function insertAtSortPosition<DocType>(limitBuffer: LimitBuffer<DocType>, doc: DocType) {
+function insertAtSortPosition<DocType>(limitBuffer: LimitBuffer<DocType>, doc: DocType): void {
     const buffer = limitBuffer.buffer;
     // binary search for the first row that sorts after doc
     let low = 0;

@@ -115,7 +115,7 @@ The resulting optimized BDD is then shipped as the EventReduce algorithm and can
 For a query with a limit, most `runFullQueryAgain` results happen when a row leaves a full window,
 because the next row after the window is unknown. If you keep `limit + bufferSize` rows in memory and show only the first `limit`,
 that row can come from memory instead. In our benchmark, a buffer of 20 rows cut the full queries of a `limit: 20` query from 1,429 to 62 per 5,000 events.
-This is a usage pattern on top of EventReduce, not part of the package. See [docs/limit-buffer.md](./docs/limit-buffer.md) for how it works, the code and the measurements.
+The JavaScript implementation has this built in as `createLimitBuffer()` and `applyChangeEventToLimitBuffer()`. See [docs/limit-buffer.md](./docs/limit-buffer.md) for how it works, how to use it and the measurements.
 
 ## When to use this
 

@@ -4,7 +4,6 @@
     "scripts": {
         "lint": "eslint .",
         "start": "webpack-dev-server --config webpack.dev.js",
-        "test:unit": "tsx --test test/limit-buffer.test.ts",
         "benchmark:limit-buffer": "tsx test/limit-buffer.benchmark.ts",
         "test:e2e": "testcafe chrome -e test/e2e.test.ts --hostname localhost --compiler-options \"typescript.customCompilerModulePath=../typescript;typescript.configPath=test/tsconfig.json\"",
         "test": "concurrently \"npm run serve\" \"sleep 4 && npm run test:e2e\" --kill-others --success first",
