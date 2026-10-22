@@ -42,7 +42,7 @@ export type {
 export * from './states/index.js';
 export * from './util.js';
 export * from './actions/index.js';
-export * from './limit-buffer.js';
+export * from './result-window-buffer.js';
 
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,

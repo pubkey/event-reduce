@@ -9,7 +9,7 @@ import './queries.test.js';
 import './fuzzing.test.js';
 import './calculate-bdd-quality.test.js';
 import './truth-table-generator.test.js';
-import './limit-buffer.test.js';
+import './result-window-buffer.test.js';
 
 // should be last
 import './generated-stuff.test.js';

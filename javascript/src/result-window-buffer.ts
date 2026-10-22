@@ -21,15 +21,15 @@ import {
 import { getDocumentId } from './util.js';
 
 /**
- * Limit buffer
+ * Result window buffer
  * ------------
  * For a query with a limit or a skip, EventReduce returns runFullQueryAgain
  * when a row has to move into the result window that is not in the previous results:
  * the row after the last row (a row left a full window) or the last skipped row
  * (a row was added in front of the window).
- * The limit buffer keeps rows on both sides of the window in memory,
+ * The result window buffer keeps rows on both sides of the window in memory,
  * so these rows can be taken from memory instead.
- * See docs/limit-buffer.md for the explanation and measurements.
+ * See docs/result-window-buffer.md for the explanation and measurements.
  *
  * Invariant: `buffer` is always an exact, contiguous slice of the full sorted result
  * (without skip and limit): exactly `offset` matching rows sort before its first row,
@@ -37,7 +37,7 @@ import { getDocumentId } from './util.js';
  * If `complete` is true, there are no rows after its last row.
  * Only if the buffer is empty, `offset` can be larger than the real number of rows.
  */
-export type LimitBuffer<DocType> = {
+export type ResultWindowBuffer<DocType> = {
     /**
      * QueryParams of the original query,
      * with the skip and limit that are shown to the user.
@@ -61,7 +61,7 @@ export type LimitBuffer<DocType> = {
     complete: boolean;
 };
 
-export type LimitBufferSizes = {
+export type ResultWindowBufferSizes = {
     /**
      * Amount of rows to keep after the result window, default 0.
      * Only used for queries with a limit.
@@ -75,13 +75,13 @@ export type LimitBufferSizes = {
 };
 
 /**
- * What applyChangeEventToLimitBuffer() did:
+ * What applyChangeEventToResultWindowBuffer() did:
  * - 'eventReduce': an EventReduce action calculated the new buffer
  * - 'buffer': EventReduce could not do it (or would have dropped a row), the slice rule did it
  * - 'runFullQueryAgain': the caller must run the query with the skip and limit of
- *   getLimitBufferQuery() and pass the rows to resetLimitBuffer()
+ *   getResultWindowBufferQuery() and pass the rows to resetResultWindowBuffer()
  */
-export type LimitBufferResult = 'eventReduce' | 'buffer' | 'runFullQueryAgain';
+export type ResultWindowBufferResult = 'eventReduce' | 'buffer' | 'runFullQueryAgain';
 
 /**
  * Actions that keep the length of the result by dropping its first or last row.
@@ -99,15 +99,15 @@ const ACTIONS_THAT_DROP_A_ROW: Set<ActionFunction<any>> = new Set([
 ]);
 
 /**
- * Creates an empty limit buffer.
- * Run the query with the skip and limit of getLimitBufferQuery()
- * and pass the rows to resetLimitBuffer() before using it.
+ * Creates an empty result window buffer.
+ * Run the query with the skip and limit of getResultWindowBufferQuery()
+ * and pass the rows to resetResultWindowBuffer() before using it.
  * @param queryParams the params of the query, with the skip and limit that are shown to the user
  */
-export function createLimitBuffer<DocType>(
+export function createResultWindowBuffer<DocType>(
     queryParams: QueryParams<DocType>,
-    sizes: LimitBufferSizes
-): LimitBuffer<DocType> {
+    sizes: ResultWindowBufferSizes
+): ResultWindowBuffer<DocType> {
     return {
         queryParams,
         limitBufferSize: sizes.limitBufferSize ? sizes.limitBufferSize : 0,
@@ -123,52 +123,52 @@ export function createLimitBuffer<DocType>(
  * The skip and limit to use when running the query for the buffer.
  * limit is undefined if the query has no limit.
  */
-export function getLimitBufferQuery(limitBuffer: LimitBuffer<any>): { skip: number; limit: number | undefined; } {
-    const skip = getSkip(limitBuffer);
-    const bufferSkip = Math.max(0, skip - limitBuffer.skipBufferSize);
-    const limit = limitBuffer.queryParams.limit;
+export function getResultWindowBufferQuery(resultWindowBuffer: ResultWindowBuffer<any>): { skip: number; limit: number | undefined; } {
+    const skip = getSkip(resultWindowBuffer);
+    const bufferSkip = Math.max(0, skip - resultWindowBuffer.skipBufferSize);
+    const limit = resultWindowBuffer.queryParams.limit;
     return {
         skip: bufferSkip,
-        limit: limit ? (skip - bufferSkip) + limit + limitBuffer.limitBufferSize : undefined
+        limit: limit ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize : undefined
     };
 }
 
 /**
  * Set the buffer to the rows of a fresh query
- * that ran with the skip and limit of getLimitBufferQuery().
+ * that ran with the skip and limit of getResultWindowBufferQuery().
  */
-export function resetLimitBuffer<DocType>(
-    limitBuffer: LimitBuffer<DocType>,
+export function resetResultWindowBuffer<DocType>(
+    resultWindowBuffer: ResultWindowBuffer<DocType>,
     rows: DocType[]
 ): void {
-    const query = getLimitBufferQuery(limitBuffer);
-    limitBuffer.buffer = rows.slice(0);
-    limitBuffer.keyDocumentMap.clear();
-    rows.forEach(doc => limitBuffer.keyDocumentMap.set(getDocumentId(limitBuffer.queryParams, doc), doc));
-    limitBuffer.offset = query.skip;
+    const query = getResultWindowBufferQuery(resultWindowBuffer);
+    resultWindowBuffer.buffer = rows.slice(0);
+    resultWindowBuffer.keyDocumentMap.clear();
+    rows.forEach(doc => resultWindowBuffer.keyDocumentMap.set(getDocumentId(resultWindowBuffer.queryParams, doc), doc));
+    resultWindowBuffer.offset = query.skip;
     // fewer rows than requested means there are no more rows
-    limitBuffer.complete = query.limit === undefined || rows.length < query.limit;
+    resultWindowBuffer.complete = query.limit === undefined || rows.length < query.limit;
 }
 
 /**
  * The result that is shown to the user.
  */
-export function getLimitBufferResults<DocType>(limitBuffer: LimitBuffer<DocType>): DocType[] {
-    const start = getSkip(limitBuffer) - limitBuffer.offset;
-    const limit = limitBuffer.queryParams.limit;
-    return limitBuffer.buffer.slice(start, limit ? start + limit : undefined);
+export function getResultWindowBufferResults<DocType>(resultWindowBuffer: ResultWindowBuffer<DocType>): DocType[] {
+    const start = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
+    const limit = resultWindowBuffer.queryParams.limit;
+    return resultWindowBuffer.buffer.slice(start, limit ? start + limit : undefined);
 }
 
 /**
  * Updates the buffer with the change event.
- * @mutates limitBuffer
+ * @mutates resultWindowBuffer
  */
-export function applyChangeEventToLimitBuffer<DocType>(
-    limitBuffer: LimitBuffer<DocType>,
+export function applyChangeEventToResultWindowBuffer<DocType>(
+    resultWindowBuffer: ResultWindowBuffer<DocType>,
     changeEvent: ChangeEvent<DocType>
-): LimitBufferResult {
-    const buffer = limitBuffer.buffer;
-    if (!limitBuffer.complete && buffer.length === 0) {
+): ResultWindowBufferResult {
+    const buffer = resultWindowBuffer.buffer;
+    if (!resultWindowBuffer.complete && buffer.length === 0) {
         return 'runFullQueryAgain';
     }
 
@@ -181,16 +181,16 @@ export function applyChangeEventToLimitBuffer<DocType>(
      */
     const input: ActionFunctionInput<DocType> = {
         queryParams: {
-            ...limitBuffer.queryParams,
-            skip: limitBuffer.offset > 0 ? limitBuffer.offset : undefined,
-            limit: limitBuffer.complete ? buffer.length + 1 : buffer.length
+            ...resultWindowBuffer.queryParams,
+            skip: resultWindowBuffer.offset > 0 ? resultWindowBuffer.offset : undefined,
+            limit: resultWindowBuffer.complete ? buffer.length + 1 : buffer.length
         },
         changeEvent,
         previousResults: buffer,
-        keyDocumentMap: limitBuffer.keyDocumentMap
+        keyDocumentMap: resultWindowBuffer.keyDocumentMap
     };
     const action: ActionFunction<DocType> = actionFunctionList[resolveInput(input)];
-    let result: LimitBufferResult;
+    let result: ResultWindowBufferResult;
     if (action === runFullQueryAgain || ACTIONS_THAT_DROP_A_ROW.has(action)) {
         /**
          * 2. EventReduce needs a row before or after the buffer, which it does not know,
@@ -198,7 +198,7 @@ export function applyChangeEventToLimitBuffer<DocType>(
          * But the buffer does not have to keep its length, only to stay an exact slice,
          * so the slice rule lets it shrink or grow instead.
          */
-        applySliceRule(limitBuffer, changeEvent);
+        applySliceRule(resultWindowBuffer, changeEvent);
         result = 'buffer';
     } else {
         action(input);
@@ -206,22 +206,22 @@ export function applyChangeEventToLimitBuffer<DocType>(
     }
 
     // 3. Do not let the buffer grow without bounds on either side.
-    trimBuffer(limitBuffer);
+    trimBuffer(resultWindowBuffer);
 
     // 4. Run the query again if the result window does not fit into the buffer anymore.
-    const start = getSkip(limitBuffer) - limitBuffer.offset;
-    const limit = limitBuffer.queryParams.limit;
+    const start = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
+    const limit = resultWindowBuffer.queryParams.limit;
     if (
         start < 0 ||
-        (!limitBuffer.complete && (!limit || buffer.length < start + limit))
+        (!resultWindowBuffer.complete && (!limit || buffer.length < start + limit))
     ) {
         return 'runFullQueryAgain';
     }
     return result;
 }
 
-function getSkip(limitBuffer: LimitBuffer<any>): number {
-    const skip = limitBuffer.queryParams.skip;
+function getSkip(resultWindowBuffer: ResultWindowBuffer<any>): number {
+    const skip = resultWindowBuffer.queryParams.skip;
     return skip ? skip : 0;
 }
 
@@ -229,24 +229,24 @@ function getSkip(limitBuffer: LimitBuffer<any>): number {
  * Removes rows before the window that are more than skipBufferSize
  * and rows after the window that are more than limitBufferSize.
  */
-function trimBuffer<DocType>(limitBuffer: LimitBuffer<DocType>): void {
-    const buffer = limitBuffer.buffer;
-    const keyDocumentMap = limitBuffer.keyDocumentMap;
-    const queryParams = limitBuffer.queryParams;
+function trimBuffer<DocType>(resultWindowBuffer: ResultWindowBuffer<DocType>): void {
+    const buffer = resultWindowBuffer.buffer;
+    const keyDocumentMap = resultWindowBuffer.keyDocumentMap;
+    const queryParams = resultWindowBuffer.queryParams;
 
-    const rowsBeforeWindow = getSkip(limitBuffer) - limitBuffer.offset;
-    const removeFromStart = Math.min(rowsBeforeWindow - limitBuffer.skipBufferSize, buffer.length);
+    const rowsBeforeWindow = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
+    const removeFromStart = Math.min(rowsBeforeWindow - resultWindowBuffer.skipBufferSize, buffer.length);
     if (removeFromStart > 0) {
         buffer.splice(0, removeFromStart).forEach(doc => keyDocumentMap.delete(getDocumentId(queryParams, doc)));
-        limitBuffer.offset = limitBuffer.offset + removeFromStart;
+        resultWindowBuffer.offset = resultWindowBuffer.offset + removeFromStart;
     }
 
     const limit = queryParams.limit;
     if (limit) {
-        const maxLength = Math.max(0, getSkip(limitBuffer) - limitBuffer.offset) + limit + limitBuffer.limitBufferSize;
+        const maxLength = Math.max(0, getSkip(resultWindowBuffer) - resultWindowBuffer.offset) + limit + resultWindowBuffer.limitBufferSize;
         if (buffer.length > maxLength) {
             buffer.splice(maxLength).forEach(doc => keyDocumentMap.delete(getDocumentId(queryParams, doc)));
-            limitBuffer.complete = false;
+            resultWindowBuffer.complete = false;
         }
     }
 }
@@ -264,35 +264,35 @@ function trimBuffer<DocType>(limitBuffer: LimitBuffer<DocType>): void {
  *
  * An empty buffer (only valid when complete) knows only the number of rows before it.
  * There, offset is only an upper bound, which stays an upper bound with the same update.
- * @mutates limitBuffer
+ * @mutates resultWindowBuffer
  */
 function applySliceRule<DocType>(
-    limitBuffer: LimitBuffer<DocType>,
+    resultWindowBuffer: ResultWindowBuffer<DocType>,
     changeEvent: ChangeEvent<DocType>
 ): void {
-    const queryParams = limitBuffer.queryParams;
-    const buffer = limitBuffer.buffer;
-    const keyDocumentMap = limitBuffer.keyDocumentMap;
+    const queryParams = resultWindowBuffer.queryParams;
+    const buffer = resultWindowBuffer.buffer;
+    const keyDocumentMap = resultWindowBuffer.keyDocumentMap;
     const previous = changeEvent.previous;
     const doc = changeEvent.doc;
     const wasMatching = !!previous && queryParams.queryMatcher(previous);
     const doesMatchNow = !!doc && queryParams.queryMatcher(doc);
 
     if (buffer.length === 0) {
-        if (limitBuffer.offset === 0) {
+        if (resultWindowBuffer.offset === 0) {
             // there are no rows at all
             if (doc && doesMatchNow) {
-                insertAtSortPosition(limitBuffer, doc);
+                insertAtSortPosition(resultWindowBuffer, doc);
             }
         } else {
-            limitBuffer.offset = limitBuffer.offset + (doesMatchNow ? 1 : 0) - (wasMatching ? 1 : 0);
+            resultWindowBuffer.offset = resultWindowBuffer.offset + (doesMatchNow ? 1 : 0) - (wasMatching ? 1 : 0);
         }
         return;
     }
 
     const first = buffer[0];
     const last = buffer[buffer.length - 1];
-    const hasRowsBefore = limitBuffer.offset > 0;
+    const hasRowsBefore = resultWindowBuffer.offset > 0;
     const isBefore = (d: DocType) => hasRowsBefore && compareRows(queryParams, d, first) < 0;
     const wasBefore = !!previous && wasMatching && isBefore(previous);
     const isBeforeNow = !!doc && doesMatchNow && isBefore(doc);
@@ -311,11 +311,11 @@ function applySliceRule<DocType>(
         doc &&
         doesMatchNow &&
         !isBeforeNow &&
-        (limitBuffer.complete || compareRows(queryParams, doc, last) <= 0)
+        (resultWindowBuffer.complete || compareRows(queryParams, doc, last) <= 0)
     ) {
-        insertAtSortPosition(limitBuffer, doc);
+        insertAtSortPosition(resultWindowBuffer, doc);
     }
-    limitBuffer.offset = limitBuffer.offset + (isBeforeNow ? 1 : 0) - (wasBefore ? 1 : 0);
+    resultWindowBuffer.offset = resultWindowBuffer.offset + (isBeforeNow ? 1 : 0) - (wasBefore ? 1 : 0);
 }
 
 /**
@@ -343,19 +343,19 @@ function compareRows<DocType>(queryParams: QueryParams<DocType>, a: DocType, b: 
     return idA < idB ? -1 : 1;
 }
 
-function insertAtSortPosition<DocType>(limitBuffer: LimitBuffer<DocType>, doc: DocType): void {
-    const buffer = limitBuffer.buffer;
+function insertAtSortPosition<DocType>(resultWindowBuffer: ResultWindowBuffer<DocType>, doc: DocType): void {
+    const buffer = resultWindowBuffer.buffer;
     // binary search for the first row that sorts after doc
     let low = 0;
     let high = buffer.length;
     while (low < high) {
         const mid = (low + high) >>> 1;
-        if (compareRows(limitBuffer.queryParams, buffer[mid], doc) < 0) {
+        if (compareRows(resultWindowBuffer.queryParams, buffer[mid], doc) < 0) {
             low = mid + 1;
         } else {
             high = mid;
         }
     }
     buffer.splice(low, 0, doc);
-    limitBuffer.keyDocumentMap.set(getDocumentId(limitBuffer.queryParams, doc), doc);
+    resultWindowBuffer.keyDocumentMap.set(getDocumentId(resultWindowBuffer.queryParams, doc), doc);
 }

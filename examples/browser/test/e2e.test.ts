@@ -48,8 +48,8 @@ for (const tech of techs) {
                 return state === DEFAULT_LOADING_STATE;
             });
 
-            // limit buffer comparison, the first example query has a limit
-            await t.click('#testLimitBufferButton');
+            // result window buffer comparison, the first example query has a limit
+            await t.click('#testResultWindowBufferButton');
             await wait(100);
 
             await waitUntil(async () => {
@@ -57,9 +57,9 @@ for (const tech of techs) {
                 return state === DEFAULT_LOADING_STATE;
             });
 
-            const rows = Selector('#limit-buffer-results .limit-buffer-row');
+            const rows = Selector('#result-window-buffer-results .result-window-buffer-row');
             await t.expect(rows.count).eql(3);
-            const identicalCells = Selector('#limit-buffer-results .identical');
+            const identicalCells = Selector('#result-window-buffer-results .identical');
             for (let i = 0; i < 3; i++) {
                 await t.expect(identicalCells.nth(i).innerText).eql('yes');
             }

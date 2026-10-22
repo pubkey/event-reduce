@@ -59,13 +59,13 @@
         </div>
         <div
             class="panel"
-            id="limitBufferPanel"
+            id="resultWindowBufferPanel"
         >
-            <h4>Limit buffer:</h4>
+            <h4>Result window buffer:</h4>
             <p>
                 Runs 100 random events on the current query and updates its result in three ways:
                 a full query after each event, EventReduce,
-                and EventReduce with a <a href="https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md">limit buffer</a>
+                and EventReduce with a <a href="https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md">result window buffer</a>
                 that keeps rows before and after the result window in memory,
                 so rows that move into the window can be taken from memory instead of a query.
                 The query must have a limit or a skip.
@@ -73,7 +73,7 @@
             <div class="list-item">
                 <div class="key">Buffer size (before and after the window)</div>
                 <div class="value">
-                    <select id="limitBufferSizeSelect">
+                    <select id="resultWindowBufferSizeSelect">
                         <option value="5">5</option>
                         <option
                             value="10"
@@ -86,13 +86,13 @@
             </div>
             <br />
             <div
-                id="testLimitBufferButton"
+                id="testResultWindowBufferButton"
                 class="button"
-            >100 events (compare limit buffer)</div>
+            >100 events (compare result window buffer)</div>
             <br />
-            <div id="limit-buffer-message"></div>
+            <div id="result-window-buffer-message"></div>
             <table
-                id="limit-buffer-results"
+                id="result-window-buffer-results"
                 border="1"
             ></table>
         </div>

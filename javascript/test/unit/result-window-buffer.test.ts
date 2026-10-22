@@ -1,16 +1,16 @@
 import * as assert from 'assert';
 import {
-    applyChangeEventToLimitBuffer,
-    createLimitBuffer,
-    getLimitBufferQuery,
-    getLimitBufferResults,
-    resetLimitBuffer
+    applyChangeEventToResultWindowBuffer,
+    createResultWindowBuffer,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults,
+    resetResultWindowBuffer
 } from '../../src/index.js';
-import type { LimitBuffer, LimitBufferResult, LimitBufferSizes } from '../../src/index.js';
+import type { ResultWindowBuffer, ResultWindowBufferResult, ResultWindowBufferSizes } from '../../src/index.js';
 import type { ChangeEvent, QueryParams } from '../../src/types/index.js';
 
 /**
- * Randomized test of the limit buffer against a full query.
+ * Randomized test of the result window buffer against a full query.
  * After every event, the visible result must equal the full query,
  * and the buffer must be an exact slice of the full result.
  */
@@ -74,9 +74,9 @@ function runQuery(docs: Map<string, Doc>, queryParams: QueryParams<Doc>, skip: n
         .slice(skip, limit === undefined ? undefined : skip + limit);
 }
 
-function fillLimitBuffer(limitBuffer: LimitBuffer<Doc>, docs: Map<string, Doc>) {
-    const { skip, limit } = getLimitBufferQuery(limitBuffer);
-    resetLimitBuffer(limitBuffer, runQuery(docs, limitBuffer.queryParams, skip, limit));
+function fillResultWindowBuffer(resultWindowBuffer: ResultWindowBuffer<Doc>, docs: Map<string, Doc>) {
+    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
+    resetResultWindowBuffer(resultWindowBuffer, runQuery(docs, resultWindowBuffer.queryParams, skip, limit));
 }
 
 function randomChangeEvent(
@@ -125,7 +125,7 @@ const QUERIES: TestQuery[] = [
     // neither skip nor limit
     { sortDirection: 'asc' }
 ];
-const BUFFER_SIZES: LimitBufferSizes[] = [
+const BUFFER_SIZES: ResultWindowBufferSizes[] = [
     { limitBufferSize: 0, skipBufferSize: 0 },
     { limitBufferSize: 5, skipBufferSize: 0 },
     { limitBufferSize: 0, skipBufferSize: 5 },
@@ -150,119 +150,119 @@ function getWeights(eventIndex: number) {
     }
 }
 
-describe('limit-buffer.test.ts', () => {
-    describe('getLimitBufferQuery()', () => {
+describe('result-window-buffer.test.ts', () => {
+    describe('getResultWindowBufferQuery()', () => {
         it('should add the buffer sizes to the skip and limit', () => {
-            const limitBuffer = createLimitBuffer(
+            const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
                 { limitBufferSize: 5, skipBufferSize: 3 }
             );
-            assert.deepStrictEqual(getLimitBufferQuery(limitBuffer), { skip: 7, limit: 28 });
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 7, limit: 28 });
         });
         it('should not go below skip 0', () => {
-            const limitBuffer = createLimitBuffer(
+            const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 2, limit: 20 }),
                 { skipBufferSize: 5 }
             );
-            assert.deepStrictEqual(getLimitBufferQuery(limitBuffer), { skip: 0, limit: 22 });
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 0, limit: 22 });
         });
         it('should have no limit for a query without a limit', () => {
-            const limitBuffer = createLimitBuffer(
+            const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 10 }),
                 { limitBufferSize: 5, skipBufferSize: 3 }
             );
-            assert.deepStrictEqual(getLimitBufferQuery(limitBuffer), { skip: 7, limit: undefined });
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 7, limit: undefined });
         });
     });
-    describe('resetLimitBuffer()', () => {
+    describe('resetResultWindowBuffer()', () => {
         it('should ask for a full query before it got rows', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), {});
-            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), {});
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
                 operation: 'INSERT', id: 'a', doc: doc('a', 1), previous: null
             });
             assert.strictEqual(result, 'runFullQueryAgain');
         });
         it('should be complete when the query returned fewer rows than requested', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
             const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
-            resetLimitBuffer(limitBuffer, rows);
-            assert.strictEqual(limitBuffer.complete, true);
-            assert.deepStrictEqual(getLimitBufferResults(limitBuffer), rows.slice(0, 2));
+            resetResultWindowBuffer(resultWindowBuffer, rows);
+            assert.strictEqual(resultWindowBuffer.complete, true);
+            assert.deepStrictEqual(getResultWindowBufferResults(resultWindowBuffer), rows.slice(0, 2));
         });
         it('should not be complete when the query returned as many rows as requested', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 1 }), { limitBufferSize: 1 });
-            resetLimitBuffer(limitBuffer, [doc('a', 1), doc('b', 2)]);
-            assert.strictEqual(limitBuffer.complete, false);
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 1 }), { limitBufferSize: 1 });
+            resetResultWindowBuffer(resultWindowBuffer, [doc('a', 1), doc('b', 2)]);
+            assert.strictEqual(resultWindowBuffer.complete, false);
         });
         it('should show the rows after the skipped rows of the buffer', () => {
-            const limitBuffer = createLimitBuffer(
+            const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 1, limit: 2 }),
                 { skipBufferSize: 1 }
             );
-            resetLimitBuffer(limitBuffer, [doc('a', 1), doc('b', 2), doc('c', 3)]);
-            assert.strictEqual(limitBuffer.offset, 0);
-            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b,c');
+            resetResultWindowBuffer(resultWindowBuffer, [doc('a', 1), doc('b', 2), doc('c', 3)]);
+            assert.strictEqual(resultWindowBuffer.offset, 0);
+            assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'b,c');
         });
     });
-    describe('applyChangeEventToLimitBuffer()', () => {
+    describe('applyChangeEventToResultWindowBuffer()', () => {
         it('should refill the window from the buffer when a visible row is deleted', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
             const rows = [doc('a', 1), doc('b', 2), doc('c', 3), doc('d', 4)];
-            resetLimitBuffer(limitBuffer, rows);
-            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+            resetResultWindowBuffer(resultWindowBuffer, rows);
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
                 operation: 'DELETE', id: 'a', doc: null, previous: rows[0]
             });
             assert.strictEqual(result, 'buffer');
-            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b,c');
-            assert.strictEqual(ids(limitBuffer.buffer), 'b,c,d');
+            assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'b,c');
+            assert.strictEqual(ids(resultWindowBuffer.buffer), 'b,c,d');
         });
         it('should not append a row that moves behind the last row of the buffer', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 1 });
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 1 });
             const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
-            resetLimitBuffer(limitBuffer, rows);
-            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+            resetResultWindowBuffer(resultWindowBuffer, rows);
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
                 operation: 'UPDATE', id: 'a', doc: doc('a', 99), previous: rows[0]
             });
             assert.strictEqual(result, 'buffer');
-            assert.strictEqual(ids(limitBuffer.buffer), 'b,c');
+            assert.strictEqual(ids(resultWindowBuffer.buffer), 'b,c');
         });
         it('should ask for a full query when a row is added in front of the skip window without a skip buffer', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', skip: 1, limit: 1 }), { limitBufferSize: 1 });
-            resetLimitBuffer(limitBuffer, [doc('b', 2), doc('c', 3)]);
-            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', skip: 1, limit: 1 }), { limitBufferSize: 1 });
+            resetResultWindowBuffer(resultWindowBuffer, [doc('b', 2), doc('c', 3)]);
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
                 operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
             });
             assert.strictEqual(result, 'runFullQueryAgain');
         });
         it('should take the row from the skip buffer when a row is added in front of the window', () => {
-            const limitBuffer = createLimitBuffer(
+            const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 2, limit: 1 }),
                 { skipBufferSize: 1 }
             );
             // skip 1, limit 2: 'a' is skipped and not in the buffer
-            resetLimitBuffer(limitBuffer, [doc('b', 2), doc('c', 3)]);
-            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'c');
-            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+            resetResultWindowBuffer(resultWindowBuffer, [doc('b', 2), doc('c', 3)]);
+            assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'c');
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
                 operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
             });
             assert.strictEqual(result, 'buffer');
-            assert.strictEqual(limitBuffer.offset, 2);
-            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b');
+            assert.strictEqual(resultWindowBuffer.offset, 2);
+            assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'b');
         });
         it('should handle a query with a skip but without a limit', () => {
-            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', skip: 1 }), { skipBufferSize: 1 });
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', skip: 1 }), { skipBufferSize: 1 });
             const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
-            resetLimitBuffer(limitBuffer, rows);
-            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b,c');
-            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+            resetResultWindowBuffer(resultWindowBuffer, rows);
+            assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'b,c');
+            const result = applyChangeEventToResultWindowBuffer<Doc>(resultWindowBuffer, {
                 operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
             });
             assert.notStrictEqual(result, 'runFullQueryAgain');
-            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'a,b,c');
+            assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'a,b,c');
         });
     });
     describe('randomized against a full query', () => {
-        const totalCounts: { [k in LimitBufferResult]: number } = {
+        const totalCounts: { [k in ResultWindowBufferResult]: number } = {
             eventReduce: 0,
             buffer: 0,
             runFullQueryAgain: 0
@@ -298,60 +298,61 @@ describe('limit-buffer.test.ts', () => {
                             }
                             const queryParams = getQueryParams(query);
                             const skip = query.skip ? query.skip : 0;
-                            const limitBuffer = createLimitBuffer(queryParams, sizes);
-                            fillLimitBuffer(limitBuffer, docs);
+                            const resultWindowBuffer = createResultWindowBuffer(queryParams, sizes);
+                            fillResultWindowBuffer(resultWindowBuffer, docs);
 
                             for (let i = 0; i < EVENTS_PER_RUN; i++) {
                                 const changeEvent = randomChangeEvent(docs, random, newId, getWeights(i));
                                 applyToDocs(changeEvent);
 
-                                const result = applyChangeEventToLimitBuffer(limitBuffer, changeEvent);
+                                const result = applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent);
                                 totalCounts[result]++;
                                 if (result === 'runFullQueryAgain') {
-                                    fillLimitBuffer(limitBuffer, docs);
+                                    fillResultWindowBuffer(resultWindowBuffer, docs);
                                 }
 
                                 const context = 'event #' + i + ' (' + changeEvent.operation + ', ' + result + ')';
 
                                 // the visible result equals the full query
                                 assert.strictEqual(
-                                    ids(getLimitBufferResults(limitBuffer)),
+                                    ids(getResultWindowBufferResults(resultWindowBuffer)),
                                     ids(runQuery(docs, queryParams, skip, query.limit)),
                                     'visible result differs from full query at ' + context
                                 );
 
                                 // the buffer is an exact slice of the full result
                                 const fullResult = runQuery(docs, queryParams, 0, undefined);
-                                if (limitBuffer.buffer.length > 0) {
+                                if (resultWindowBuffer.buffer.length > 0) {
                                     assert.strictEqual(
-                                        ids(limitBuffer.buffer),
-                                        ids(fullResult.slice(limitBuffer.offset, limitBuffer.offset + limitBuffer.buffer.length)),
+                                        ids(resultWindowBuffer.buffer),
+                                        ids(fullResult.slice(resultWindowBuffer.offset, resultWindowBuffer.offset + resultWindowBuffer.buffer.length)),
                                         'buffer is not an exact slice of the full result at ' + context
                                     );
                                 } else {
                                     // an empty buffer only knows an upper bound of the rows before it
-                                    assert.ok(limitBuffer.complete, 'empty buffer must be complete at ' + context);
-                                    assert.ok(fullResult.length <= limitBuffer.offset, 'offset is no upper bound at ' + context);
+                                    assert.ok(resultWindowBuffer.complete, 'empty buffer must be complete at ' + context);
+                                    assert.ok(fullResult.length <= resultWindowBuffer.offset, 'offset is no upper bound at ' + context);
                                 }
-                                if (limitBuffer.complete) {
+                                if (resultWindowBuffer.complete) {
                                     assert.ok(
-                                        limitBuffer.offset + limitBuffer.buffer.length >= fullResult.length,
+                                        resultWindowBuffer.offset + resultWindowBuffer.buffer.length >= fullResult.length,
                                         'complete buffer misses rows at ' + context
                                     );
                                 }
 
                                 // the buffer keeps no more rows than requested on both sides
-                                assert.ok(skip - limitBuffer.offset <= (sizes.skipBufferSize || 0), 'too many rows before the window');
+                                assert.ok(skip - resultWindowBuffer.offset <= (sizes.skipBufferSize || 0), 'too many rows before the window');
                                 if (query.limit) {
                                     assert.ok(
-                                        limitBuffer.buffer.length <= Math.max(0, skip - limitBuffer.offset) + query.limit + (sizes.limitBufferSize || 0),
+                                        resultWindowBuffer.buffer.length <=
+                                        Math.max(0, skip - resultWindowBuffer.offset) + query.limit + (sizes.limitBufferSize || 0),
                                         'too many rows after the window'
                                     );
                                 }
 
                                 // the key map matches the buffer
-                                assert.strictEqual(limitBuffer.keyDocumentMap.size, limitBuffer.buffer.length);
-                                limitBuffer.buffer.forEach(d => assert.strictEqual(limitBuffer.keyDocumentMap.get(d._id), d));
+                                assert.strictEqual(resultWindowBuffer.keyDocumentMap.size, resultWindowBuffer.buffer.length);
+                                resultWindowBuffer.buffer.forEach(d => assert.strictEqual(resultWindowBuffer.keyDocumentMap.get(d._id), d));
                             }
                         }
                     );

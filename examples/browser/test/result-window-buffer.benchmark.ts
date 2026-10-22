@@ -3,12 +3,12 @@ import {
     runAction,
     ChangeEvent,
     QueryParams,
-    applyChangeEventToLimitBuffer,
-    createLimitBuffer,
-    getLimitBufferQuery,
-    getLimitBufferResults,
-    LimitBuffer,
-    resetLimitBuffer
+    applyChangeEventToResultWindowBuffer,
+    createResultWindowBuffer,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults,
+    ResultWindowBuffer,
+    resetResultWindowBuffer
 } from 'event-reduce-js';
 import type { Human } from '../src/types';
 import {
@@ -17,11 +17,11 @@ import {
     idsOf,
     MemoryTable,
     TestQuery
-} from './limit-buffer-memory-db';
+} from './result-window-buffer-memory-db';
 
 /**
- * Measures how many events need a full query, with and without the limit buffer.
- * Run with: npm run benchmark:limit-buffer
+ * Measures how many events need a full query, with and without the result window buffer.
+ * Run with: npm run benchmark:result-window-buffer
  *
  * The same seeded events are applied to an in-memory table with 10,000 rows.
  * After each event, every strategy updates its result,
@@ -82,27 +82,27 @@ function eventReduceStrategy(queryParams: QueryParams<Human>, table: MemoryTable
     return strategy;
 }
 
-function limitBufferStrategy(queryParams: QueryParams<Human>, bufferSize: number, table: MemoryTable): Strategy {
-    const limitBuffer: LimitBuffer<Human> = createLimitBuffer(queryParams, {
+function resultWindowBufferStrategy(queryParams: QueryParams<Human>, bufferSize: number, table: MemoryTable): Strategy {
+    const resultWindowBuffer: ResultWindowBuffer<Human> = createResultWindowBuffer(queryParams, {
         limitBufferSize: bufferSize,
         skipBufferSize: bufferSize
     });
-    const bufferQuery = getLimitBufferQuery(limitBuffer);
-    resetLimitBuffer(limitBuffer, table.query(queryParams, bufferQuery.limit, bufferQuery.skip));
+    const bufferQuery = getResultWindowBufferQuery(resultWindowBuffer);
+    resetResultWindowBuffer(resultWindowBuffer, table.query(queryParams, bufferQuery.limit, bufferQuery.skip));
     const strategy: Strategy = {
-        name: 'limit buffer, bufferSize ' + bufferSize,
+        name: 'result window buffer, bufferSize ' + bufferSize,
         fullQueries: 0,
         time: 0,
         rowsRead: 0,
         wrongResults: 0,
         update(changeEvent, t) {
-            if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
+            if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
                 strategy.fullQueries++;
                 const rows = t.query(queryParams, bufferQuery.limit, bufferQuery.skip);
                 strategy.rowsRead += rows.length;
-                resetLimitBuffer(limitBuffer, rows);
+                resetResultWindowBuffer(resultWindowBuffer, rows);
             }
-            return getLimitBufferResults(limitBuffer);
+            return getResultWindowBufferResults(resultWindowBuffer);
         }
     };
     return strategy;
@@ -133,7 +133,7 @@ function runBenchmark(query: TestQuery, mix: EventMix) {
     const strategies: Strategy[] = [
         fullQueryEachTime,
         eventReduceStrategy(queryParams, table),
-        ...BUFFER_SIZES.map(bufferSize => limitBufferStrategy(queryParams, bufferSize, table))
+        ...BUFFER_SIZES.map(bufferSize => resultWindowBufferStrategy(queryParams, bufferSize, table))
     ];
 
     /**

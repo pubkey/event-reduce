@@ -1,14 +1,14 @@
-# Limit buffer
+# Result window buffer
 
-For a query with a limit or a skip, the limit buffer of `event-reduce-js` keeps some rows before and after the result window in memory.
+For a query with a limit or a skip, the result window buffer of `event-reduce-js` keeps some rows before and after the result window in memory.
 When a row has to move into the window, it comes from memory instead of a new query.
 
-- Source: [`javascript/src/limit-buffer.ts`](../javascript/src/limit-buffer.ts)
-- Randomized test: [`javascript/test/unit/limit-buffer.test.ts`](../javascript/test/unit/limit-buffer.test.ts)
-- Benchmark: [`examples/browser/test/limit-buffer.benchmark.ts`](../examples/browser/test/limit-buffer.benchmark.ts)
-- Demo: the "Limit buffer" section of the [browser demo](https://pubkey.github.io/event-reduce/)
+- Source: [`javascript/src/result-window-buffer.ts`](../javascript/src/result-window-buffer.ts)
+- Randomized test: [`javascript/test/unit/result-window-buffer.test.ts`](../javascript/test/unit/result-window-buffer.test.ts)
+- Benchmark: [`examples/browser/test/result-window-buffer.benchmark.ts`](../examples/browser/test/result-window-buffer.benchmark.ts)
+- Demo: the "Result window buffer" section of the [browser demo](https://pubkey.github.io/event-reduce/)
 
-![Limit buffer section of the browser demo](./files/limit-buffer-demo.png)
+![Result window buffer section of the browser demo](./files/result-window-buffer-demo.png)
 
 ## The problem
 
@@ -64,10 +64,10 @@ If the window does not fit anymore, the query must run again:
 
 **Step 1: EventReduce on the buffer.** An exact slice of length `n` with `offset` rows before it
 is exactly the result of the same query with `skip: offset` and `limit: n`.
-So the limit buffer runs the EventReduce decision diagram with these values,
+So the result window buffer runs the EventReduce decision diagram with these values,
 and EventReduce works on the buffer like on any other query result.
 If the buffer is complete, it uses `limit: n + 1`, so EventReduce knows that no more rows exist.
-If EventReduce returns an action, the limit buffer runs it. The new buffer is the exact result for these values, so the invariant holds.
+If EventReduce returns an action, the result window buffer runs it. The new buffer is the exact result for these values, so the invariant holds.
 No new decision diagram is needed: the existing one only gets a different, but true, skip and limit.
 
 **Step 2: the slice rule**, when EventReduce returns `runFullQueryAgain`,
@@ -95,20 +95,20 @@ if the buffer is complete, there are no rows after the last row, so a row that s
 **Step 3: trim.** Rows before the window beyond `skipBufferSize`
 and rows after the window beyond `limitBufferSize` are removed. `offset` grows by the rows removed at the start.
 
-**Step 4:** if the window does not fit into the buffer anymore, `applyChangeEventToLimitBuffer()` returns `runFullQueryAgain`.
+**Step 4:** if the window does not fit into the buffer anymore, `applyChangeEventToResultWindowBuffer()` returns `runFullQueryAgain`.
 
 You could use the slice rule alone, because it handles every event that EventReduce handles.
 We tried that with the first version, which had only the buffer after the window:
 it needed the same number of full queries, but took 2 to 8 times as long in the uniform mix, where most events do not touch the window.
 The slice rule compares the changed row with the first and last row of the buffer, while the EventReduce decision diagram
 often answers `doNothing` after a few checks.
-So the limit buffer keeps EventReduce in front. Its actions are verified by the EventReduce fuzzing, and the slice rule only handles the rest.
-With both buffer sizes at 0, the limit buffer behaves like plain EventReduce (see the tables below).
+So the result window buffer keeps EventReduce in front. Its actions are verified by the EventReduce fuzzing, and the slice rule only handles the rest.
+With both buffer sizes at 0, the result window buffer behaves like plain EventReduce (see the tables below).
 
 ### Requirements
 
 - The sort order must be deterministic. Rows with the same sort values must be ordered by the primary key.
-  The limit buffer breaks ties with the primary key when the comparator returns `0`, and the database must sort the same way.
+  The result window buffer breaks ties with the primary key when the comparator returns `0`, and the database must sort the same way.
 - Every write must reach the buffer as a change event, in order, with `previous` set for updates and deletes.
   These are the same requirements as for EventReduce itself.
 
@@ -116,48 +116,48 @@ With both buffer sizes at 0, the limit buffer behaves like plain EventReduce (se
 
 ```ts
 import {
-    createLimitBuffer,
-    applyChangeEventToLimitBuffer,
-    getLimitBufferQuery,
-    getLimitBufferResults,
-    resetLimitBuffer
+    createResultWindowBuffer,
+    applyChangeEventToResultWindowBuffer,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults,
+    resetResultWindowBuffer
 } from 'event-reduce-js';
 
 // queryParams as for EventReduce, with the skip and limit that the user sees
-const limitBuffer = createLimitBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
+const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
 
 async function runBufferQuery() {
     // the same query, with the skip and limit of the buffer
-    const { skip, limit } = getLimitBufferQuery(limitBuffer);
-    resetLimitBuffer(limitBuffer, await db.find({ ...query, skip, limit }));
+    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
+    resetResultWindowBuffer(resultWindowBuffer, await db.find({ ...query, skip, limit }));
 }
 await runBufferQuery();
-render(getLimitBufferResults(limitBuffer));
+render(getResultWindowBufferResults(resultWindowBuffer));
 
 db.changes$.subscribe(async changeEvent => {
-    if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
+    if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
         await runBufferQuery();
     }
-    render(getLimitBufferResults(limitBuffer));
+    render(getResultWindowBufferResults(resultWindowBuffer));
 });
 ```
 
 | Function | Description |
 |---|---|
-| `createLimitBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. |
-| `getLimitBufferQuery(limitBuffer)` | The `skip` and `limit` to run the query with: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. `limit` is `undefined` if the query has no limit. |
-| `resetLimitBuffer(limitBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
-| `applyChangeEventToLimitBuffer(limitBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |
-| `getLimitBufferResults(limitBuffer)` | The visible result, the rows of the original skip and limit. |
+| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. |
+| `getResultWindowBufferQuery(resultWindowBuffer)` | The `skip` and `limit` to run the query with: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. `limit` is `undefined` if the query has no limit. |
+| `resetResultWindowBuffer(resultWindowBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
+| `applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |
+| `getResultWindowBufferResults(resultWindowBuffer)` | The visible result, the rows of the original skip and limit. |
 
-The functions mutate the `limitBuffer` object. Treat its fields as read only.
+The functions mutate the `resultWindowBuffer` object. Treat its fields as read only.
 It works for any query: with a limit, with a skip, with both or with neither.
 Without a limit, the buffer always runs to the end of the result, so `limitBufferSize` is not used.
 Without a skip, `skipBufferSize` is not used.
 
 ### Proof by test
 
-[`limit-buffer.test.ts`](../javascript/test/unit/limit-buffer.test.ts) runs seeded random inserts, updates
+[`result-window-buffer.test.ts`](../javascript/test/unit/result-window-buffer.test.ts) runs seeded random inserts, updates
 (including changes of the sort field and of the matching field) and deletes.
 The queries use a limit, skip + limit, skip without limit and neither, with ascending and descending sort.
 The buffer sizes are 0/0, 5/0, 0/5, 20/3 and 50/20 (`limitBufferSize`/`skipBufferSize`),
@@ -272,7 +272,7 @@ so EventReduce alone already needs very few full queries. The buffer still remov
 | skip 20 | bufferSize 50 | 0 | 0 % | 69 ms | 0 |
 
 The times are dominated by the full queries, so a database where queries are slower (for example IndexedDB) gains more.
-Run the benchmark with `npm run benchmark:limit-buffer` in `examples/browser`.
+Run the benchmark with `npm run benchmark:result-window-buffer` in `examples/browser`.
 
 ### Random queries of the fuzzing
 
@@ -281,7 +281,7 @@ and events where half are aimed at the edges of a result window.
 With these, we counted the share of event+query combinations that need no full query
 (300 runs × 30 random queries × 100 events = 900,000 combinations; 0 wrong results):
 
-| Queries | EventReduce | limit buffer 20 only | skip buffer 20 only | both 5 | both 20 |
+| Queries | EventReduce | 20 after the window only | 20 before the window only | both 5 | both 20 |
 |---|---:|---:|---:|---:|---:|
 | all | 95.0 % | 96.4 % | 98.9 % | 99.9 % | 100.0 % |
 | no skip, no limit | 100.0 % | 100.0 % | 100.0 % | 100.0 % | 100.0 % |

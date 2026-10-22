@@ -145,35 +145,35 @@ if (action === 'runFullQueryAgain') {
 console.dir(currentResults);
 ```
 
-## Queries with a limit or skip: the limit buffer
+## Queries with a limit or skip: the result window buffer
 
 For a query with a limit or a skip, EventReduce returns `runFullQueryAgain` when a row has to move into the result window that is not in the previous results:
 the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
-The limit buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
+The result window buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
 
 ```typescript
 import {
-    createLimitBuffer,
-    applyChangeEventToLimitBuffer,
-    getLimitBufferQuery,
-    getLimitBufferResults,
-    resetLimitBuffer
+    createResultWindowBuffer,
+    applyChangeEventToResultWindowBuffer,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults,
+    resetResultWindowBuffer
 } from 'event-reduce-js';
 
-const limitBuffer = createLimitBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
+const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
 // run the query with the skip and limit of the buffer
-const { skip, limit } = getLimitBufferQuery(limitBuffer);
-resetLimitBuffer(limitBuffer, await runQuery({ ...query, skip, limit }));
+const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
+resetResultWindowBuffer(resultWindowBuffer, await runQuery({ ...query, skip, limit }));
 
 // on each change event
-if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
-    const { skip, limit } = getLimitBufferQuery(limitBuffer);
-    resetLimitBuffer(limitBuffer, await runQuery({ ...query, skip, limit }));
+if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
+    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
+    resetResultWindowBuffer(resultWindowBuffer, await runQuery({ ...query, skip, limit }));
 }
-const results = getLimitBufferResults(limitBuffer); // the rows of the original skip and limit
+const results = getResultWindowBufferResults(resultWindowBuffer); // the rows of the original skip and limit
 ```
 
-See [Limit buffer](https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md) for how it works, how to choose the buffer sizes and measurements.
+See [Result window buffer](https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md) for how it works, how to choose the buffer sizes and measurements.
 
 ## Smaller bundles
 
