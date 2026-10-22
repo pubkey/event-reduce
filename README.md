@@ -110,14 +110,6 @@ From this state-action combinations we create a big truth table that is used to 
 
 The resulting optimized BDD is then shipped as the EventReduce algorithm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [JavaScript implementation](https://github.com/pubkey/event-reduce/tree/master/javascript)
 
-## Queries with a limit or skip: the result window buffer
-
-For a query with a limit or a skip, most `runFullQueryAgain` results happen when a row has to move into the result window that is not in the previous results:
-the row after a full window, or the last skipped row when a row is added in front of the window.
-The result window buffer keeps some rows before and after the window in memory, so these rows come from memory instead of a new query.
-With the random queries and events of the fuzzing, it raised the share of events that need no full query from about 95 % to about 100 %.
-See [docs/result-window-buffer.md](./docs/result-window-buffer.md) for how it works, how to use it and the measurements.
-
 ## When to use this
 
 Use EventReduce whenever you observe query results and need to keep them up to date, for example for reactive UIs, realtime dashboards, live queries in local-first apps or server-push subscriptions. You can use it to
@@ -140,6 +132,14 @@ Before, RxDB used its own `QueryChangeDetection`, which was made of many handwri
 - EventReduce only works with queries that have a [predictable](https://stackoverflow.com/a/11599283) sort-order for any given documents. (you can make any query predicable by adding the primary key as last sort parameter)
 
 - EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for relational queries but I did not need this for now. Also the fuzzing that ensures the correctness of the truth table runs for a long time, and having more state functions looks like an NP problem.
+
+## Additional Optimization: Result Window Buffer
+
+For a query with a limit or a skip, most `runFullQueryAgain` results happen when a row has to move into the result window that is not in the previous results:
+the row after a full window, or the last skipped row when a row is added in front of the window.
+The result window buffer keeps some rows before and after the window in memory, so these rows come from memory instead of a new query.
+With the random queries and events of the fuzzing, it raised the share of events that need no full query from about 95 % to about 100 %.
+See [docs/result-window-buffer.md](./docs/result-window-buffer.md) for how it works, how to use it and the measurements.
 
 ## Implementations
 
