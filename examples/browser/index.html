@@ -55,46 +55,18 @@
                 This will run 100 random events and after each event it will use EventReduce to calculate the new
                 results
             </p>
-            <br /><br />
-        </div>
-        <div
-            class="panel"
-            id="resultWindowBufferPanel"
-        >
-            <h4>Result window buffer:</h4>
-            <p>
-                Runs 100 random events on the current query and updates its result in three ways:
-                a full query after each event, EventReduce,
-                and EventReduce with a <a href="https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md">result window buffer</a>
-                that keeps rows before and after the result window in memory,
-                so rows that move into the window can be taken from memory instead of a query.
-                The query must have a limit or a skip.
-            </p>
-            <div class="list-item">
-                <div class="key">Buffer size (before and after the window)</div>
-                <div class="value">
-                    <select id="resultWindowBufferSizeSelect">
-                        <option value="5">5</option>
-                        <option
-                            value="10"
-                            selected
-                        >10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
-                </div>
-            </div>
-            <br />
+            <hr />
             <div
-                id="testResultWindowBufferButton"
+                id="test100EventsResultWindowBufferButton"
                 class="button"
-            >100 events (compare result window buffer)</div>
-            <br />
-            <div id="result-window-buffer-message"></div>
-            <table
-                id="result-window-buffer-results"
-                border="1"
-            ></table>
+            >100 events (with EventReduce + result window buffer)</div>
+            <p>
+                This will run 100 random events and use EventReduce with a
+                <a href="https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md">result window buffer</a>
+                that keeps 10 rows before and after the result window in memory,
+                so rows that move into the window do not need a new query
+            </p>
+            <br /><br />
         </div>
         <div class="panel">
             Sponsored by <a href="https://rxdb.info/" target="_blank">RxDB</a>

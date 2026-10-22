@@ -6,9 +6,10 @@ When a row has to move into the window, it comes from memory instead of a new qu
 - Source: [`javascript/src/result-window-buffer.ts`](../javascript/src/result-window-buffer.ts)
 - Randomized test: [`javascript/test/unit/result-window-buffer.test.ts`](../javascript/test/unit/result-window-buffer.test.ts)
 - Benchmark: [`examples/browser/test/result-window-buffer.benchmark.ts`](../examples/browser/test/result-window-buffer.benchmark.ts)
-- Demo: the "Result window buffer" section of the [browser demo](https://pubkey.github.io/event-reduce/)
+- Demo: the "100 events (with EventReduce + result window buffer)" button of the [browser demo](https://pubkey.github.io/event-reduce/),
+  which keeps 10 rows before and after the result window
 
-![Result window buffer section of the browser demo](./files/result-window-buffer-demo.png)
+![Browser demo after running 100 events with EventReduce and with the result window buffer](./files/result-window-buffer-demo.png)
 
 ## The problem
 

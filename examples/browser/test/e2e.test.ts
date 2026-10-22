@@ -48,20 +48,12 @@ for (const tech of techs) {
                 return state === DEFAULT_LOADING_STATE;
             });
 
-            // result window buffer comparison, the first example query has a limit
-            await t.click('#testResultWindowBufferButton');
+            await t.click('#test100EventsResultWindowBufferButton');
             await wait(100);
 
             await waitUntil(async () => {
                 const state = await getLoadingState();
                 return state === DEFAULT_LOADING_STATE;
             });
-
-            const rows = Selector('#result-window-buffer-results .result-window-buffer-row');
-            await t.expect(rows.count).eql(3);
-            const identicalCells = Selector('#result-window-buffer-results .identical');
-            for (let i = 0; i < 3; i++) {
-                await t.expect(identicalCells.nth(i).innerText).eql('yes');
-            }
         });
 }

@@ -14,10 +14,7 @@ export const $test100EventsButton = document.getElementById('test100EventsButton
 export const $test100EventsEventReduceButton = document.getElementById('test100EventsEventReduceButton');
 
 export const $techSelectionSelect: HTMLSelectElement = document.getElementById('techSelectionSelect') as HTMLSelectElement;
-export const $testResultWindowBufferButton = document.getElementById('testResultWindowBufferButton');
-export const $resultWindowBufferSizeSelect: HTMLSelectElement = document.getElementById('resultWindowBufferSizeSelect') as HTMLSelectElement;
-const $resultWindowBufferMessage = document.getElementById('result-window-buffer-message');
-const $resultWindowBufferResults = document.getElementById('result-window-buffer-results');
+export const $test100EventsResultWindowBufferButton = document.getElementById('test100EventsResultWindowBufferButton');
 
 export function setResults(docs: Human[]) {
 
@@ -143,46 +140,4 @@ export function setButtonsDisableState(to: boolean) {
             buttons[i].classList.remove('disabled');
         }
     }
-}
-
-export type ResultWindowBufferComparisonRow = {
-    name: string;
-    fullQueries: number;
-    timeInMs: number;
-    // amount of events after which the result differed from the full query
-    wrongResults: number;
-};
-
-export function setResultWindowBufferMessage(message: string = '') {
-    $resultWindowBufferMessage.innerHTML = message;
-}
-
-export function setResultWindowBufferResults(eventsAmount: number, rows: ResultWindowBufferComparisonRow[]) {
-    $resultWindowBufferResults.innerHTML = '';
-
-    function addCell(tr: HTMLElement, text: string, tagName: 'td' | 'th' = 'td') {
-        const cell = document.createElement(tagName);
-        cell.innerHTML = text;
-        tr.appendChild(cell);
-        return cell;
-    }
-
-    const headTr = document.createElement('tr');
-    addCell(headTr, 'Strategy', 'th');
-    addCell(headTr, 'Full queries', 'th');
-    addCell(headTr, 'Total time', 'th');
-    addCell(headTr, 'Same as full query', 'th');
-    $resultWindowBufferResults.appendChild(headTr);
-
-    rows.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.classList.add('result-window-buffer-row');
-        addCell(tr, row.name);
-        addCell(tr, row.fullQueries + ' / ' + eventsAmount).classList.add('number', 'full-queries');
-        addCell(tr, row.timeInMs.toFixed(1) + ' ms').classList.add('number');
-        const identical = row.wrongResults === 0;
-        const identicalCell = addCell(tr, identical ? 'yes' : 'no (' + row.wrongResults + ' wrong)');
-        identicalCell.classList.add('identical', identical ? 'identical-yes' : 'identical-no');
-        $resultWindowBufferResults.appendChild(tr);
-    });
 }

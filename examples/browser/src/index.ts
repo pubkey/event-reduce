@@ -10,11 +10,7 @@ import {
     $queryTextArea,
     $invalidQuery,
     buttonsDisabled,
-    $testResultWindowBufferButton,
-    $resultWindowBufferSizeSelect,
-    setResultWindowBufferMessage,
-    setResultWindowBufferResults,
-    ResultWindowBufferComparisonRow
+    $test100EventsResultWindowBufferButton
 } from './dom';
 
 import {
@@ -38,18 +34,6 @@ import { performanceNow } from 'async-test-util';
 
 import '../style.less';
 import { appendToLog } from './logs';
-
-/**
- * Compares two results of the same query.
- * Rows that the sort comparator sees as equal may be in any order,
- * because the databases do not all break ties the same way.
- */
-function isSameResult(a: Human[], b: Human[], sortComparator: (a: Human, b: Human) => number): boolean {
-    if (a.length !== b.length) {
-        return false;
-    }
-    return a.every((doc, i) => doc._id === b[i]._id || sortComparator(doc, b[i]) === 0);
-}
 
 async function run() {
     const implementations = getImplementations();
@@ -232,101 +216,61 @@ async function run() {
         setLoadingState();
     };
 
-    // compare full query, EventReduce and EventReduce with a result window buffer
-    $testResultWindowBufferButton.onclick = async () => {
+    // with event-reduce and a result window buffer
+    $test100EventsResultWindowBufferButton.onclick = async () => {
         if (buttonsDisabled()) return;
 
-        const mongoQuery = query as MongoQuery;
-        if (!mongoQuery.limit && !mongoQuery.skip) {
-            setResultWindowBufferMessage('The current query has neither a limit nor a skip. Select a query like Query #1.');
-            return;
-        }
-        setResultWindowBufferMessage();
         setButtonsDisableState(true);
-        setLoadingState('Run result window buffer comparison..');
-        try {
-            await runResultWindowBufferComparison(mongoQuery);
-        } catch (err) {
-            console.error(err);
-            setResultWindowBufferMessage('Error: ' + err.message);
-        }
-        setButtonsDisableState(false);
-        setLoadingState();
-    };
+        setLoadingState('Run with EventReduce and result window buffer..');
 
-    async function runResultWindowBufferComparison(mongoQuery: MongoQuery) {
-
-        const bufferSize = parseInt($resultWindowBufferSizeSelect.value, 10);
+        const prevData = await implementation.getAll();
+        const events = await getRandomChangeEvents(
+            prevData,
+            100
+        );
         const queryParams = implementation.getQueryParams(query);
-        const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: bufferSize, skipBufferSize: bufferSize });
-        const bufferQuery: MongoQuery = { ...mongoQuery, ...getResultWindowBufferQuery(resultWindowBuffer) };
-        const eventsAmount = 100;
-        const events = await getRandomChangeEvents(await implementation.getAll(), eventsAmount);
+        let optimizedEventsCount = 0;
+        let totalWriteTime = 0;
+        const timeStart = performanceNow();
 
-        const fullQueryRow: ResultWindowBufferComparisonRow = { name: 'Full query after each event', fullQueries: 0, timeInMs: 0, wrongResults: 0 };
-        const eventReduceRow: ResultWindowBufferComparisonRow = { name: 'EventReduce', fullQueries: 0, timeInMs: 0, wrongResults: 0 };
-        const resultWindowBufferRow: ResultWindowBufferComparisonRow = {
-            name: 'EventReduce + result window buffer (' + bufferSize + ')',
-            fullQueries: 0,
-            timeInMs: 0,
-            wrongResults: 0
-        };
-
-        // the initial queries are not measured
-        let eventReduceResults = await implementation.getRawResults(query);
-        let eventReduceDocMap = idToDocMapFromList(eventReduceResults);
+        /**
+         * Keep 10 rows before and after the result window in memory,
+         * so rows that move into the window can be taken from there.
+         */
+        const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 10, skipBufferSize: 10 });
+        const bufferQuery: MongoQuery = { ...(query as MongoQuery), ...getResultWindowBufferQuery(resultWindowBuffer) };
         resetResultWindowBuffer(resultWindowBuffer, await implementation.getRawResults(bufferQuery));
 
-        let timeStart: number;
         for (const changeEvent of events) {
-            await implementation.handleEvent(changeEvent);
 
-            // 1. full query
-            timeStart = performanceNow();
-            const fullQueryResults = await implementation.getRawResults(query);
-            fullQueryRow.timeInMs += performanceNow() - timeStart;
-            fullQueryRow.fullQueries++;
+            const writeTime = await implementation.handleEvent(changeEvent);
+            totalWriteTime = totalWriteTime + writeTime;
 
-            // 2. EventReduce
-            timeStart = performanceNow();
-            const action = calculateActionName({
-                changeEvent,
-                queryParams,
-                previousResults: eventReduceResults,
-                keyDocumentMap: eventReduceDocMap
-            });
-            if (action === 'runFullQueryAgain') {
-                eventReduceRow.fullQueries++;
-                eventReduceResults = await implementation.getRawResults(query);
-                eventReduceDocMap = idToDocMapFromList(eventReduceResults);
-            } else {
-                runAction(action, queryParams, changeEvent, eventReduceResults, eventReduceDocMap);
-            }
-            eventReduceRow.timeInMs += performanceNow() - timeStart;
-
-            // 3. EventReduce + result window buffer
-            timeStart = performanceNow();
             if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
-                resultWindowBufferRow.fullQueries++;
+                // the result window does not fit into the buffer anymore, run the query again
                 resetResultWindowBuffer(resultWindowBuffer, await implementation.getRawResults(bufferQuery));
+            } else {
+                optimizedEventsCount++;
             }
-            const resultWindowBufferResults = getResultWindowBufferResults(resultWindowBuffer);
-            resultWindowBufferRow.timeInMs += performanceNow() - timeStart;
-
-            if (!isSameResult(eventReduceResults, fullQueryResults, queryParams.sortComparator)) {
-                eventReduceRow.wrongResults++;
-            }
-            if (!isSameResult(resultWindowBufferResults, fullQueryResults, queryParams.sortComparator)) {
-                resultWindowBufferRow.wrongResults++;
-            }
-
-            currentResults = fullQueryResults;
-            setResults(resultWindowBufferResults);
+            currentResults = getResultWindowBufferResults(resultWindowBuffer);
+            setResults(currentResults);
         }
         currentDocMap = idToDocMapFromList(currentResults);
 
-        setResultWindowBufferResults(eventsAmount, [fullQueryRow, eventReduceRow, resultWindowBufferRow]);
-    }
+        const timeEnd = performanceNow();
+        const totalTimeInMs = timeEnd - timeStart;
+
+        const queryTime = totalTimeInMs - totalWriteTime;
+        appendToLog('running 100 events with event-reduce and result window buffer', {
+            totalTimeInMs,
+            totalWriteTime,
+            optimizedEventsCount,
+            queryTime
+        });
+
+        setButtonsDisableState(false);
+        setLoadingState();
+    };
 
     setLoadingState();
 }
