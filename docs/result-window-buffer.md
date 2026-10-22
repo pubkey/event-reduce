@@ -146,7 +146,7 @@ db.changes$.subscribe(async changeEvent => {
 
 | Function | Description |
 |---|---|
-| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. Sizes are rounded down, negative sizes and `NaN` mean 0, and `Infinity` keeps all rows on that side. |
+| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. Sizes are rounded down and `Infinity` keeps all rows on that side. Throws `EventReduce:RWB_SIZE` for negative sizes and values that are not numbers, like `NaN`. |
 | `getResultWindowBufferQuery(resultWindowBuffer)` | The `skip` and `limit` to run the query with: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. `limit` is `undefined` if the query has no limit. |
 | `resetResultWindowBuffer(resultWindowBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
 | `applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |

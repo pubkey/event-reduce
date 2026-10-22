@@ -173,11 +173,18 @@ describe('result-window-buffer.test.ts', () => {
                 { limitBufferSize: size, skipBufferSize: size }
             ));
             assert.deepStrictEqual(query(2.5), { skip: 8, limit: 24 });
-            // negative sizes and NaN mean no buffer
-            assert.deepStrictEqual(query(-3), { skip: 10, limit: 20 });
-            assert.deepStrictEqual(query(NaN), { skip: 10, limit: 20 });
+            assert.deepStrictEqual(query(0), { skip: 10, limit: 20 });
             // Infinity keeps all rows
             assert.deepStrictEqual(query(Infinity), { skip: 0, limit: undefined });
+        });
+        it('should throw on negative buffer sizes and values that are not numbers', () => {
+            const queryParams = getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 });
+            [-1, -0.5, -Infinity, NaN, '5', null, {}, true].forEach(size => {
+                assert.throws(() => createResultWindowBuffer(queryParams, { limitBufferSize: size as any }), /RWB_SIZE/, String(size));
+                assert.throws(() => createResultWindowBuffer(queryParams, { skipBufferSize: size as any }), /RWB_SIZE/, String(size));
+            });
+            // not set means 0
+            assert.deepStrictEqual(getResultWindowBufferQuery(createResultWindowBuffer(queryParams, {})), { skip: 10, limit: 20 });
         });
         it('should have no limit for a query without a limit', () => {
             const resultWindowBuffer = createResultWindowBuffer(

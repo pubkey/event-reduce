@@ -120,11 +120,18 @@ export function createResultWindowBuffer<DocType>(
 }
 
 /**
- * Buffer sizes are whole numbers.
- * Negative sizes and NaN mean no buffer, Infinity keeps all rows on that side.
+ * Buffer sizes are whole numbers, rounded down. Not set means 0,
+ * Infinity keeps all rows on that side.
+ * Throws on negative sizes and on values that are not numbers, like NaN.
  */
 function toBufferSize(size?: number): number {
-    return size && size > 0 ? Math.floor(size) : 0;
+    if (typeof size === 'undefined') {
+        return 0;
+    }
+    if (typeof size !== 'number' || Number.isNaN(size) || size < 0) {
+        throw new Error('EventReduce:RWB_SIZE');
+    }
+    return Math.floor(size);
 }
 
 /**
