@@ -145,7 +145,22 @@ if (action === 'runFullQueryAgain') {
 console.dir(currentResults);
 ```
 
-## Queries with a limit or skip: the result window buffer
+## Smaller bundles
+
+`calculateActionName()` and `runAction()` work with action names, so the names of all actions end up in your bundle. If bundle size matters, use `calculateActionFunction()` instead. It returns the action function directly:
+
+```typescript
+import { calculateActionFunction, runFullQueryAgain } from 'event-reduce-js';
+
+const action = calculateActionFunction(input);
+if (action === runFullQueryAgain) {
+    // run the query over the database again
+} else {
+    action(input); // mutates input.previousResults
+}
+```
+
+## Additional Optimization: Result Window Buffer
 
 For a query with a limit or a skip, EventReduce returns `runFullQueryAgain` when a row has to move into the result window that is not in the previous results:
 the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
@@ -174,21 +189,6 @@ const results = getResultWindowBufferResults(resultWindowBuffer); // the rows of
 ```
 
 See [Result window buffer](https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md) for how it works, how to choose the buffer sizes and measurements.
-
-## Smaller bundles
-
-`calculateActionName()` and `runAction()` work with action names, so the names of all actions end up in your bundle. If bundle size matters, use `calculateActionFunction()` instead. It returns the action function directly:
-
-```typescript
-import { calculateActionFunction, runFullQueryAgain } from 'event-reduce-js';
-
-const action = calculateActionFunction(input);
-if (action === runFullQueryAgain) {
-    // run the query over the database again
-} else {
-    action(input); // mutates input.previousResults
-}
-```
 
 ## Error codes
 
