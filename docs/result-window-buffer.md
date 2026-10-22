@@ -125,7 +125,8 @@ import {
 } from 'event-reduce-js';
 
 // queryParams as for EventReduce, with the skip and limit that the user sees
-const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
+const size = recommendedBufferSize(queryParams.limit); // see "Choosing the buffer sizes"
+const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: size, skipBufferSize: size });
 
 async function runBufferQuery() {
     // the same query, with the skip and limit of the buffer
@@ -183,8 +184,30 @@ Rows that move the other way make the buffer longer again, so the real number is
 In the benchmark, `limit 20` needed 1,429 full queries without a buffer, then 220 (÷ 6.5), 62 (÷ 23) and 25 (÷ 57)
 with 5, 20 and 50 rows. `skip 20 + limit 20` behaves the same: 1,501 without a buffer, then 219, 61 and 25.
 
-- Start with both sizes about equal to `limit`.
-  This removes most full queries, and each query reads at most three times as many rows.
+### Recommended sizes
+
+We recommend this function for both sizes:
+
+```ts
+function recommendedBufferSize(limit?: number): number {
+    if (!limit) {
+        return 0;
+    }
+    return Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2)));
+}
+```
+
+| limit | 1 | 2 | 3 | 4 | 10 | 20 | 100 | 200 | 500 | 1,000 | 2,712+ |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| buffer per side | 0 | 1 | 1 | 2 | 3 | 4 | 7 | 11 | 20 | 26 | 30 |
+
+- **Small limits** get about `log2(limit)` rows. A query with limit 1, like a find-one query, gets no buffer.
+- **Around limit 400** the size grows faster (an S-curve), from 7 rows at limit 100 to 20 rows at limit 500.
+- **At most 30 rows** on each side, so a query reads at most 60 rows more than its window.
+- **Without a limit**, the size is 0. Use your own number for `skipBufferSize` if such a query has a skip.
+
+Adjust it to your writes:
+
 - If `skip` is not larger than `skipBufferSize`, the buffer holds all skipped rows,
   and a row added in front of the window never needs a full query.
 - Use a bigger `limitBufferSize` when many rows leave the window, for example a list where users often delete or move what they see.

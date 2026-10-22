@@ -175,7 +175,9 @@ import {
     resetResultWindowBuffer
 } from 'event-reduce-js';
 
-const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
+// recommended size: about log2(limit), at most 30, see the docs link below
+const size = queryParams.limit ? Math.min(30, Math.floor(Math.log2(queryParams.limit) + 19 / (1 + (400 / queryParams.limit) ** 2))) : 0;
+const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: size, skipBufferSize: size });
 // run the query with the skip and limit of the buffer
 const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
 resetResultWindowBuffer(resultWindowBuffer, await runQuery({ ...query, skip, limit }));
