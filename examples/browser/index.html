@@ -66,11 +66,12 @@
                 Runs 100 random events on the current query and updates its result in three ways:
                 a full query after each event, EventReduce,
                 and EventReduce with a <a href="https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md">limit buffer</a>
-                that keeps more rows in memory than the limit, so rows that leave the window can be refilled without a query.
-                The query must have a limit.
+                that keeps rows before and after the result window in memory,
+                so rows that move into the window can be taken from memory instead of a query.
+                The query must have a limit or a skip.
             </p>
             <div class="list-item">
-                <div class="key">Buffer size</div>
+                <div class="key">Buffer size (before and after the window)</div>
                 <div class="value">
                     <select id="limitBufferSizeSelect">
                         <option value="5">5</option>

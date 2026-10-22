@@ -145,33 +145,35 @@ if (action === 'runFullQueryAgain') {
 console.dir(currentResults);
 ```
 
-## Queries with a limit: the limit buffer
+## Queries with a limit or skip: the limit buffer
 
-For a query with a limit, EventReduce returns `runFullQueryAgain` when a row leaves a full window, because it does not know the next row after the window.
-The limit buffer avoids most of these full queries: it keeps `limit + bufferSize` rows in memory and shows only the first `limit` of them.
+For a query with a limit or a skip, EventReduce returns `runFullQueryAgain` when a row has to move into the result window that is not in the previous results:
+the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
+The limit buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
 
 ```typescript
 import {
     createLimitBuffer,
     applyChangeEventToLimitBuffer,
-    getLimitBufferQueryLimit,
+    getLimitBufferQuery,
     getLimitBufferResults,
     resetLimitBuffer
 } from 'event-reduce-js';
 
-const bufferSize = 20;
-// run the query with limit + bufferSize (and the same skip)
-const limitBuffer = createLimitBuffer(queryParams, bufferSize, rows);
+const limitBuffer = createLimitBuffer(queryParams, { limitBufferSize: 20, skipBufferSize: 20 });
+// run the query with the skip and limit of the buffer
+const { skip, limit } = getLimitBufferQuery(limitBuffer);
+resetLimitBuffer(limitBuffer, await runQuery({ ...query, skip, limit }));
 
 // on each change event
 if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
-    // run the query again with getLimitBufferQueryLimit(limitBuffer) as limit
-    resetLimitBuffer(limitBuffer, newRows);
+    const { skip, limit } = getLimitBufferQuery(limitBuffer);
+    resetLimitBuffer(limitBuffer, await runQuery({ ...query, skip, limit }));
 }
-const results = getLimitBufferResults(limitBuffer); // the first `limit` rows
+const results = getLimitBufferResults(limitBuffer); // the rows of the original skip and limit
 ```
 
-See [Limit buffer](https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md) for how it works, how to choose `bufferSize` and measurements.
+See [Limit buffer](https://github.com/pubkey/event-reduce/blob/master/docs/limit-buffer.md) for how it works, how to choose the buffer sizes and measurements.
 
 ## Smaller bundles
 
@@ -196,6 +198,5 @@ To keep the bundle small, errors only contain a short code:
 | --- | --- |
 | `EventReduce:RUN_FULL` | The `runFullQueryAgain` action was called. You have to re-run the query yourself. |
 | `EventReduce:UNK_ACT` | The `unknownAction` action was called, or `runAction()` was called with `alwaysWrong`. This should never happen. |
-| `EventReduce:LB_NO_LIMIT` | `createLimitBuffer()` was called with `queryParams` that have no `limit`. |
 | `EventReduce:UNK_STATE` | `resolveState()` was called with an unknown state name. |
 | `EventReduce:FALSY` | `ensureNotFalsy()` got a falsy value. |

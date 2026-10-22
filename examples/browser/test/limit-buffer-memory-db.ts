@@ -83,7 +83,11 @@ export class MemoryTable {
     /**
      * Full query: filter, sort, skip, limit.
      */
-    query(queryParams: QueryParams<Human>, limit = queryParams.limit): Human[] {
+    query(
+        queryParams: QueryParams<Human>,
+        limit = queryParams.limit,
+        skip = queryParams.skip ? queryParams.skip : 0
+    ): Human[] {
         const matching: Human[] = [];
         for (const doc of this.docs.values()) {
             if (queryParams.queryMatcher(doc)) {
@@ -91,7 +95,6 @@ export class MemoryTable {
             }
         }
         matching.sort(queryParams.sortComparator);
-        const skip = queryParams.skip ? queryParams.skip : 0;
         return limit === undefined ? matching.slice(skip) : matching.slice(skip, skip + limit);
     }
 }

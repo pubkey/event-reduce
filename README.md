@@ -110,12 +110,13 @@ From this state-action combinations we create a big truth table that is used to 
 
 The resulting optimized BDD is then shipped as the EventReduce algorithm and can be used in different programming languages and implementations. The programmer does not need to know about all this optimisation stuff and can directly use three simple functions like shown in the [JavaScript implementation](https://github.com/pubkey/event-reduce/tree/master/javascript)
 
-## Queries with a limit: the limit buffer
+## Queries with a limit or skip: the limit buffer
 
-For a query with a limit, most `runFullQueryAgain` results happen when a row leaves a full window,
-because the next row after the window is unknown. If you keep `limit + bufferSize` rows in memory and show only the first `limit`,
-that row can come from memory instead. In our benchmark, a buffer of 20 rows cut the full queries of a `limit: 20` query from 1,429 to 62 per 5,000 events.
-The JavaScript implementation has this built in as `createLimitBuffer()` and `applyChangeEventToLimitBuffer()`. See [docs/limit-buffer.md](./docs/limit-buffer.md) for how it works, how to use it and the measurements.
+For a query with a limit or a skip, most `runFullQueryAgain` results happen when a row has to move into the result window that is not in the previous results:
+the row after a full window, or the last skipped row when a row is added in front of the window.
+The limit buffer keeps some rows before and after the window in memory, so these rows come from memory instead of a new query.
+With the random queries and events of the fuzzing, it raised the share of events that need no full query from about 95 % to about 100 %.
+See [docs/limit-buffer.md](./docs/limit-buffer.md) for how it works, how to use it and the measurements.
 
 ## When to use this
 

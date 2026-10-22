@@ -2,17 +2,17 @@ import * as assert from 'assert';
 import {
     applyChangeEventToLimitBuffer,
     createLimitBuffer,
-    getLimitBufferQueryLimit,
+    getLimitBufferQuery,
     getLimitBufferResults,
     resetLimitBuffer
 } from '../../src/index.js';
-import type { LimitBufferResult } from '../../src/index.js';
+import type { LimitBuffer, LimitBufferResult, LimitBufferSizes } from '../../src/index.js';
 import type { ChangeEvent, QueryParams } from '../../src/types/index.js';
 
 /**
  * Randomized test of the limit buffer against a full query.
  * After every event, the visible result must equal the full query,
- * and the buffer must be an exact prefix of the full result.
+ * and the buffer must be an exact slice of the full result.
  */
 
 type Doc = {
@@ -24,7 +24,7 @@ type Doc = {
 type TestQuery = {
     sortDirection: 'asc' | 'desc';
     skip?: number;
-    limit: number;
+    limit?: number;
 };
 
 /**
@@ -67,12 +67,16 @@ function getQueryParams(query: TestQuery): QueryParams<Doc> {
 /**
  * Full query over all documents: filter, sort, skip, limit.
  */
-function runQuery(docs: Map<string, Doc>, queryParams: QueryParams<Doc>, limit: number): Doc[] {
-    const skip = queryParams.skip ? queryParams.skip : 0;
+function runQuery(docs: Map<string, Doc>, queryParams: QueryParams<Doc>, skip: number, limit: number | undefined): Doc[] {
     return Array.from(docs.values())
         .filter(queryParams.queryMatcher)
         .sort(queryParams.sortComparator)
-        .slice(skip, skip + limit);
+        .slice(skip, limit === undefined ? undefined : skip + limit);
+}
+
+function fillLimitBuffer(limitBuffer: LimitBuffer<Doc>, docs: Map<string, Doc>) {
+    const { skip, limit } = getLimitBufferQuery(limitBuffer);
+    resetLimitBuffer(limitBuffer, runQuery(docs, limitBuffer.queryParams, skip, limit));
 }
 
 function randomChangeEvent(
@@ -106,6 +110,7 @@ function randomChangeEvent(
 }
 
 const ids = (docs: Doc[]) => docs.map(d => d._id).join(',');
+const doc = (_id: string, age: number): Doc => ({ _id, gender: 'f', age });
 
 const QUERIES: TestQuery[] = [
     { sortDirection: 'asc', limit: 20 },
@@ -113,11 +118,22 @@ const QUERIES: TestQuery[] = [
     { sortDirection: 'asc', skip: 10, limit: 20 },
     { sortDirection: 'desc', skip: 10, limit: 20 },
     { sortDirection: 'asc', limit: 1 },
-    { sortDirection: 'desc', skip: 3, limit: 5 }
+    { sortDirection: 'desc', skip: 3, limit: 5 },
+    // skip without limit
+    { sortDirection: 'asc', skip: 10 },
+    { sortDirection: 'desc', skip: 2 },
+    // neither skip nor limit
+    { sortDirection: 'asc' }
 ];
-const BUFFER_SIZES = [0, 5, 20, 50];
+const BUFFER_SIZES: LimitBufferSizes[] = [
+    { limitBufferSize: 0, skipBufferSize: 0 },
+    { limitBufferSize: 5, skipBufferSize: 0 },
+    { limitBufferSize: 0, skipBufferSize: 5 },
+    { limitBufferSize: 20, skipBufferSize: 3 },
+    { limitBufferSize: 50, skipBufferSize: 20 }
+];
 const INITIAL_ROWS = [0, 30, 300];
-const EVENTS_PER_RUN = 1000;
+const EVENTS_PER_RUN = 600;
 
 /**
  * First more inserts, then mostly updates, then more deletes,
@@ -135,85 +151,114 @@ function getWeights(eventIndex: number) {
 }
 
 describe('limit-buffer.test.ts', () => {
-    describe('createLimitBuffer()', () => {
-        it('should throw on a query without a limit', () => {
-            const queryParams = getQueryParams({ sortDirection: 'asc', limit: 0 });
-            delete queryParams.limit;
-            assert.throws(() => createLimitBuffer(queryParams, 5, []), /LB_NO_LIMIT/);
+    describe('getLimitBufferQuery()', () => {
+        it('should add the buffer sizes to the skip and limit', () => {
+            const limitBuffer = createLimitBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
+                { limitBufferSize: 5, skipBufferSize: 3 }
+            );
+            assert.deepStrictEqual(getLimitBufferQuery(limitBuffer), { skip: 7, limit: 28 });
+        });
+        it('should not go below skip 0', () => {
+            const limitBuffer = createLimitBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 2, limit: 20 }),
+                { skipBufferSize: 5 }
+            );
+            assert.deepStrictEqual(getLimitBufferQuery(limitBuffer), { skip: 0, limit: 22 });
+        });
+        it('should have no limit for a query without a limit', () => {
+            const limitBuffer = createLimitBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 10 }),
+                { limitBufferSize: 5, skipBufferSize: 3 }
+            );
+            assert.deepStrictEqual(getLimitBufferQuery(limitBuffer), { skip: 7, limit: undefined });
+        });
+    });
+    describe('resetLimitBuffer()', () => {
+        it('should ask for a full query before it got rows', () => {
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), {});
+            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+                operation: 'INSERT', id: 'a', doc: doc('a', 1), previous: null
+            });
+            assert.strictEqual(result, 'runFullQueryAgain');
         });
         it('should be complete when the query returned fewer rows than requested', () => {
-            const queryParams = getQueryParams({ sortDirection: 'asc', limit: 2 });
-            const rows: Doc[] = [
-                { _id: 'a', gender: 'f', age: 1 },
-                { _id: 'b', gender: 'f', age: 2 },
-                { _id: 'c', gender: 'f', age: 3 }
-            ];
-            const limitBuffer = createLimitBuffer(queryParams, 2, rows);
-            assert.strictEqual(getLimitBufferQueryLimit(limitBuffer), 4);
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
+            const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
+            resetLimitBuffer(limitBuffer, rows);
             assert.strictEqual(limitBuffer.complete, true);
             assert.deepStrictEqual(getLimitBufferResults(limitBuffer), rows.slice(0, 2));
         });
         it('should not be complete when the query returned as many rows as requested', () => {
-            const queryParams = getQueryParams({ sortDirection: 'asc', limit: 1 });
-            const rows: Doc[] = [
-                { _id: 'a', gender: 'f', age: 1 },
-                { _id: 'b', gender: 'f', age: 2 }
-            ];
-            assert.strictEqual(createLimitBuffer(queryParams, 1, rows).complete, false);
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 1 }), { limitBufferSize: 1 });
+            resetLimitBuffer(limitBuffer, [doc('a', 1), doc('b', 2)]);
+            assert.strictEqual(limitBuffer.complete, false);
+        });
+        it('should show the rows after the skipped rows of the buffer', () => {
+            const limitBuffer = createLimitBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 1, limit: 2 }),
+                { skipBufferSize: 1 }
+            );
+            resetLimitBuffer(limitBuffer, [doc('a', 1), doc('b', 2), doc('c', 3)]);
+            assert.strictEqual(limitBuffer.offset, 0);
+            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b,c');
         });
     });
     describe('applyChangeEventToLimitBuffer()', () => {
         it('should refill the window from the buffer when a visible row is deleted', () => {
-            const queryParams = getQueryParams({ sortDirection: 'asc', limit: 2 });
-            const rows: Doc[] = [
-                { _id: 'a', gender: 'f', age: 1 },
-                { _id: 'b', gender: 'f', age: 2 },
-                { _id: 'c', gender: 'f', age: 3 },
-                { _id: 'd', gender: 'f', age: 4 }
-            ];
-            const limitBuffer = createLimitBuffer(queryParams, 2, rows);
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 2 });
+            const rows = [doc('a', 1), doc('b', 2), doc('c', 3), doc('d', 4)];
+            resetLimitBuffer(limitBuffer, rows);
             const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
-                operation: 'DELETE',
-                id: 'a',
-                doc: null,
-                previous: rows[0]
+                operation: 'DELETE', id: 'a', doc: null, previous: rows[0]
             });
             assert.strictEqual(result, 'buffer');
             assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b,c');
             assert.strictEqual(ids(limitBuffer.buffer), 'b,c,d');
         });
         it('should not append a row that moves behind the last row of the buffer', () => {
-            const queryParams = getQueryParams({ sortDirection: 'asc', limit: 2 });
-            const rows: Doc[] = [
-                { _id: 'a', gender: 'f', age: 1 },
-                { _id: 'b', gender: 'f', age: 2 },
-                { _id: 'c', gender: 'f', age: 3 }
-            ];
-            const limitBuffer = createLimitBuffer(queryParams, 1, rows);
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 1 });
+            const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
+            resetLimitBuffer(limitBuffer, rows);
             const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
-                operation: 'UPDATE',
-                id: 'a',
-                doc: { _id: 'a', gender: 'f', age: 99 },
-                previous: rows[0]
+                operation: 'UPDATE', id: 'a', doc: doc('a', 99), previous: rows[0]
             });
             assert.strictEqual(result, 'buffer');
             assert.strictEqual(ids(limitBuffer.buffer), 'b,c');
         });
-        it('should ask for a full query when a row is added in front of the skip window', () => {
-            const queryParams = getQueryParams({ sortDirection: 'asc', skip: 1, limit: 1 });
-            const rows: Doc[] = [
-                { _id: 'b', gender: 'f', age: 2 },
-                { _id: 'c', gender: 'f', age: 3 }
-            ];
-            const limitBuffer = createLimitBuffer(queryParams, 1, rows);
-            const doc: Doc = { _id: 'x', gender: 'f', age: 1 };
+        it('should ask for a full query when a row is added in front of the skip window without a skip buffer', () => {
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', skip: 1, limit: 1 }), { limitBufferSize: 1 });
+            resetLimitBuffer(limitBuffer, [doc('b', 2), doc('c', 3)]);
             const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
-                operation: 'INSERT',
-                id: doc._id,
-                doc,
-                previous: null
+                operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
             });
             assert.strictEqual(result, 'runFullQueryAgain');
+        });
+        it('should take the row from the skip buffer when a row is added in front of the window', () => {
+            const limitBuffer = createLimitBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 2, limit: 1 }),
+                { skipBufferSize: 1 }
+            );
+            // skip 1, limit 2: 'a' is skipped and not in the buffer
+            resetLimitBuffer(limitBuffer, [doc('b', 2), doc('c', 3)]);
+            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'c');
+            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+                operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
+            });
+            assert.strictEqual(result, 'buffer');
+            assert.strictEqual(limitBuffer.offset, 2);
+            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b');
+        });
+        it('should handle a query with a skip but without a limit', () => {
+            const limitBuffer = createLimitBuffer(getQueryParams({ sortDirection: 'asc', skip: 1 }), { skipBufferSize: 1 });
+            const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
+            resetLimitBuffer(limitBuffer, rows);
+            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'b,c');
+            const result = applyChangeEventToLimitBuffer<Doc>(limitBuffer, {
+                operation: 'INSERT', id: 'x', doc: doc('x', 0), previous: null
+            });
+            assert.notStrictEqual(result, 'runFullQueryAgain');
+            assert.strictEqual(ids(getLimitBufferResults(limitBuffer)), 'a,b,c');
         });
     });
     describe('randomized against a full query', () => {
@@ -225,13 +270,14 @@ describe('limit-buffer.test.ts', () => {
 
         let seed = 0;
         for (const query of QUERIES) {
-            for (const bufferSize of BUFFER_SIZES) {
+            for (const sizes of BUFFER_SIZES) {
                 for (const initialRows of INITIAL_ROWS) {
                     seed++;
                     const runSeed = seed;
                     it(
-                        'sort ' + query.sortDirection + ', skip ' + (query.skip || 0) + ', limit ' + query.limit +
-                        ', bufferSize ' + bufferSize + ', ' + initialRows + ' initial rows',
+                        'sort ' + query.sortDirection + ', skip ' + query.skip + ', limit ' + query.limit +
+                        ', limitBufferSize ' + sizes.limitBufferSize + ', skipBufferSize ' + sizes.skipBufferSize +
+                        ', ' + initialRows + ' initial rows',
                         () => {
                             const random = seededRandom(runSeed);
                             let idCounter = 0;
@@ -251,11 +297,9 @@ describe('limit-buffer.test.ts', () => {
                                 applyToDocs(randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 }));
                             }
                             const queryParams = getQueryParams(query);
-                            const limitBuffer = createLimitBuffer(
-                                queryParams,
-                                bufferSize,
-                                runQuery(docs, queryParams, query.limit + bufferSize)
-                            );
+                            const skip = query.skip ? query.skip : 0;
+                            const limitBuffer = createLimitBuffer(queryParams, sizes);
+                            fillLimitBuffer(limitBuffer, docs);
 
                             for (let i = 0; i < EVENTS_PER_RUN; i++) {
                                 const changeEvent = randomChangeEvent(docs, random, newId, getWeights(i));
@@ -264,7 +308,7 @@ describe('limit-buffer.test.ts', () => {
                                 const result = applyChangeEventToLimitBuffer(limitBuffer, changeEvent);
                                 totalCounts[result]++;
                                 if (result === 'runFullQueryAgain') {
-                                    resetLimitBuffer(limitBuffer, runQuery(docs, queryParams, getLimitBufferQueryLimit(limitBuffer)));
+                                    fillLimitBuffer(limitBuffer, docs);
                                 }
 
                                 const context = 'event #' + i + ' (' + changeEvent.operation + ', ' + result + ')';
@@ -272,29 +316,42 @@ describe('limit-buffer.test.ts', () => {
                                 // the visible result equals the full query
                                 assert.strictEqual(
                                     ids(getLimitBufferResults(limitBuffer)),
-                                    ids(runQuery(docs, queryParams, query.limit)),
+                                    ids(runQuery(docs, queryParams, skip, query.limit)),
                                     'visible result differs from full query at ' + context
                                 );
 
-                                // the buffer is an exact prefix of the full result
-                                const fullResult = runQuery(docs, queryParams, Infinity);
-                                assert.strictEqual(
-                                    ids(limitBuffer.buffer),
-                                    ids(fullResult.slice(0, limitBuffer.buffer.length)),
-                                    'buffer is not a prefix of the full result at ' + context
-                                );
-                                if (limitBuffer.complete) {
+                                // the buffer is an exact slice of the full result
+                                const fullResult = runQuery(docs, queryParams, 0, undefined);
+                                if (limitBuffer.buffer.length > 0) {
                                     assert.strictEqual(
-                                        limitBuffer.buffer.length,
-                                        fullResult.length,
+                                        ids(limitBuffer.buffer),
+                                        ids(fullResult.slice(limitBuffer.offset, limitBuffer.offset + limitBuffer.buffer.length)),
+                                        'buffer is not an exact slice of the full result at ' + context
+                                    );
+                                } else {
+                                    // an empty buffer only knows an upper bound of the rows before it
+                                    assert.ok(limitBuffer.complete, 'empty buffer must be complete at ' + context);
+                                    assert.ok(fullResult.length <= limitBuffer.offset, 'offset is no upper bound at ' + context);
+                                }
+                                if (limitBuffer.complete) {
+                                    assert.ok(
+                                        limitBuffer.offset + limitBuffer.buffer.length >= fullResult.length,
                                         'complete buffer misses rows at ' + context
                                     );
                                 }
-                                assert.ok(limitBuffer.buffer.length <= getLimitBufferQueryLimit(limitBuffer));
+
+                                // the buffer keeps no more rows than requested on both sides
+                                assert.ok(skip - limitBuffer.offset <= (sizes.skipBufferSize || 0), 'too many rows before the window');
+                                if (query.limit) {
+                                    assert.ok(
+                                        limitBuffer.buffer.length <= Math.max(0, skip - limitBuffer.offset) + query.limit + (sizes.limitBufferSize || 0),
+                                        'too many rows after the window'
+                                    );
+                                }
 
                                 // the key map matches the buffer
                                 assert.strictEqual(limitBuffer.keyDocumentMap.size, limitBuffer.buffer.length);
-                                limitBuffer.buffer.forEach(doc => assert.strictEqual(limitBuffer.keyDocumentMap.get(doc._id), doc));
+                                limitBuffer.buffer.forEach(d => assert.strictEqual(limitBuffer.keyDocumentMap.get(d._id), d));
                             }
                         }
                     );

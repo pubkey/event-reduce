@@ -30,7 +30,7 @@ import {
     runAction,
     applyChangeEventToLimitBuffer,
     createLimitBuffer,
-    getLimitBufferQueryLimit,
+    getLimitBufferQuery,
     getLimitBufferResults,
     resetLimitBuffer
 } from 'event-reduce-js';
@@ -237,8 +237,8 @@ async function run() {
         if (buttonsDisabled()) return;
 
         const mongoQuery = query as MongoQuery;
-        if (!mongoQuery.limit) {
-            setLimitBufferMessage('The current query has no limit. Select a query with a limit, like Query #1.');
+        if (!mongoQuery.limit && !mongoQuery.skip) {
+            setLimitBufferMessage('The current query has neither a limit nor a skip. Select a query like Query #1.');
             return;
         }
         setLimitBufferMessage();
@@ -258,7 +258,8 @@ async function run() {
 
         const bufferSize = parseInt($limitBufferSizeSelect.value, 10);
         const queryParams = implementation.getQueryParams(query);
-        const bufferQuery: MongoQuery = { ...mongoQuery, limit: mongoQuery.limit + bufferSize };
+        const limitBuffer = createLimitBuffer(queryParams, { limitBufferSize: bufferSize, skipBufferSize: bufferSize });
+        const bufferQuery: MongoQuery = { ...mongoQuery, ...getLimitBufferQuery(limitBuffer) };
         const eventsAmount = 100;
         const events = await getRandomChangeEvents(await implementation.getAll(), eventsAmount);
 
@@ -274,7 +275,7 @@ async function run() {
         // the initial queries are not measured
         let eventReduceResults = await implementation.getRawResults(query);
         let eventReduceDocMap = idToDocMapFromList(eventReduceResults);
-        const limitBuffer = createLimitBuffer(queryParams, bufferSize, await implementation.getRawResults(bufferQuery));
+        resetLimitBuffer(limitBuffer, await implementation.getRawResults(bufferQuery));
 
         let timeStart: number;
         for (const changeEvent of events) {
@@ -307,7 +308,6 @@ async function run() {
             timeStart = performanceNow();
             if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
                 limitBufferRow.fullQueries++;
-                bufferQuery.limit = getLimitBufferQueryLimit(limitBuffer);
                 resetLimitBuffer(limitBuffer, await implementation.getRawResults(bufferQuery));
             }
             const limitBufferResults = getLimitBufferResults(limitBuffer);

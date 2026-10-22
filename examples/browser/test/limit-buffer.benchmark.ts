@@ -5,7 +5,7 @@ import {
     QueryParams,
     applyChangeEventToLimitBuffer,
     createLimitBuffer,
-    getLimitBufferQueryLimit,
+    getLimitBufferQuery,
     getLimitBufferResults,
     LimitBuffer,
     resetLimitBuffer
@@ -31,11 +31,13 @@ import {
 const ROWS = 10000;
 const EVENTS = 5000;
 const SEED = 2026;
+// used as limitBufferSize and as skipBufferSize
 const BUFFER_SIZES = [0, 5, 20, 50];
 const QUERIES: TestQuery[] = [
     { sortDirection: 'asc', limit: 20 },
     { sortDirection: 'asc', limit: 100 },
-    { sortDirection: 'asc', skip: 20, limit: 20 }
+    { sortDirection: 'asc', skip: 20, limit: 20 },
+    { sortDirection: 'asc', skip: 20 }
 ];
 const WEIGHTS = { insert: 1, update: 3, delete: 1 };
 
@@ -81,11 +83,12 @@ function eventReduceStrategy(queryParams: QueryParams<Human>, table: MemoryTable
 }
 
 function limitBufferStrategy(queryParams: QueryParams<Human>, bufferSize: number, table: MemoryTable): Strategy {
-    const limitBuffer: LimitBuffer<Human> = createLimitBuffer(
-        queryParams,
-        bufferSize,
-        table.query(queryParams, queryParams.limit + bufferSize)
-    );
+    const limitBuffer: LimitBuffer<Human> = createLimitBuffer(queryParams, {
+        limitBufferSize: bufferSize,
+        skipBufferSize: bufferSize
+    });
+    const bufferQuery = getLimitBufferQuery(limitBuffer);
+    resetLimitBuffer(limitBuffer, table.query(queryParams, bufferQuery.limit, bufferQuery.skip));
     const strategy: Strategy = {
         name: 'limit buffer, bufferSize ' + bufferSize,
         fullQueries: 0,
@@ -95,7 +98,7 @@ function limitBufferStrategy(queryParams: QueryParams<Human>, bufferSize: number
         update(changeEvent, t) {
             if (applyChangeEventToLimitBuffer(limitBuffer, changeEvent) === 'runFullQueryAgain') {
                 strategy.fullQueries++;
-                const rows = t.query(queryParams, getLimitBufferQueryLimit(limitBuffer));
+                const rows = t.query(queryParams, bufferQuery.limit, bufferQuery.skip);
                 strategy.rowsRead += rows.length;
                 resetLimitBuffer(limitBuffer, rows);
             }
@@ -196,7 +199,10 @@ function runBenchmark(query: TestQuery, mix: EventMix) {
 }
 
 function queryLabel(query: TestQuery) {
-    return (query.skip ? 'skip ' + query.skip + ' + ' : '') + 'limit ' + query.limit;
+    return [
+        query.skip ? 'skip ' + query.skip : '',
+        query.limit ? 'limit ' + query.limit : ''
+    ].filter(Boolean).join(' + ');
 }
 
 function main() {
