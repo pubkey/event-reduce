@@ -72,3 +72,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create ${{ steps.bump.outputs.version }} --title ${{ steps.bump.outputs.version }} --generate-notes --verify-tag
+
+  deploy-example-page:
+    needs: build
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy-example-page.yml

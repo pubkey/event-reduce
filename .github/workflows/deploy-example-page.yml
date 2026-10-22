@@ -1,0 +1,45 @@
+# Builds the browser example page and publishes it to the github-pages branch.
+# Runs on every release (called from release.yml) and can be triggered manually.
+name: Deploy Example Page
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: deploy-example-page
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: javascript implementation install & build
+        working-directory: ./javascript
+        run: |
+          npm install
+          npm run build
+
+      - name: build example page
+        working-directory: ./examples/browser
+        run: |
+          npm install
+          npm run build
+
+      - name: push to github-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: github-pages
+          publish_dir: ./examples/browser/dist
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'deploy example page'
