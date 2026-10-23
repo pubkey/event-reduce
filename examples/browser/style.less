@@ -63,6 +63,22 @@ body {
             float: right;
         }
 
+        // reserve the height of the loading icon so it does not cause a layout shift
+        &.state-item {
+            line-height: 20px;
+
+            .value {
+                display    : flex;
+                align-items: center;
+                gap        : 4px;
+                height     : 20px;
+            }
+
+            .loading-icon {
+                margin-top: 0;
+            }
+        }
+
         // clearfix
         &:after {
             content   : ".";
