@@ -238,7 +238,7 @@ async function run() {
          * so rows that move into the window can be taken from there.
          */
         const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 10, skipBufferSize: 10 });
-        const bufferQuery: MongoQuery = { ...(query as MongoQuery), ...getResultWindowBufferQuery(resultWindowBuffer) };
+        const bufferQuery: MongoQuery = getResultWindowBufferQuery(resultWindowBuffer, query as MongoQuery);
         resetResultWindowBuffer(resultWindowBuffer, await implementation.getRawResults(bufferQuery));
 
         for (const changeEvent of events) {

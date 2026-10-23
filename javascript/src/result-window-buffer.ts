@@ -84,6 +84,19 @@ export type ResultWindowBufferSizes = {
 export type ResultWindowBufferResult = 'eventReduce' | 'buffer' | 'runFullQueryAgain';
 
 /**
+ * What applyChangeEventsToResultWindowBuffer() returns.
+ * results are the rows of the original skip and limit,
+ * changed is true if they are not the same rows as before the change events.
+ */
+export type ResultWindowBufferChangeResult<DocType> = {
+    runFullQueryAgain: true;
+} | {
+    runFullQueryAgain: false;
+    changed: boolean;
+    results: DocType[];
+};
+
+/**
  * Actions that keep the length of the result by dropping its first or last row.
  * The slice rule can keep that row instead.
  */
@@ -148,10 +161,30 @@ function toBufferSize(size?: number): number {
 }
 
 /**
- * The skip and limit to use when running the query for the buffer.
+ * The query to run for the buffer: the given query
+ * with the skip and limit of the buffer.
+ * limit is removed if all rows after the skip are needed.
+ * @param query the query that is shown to the user, it is not changed
+ */
+export function getResultWindowBufferQuery<Query extends { skip?: number; limit?: number; }>(
+    resultWindowBuffer: ResultWindowBuffer<any>,
+    query: Query
+): Query & { skip: number; limit?: number; } {
+    const bufferQuery = getBufferSkipAndLimit(resultWindowBuffer);
+    const ret: Query & { skip: number; limit?: number; } = Object.assign({}, query, { skip: bufferQuery.skip });
+    if (typeof bufferQuery.limit === 'number') {
+        ret.limit = bufferQuery.limit;
+    } else {
+        delete ret.limit;
+    }
+    return ret;
+}
+
+/**
+ * The skip and limit of the buffer.
  * limit is undefined if all rows after the skip are needed.
  */
-export function getResultWindowBufferQuery(resultWindowBuffer: ResultWindowBuffer<any>): { skip: number; limit: number | undefined; } {
+function getBufferSkipAndLimit(resultWindowBuffer: ResultWindowBuffer<any>): { skip: number; limit: number | undefined; } {
     const skip = getSkip(resultWindowBuffer);
     const bufferSkip = Math.max(0, skip - resultWindowBuffer.skipBufferSize);
     const limit = resultWindowBuffer.queryParams.limit;
@@ -170,7 +203,7 @@ export function resetResultWindowBuffer<DocType>(
     resultWindowBuffer: ResultWindowBuffer<DocType>,
     rows: DocType[]
 ): void {
-    const query = getResultWindowBufferQuery(resultWindowBuffer);
+    const query = getBufferSkipAndLimit(resultWindowBuffer);
     resultWindowBuffer.buffer = rows.slice(0);
     resultWindowBuffer.keyDocumentMap.clear();
     rows.forEach(doc => resultWindowBuffer.keyDocumentMap.set(getDocumentId(resultWindowBuffer.queryParams, doc), doc));
@@ -249,6 +282,42 @@ export function applyChangeEventToResultWindowBuffer<DocType>(
         return 'runFullQueryAgain';
     }
     return result;
+}
+
+/**
+ * Updates the buffer with all change events.
+ * Returns the new results, and if they changed,
+ * or runFullQueryAgain if the result window does not fit into the buffer anymore.
+ * Then run the query of getResultWindowBufferQuery() and pass the rows to resetResultWindowBuffer().
+ * @mutates resultWindowBuffer
+ */
+export function applyChangeEventsToResultWindowBuffer<DocType>(
+    resultWindowBuffer: ResultWindowBuffer<DocType>,
+    changeEvents: ChangeEvent<DocType>[]
+): ResultWindowBufferChangeResult<DocType> {
+    if (!isResultWindowInBuffer(resultWindowBuffer)) {
+        return { runFullQueryAgain: true };
+    }
+    const previousResults = getResultWindowBufferResults(resultWindowBuffer);
+    for (let index = 0; index < changeEvents.length; index++) {
+        if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvents[index]) === 'runFullQueryAgain') {
+            return { runFullQueryAgain: true };
+        }
+    }
+    const results = getResultWindowBufferResults(resultWindowBuffer);
+    /**
+     * Changed rows are always new objects from the change events,
+     * so comparing the rows by reference finds every change.
+     */
+    let changed = results.length !== previousResults.length;
+    for (let index = 0; !changed && index < results.length; index++) {
+        changed = results[index] !== previousResults[index];
+    }
+    return {
+        runFullQueryAgain: false,
+        changed,
+        results
+    };
 }
 
 /**

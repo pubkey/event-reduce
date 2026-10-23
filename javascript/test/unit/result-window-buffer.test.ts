@@ -1,11 +1,14 @@
 import * as assert from 'assert';
 import {
+    applyChangeEventsToResultWindowBuffer,
     applyChangeEventToResultWindowBuffer,
+    calculateActionName,
     createResultWindowBuffer,
     getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults,
-    resetResultWindowBuffer
+    resetResultWindowBuffer,
+    runAction
 } from '../../src/index.js';
 import type { ResultWindowBuffer, ResultWindowBufferResult, ResultWindowBufferSizes } from '../../src/index.js';
 import type { ChangeEvent, QueryParams } from '../../src/types/index.js';
@@ -76,7 +79,7 @@ function runQuery(docs: Map<string, Doc>, queryParams: QueryParams<Doc>, skip: n
 }
 
 function fillResultWindowBuffer(resultWindowBuffer: ResultWindowBuffer<Doc>, docs: Map<string, Doc>) {
-    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
+    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer, {});
     resetResultWindowBuffer(resultWindowBuffer, runQuery(docs, resultWindowBuffer.queryParams, skip, limit));
 }
 
@@ -170,24 +173,24 @@ describe('result-window-buffer.test.ts', () => {
                 getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
                 { limitBufferSize: 5, skipBufferSize: 3 }
             );
-            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 7, limit: 28 });
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer, {}), { skip: 7, limit: 28 });
         });
         it('should not go below skip 0', () => {
             const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 2, limit: 20 }),
                 { skipBufferSize: 5 }
             );
-            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 0, limit: 22 });
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer, {}), { skip: 0, limit: 22 });
         });
         it('should use whole numbers as buffer sizes', () => {
             const query = (size: number) => getResultWindowBufferQuery(createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
                 { limitBufferSize: size, skipBufferSize: size }
-            ));
+            ), {});
             assert.deepStrictEqual(query(2.5), { skip: 8, limit: 24 });
             assert.deepStrictEqual(query(0), { skip: 10, limit: 20 });
             // Infinity keeps all rows
-            assert.deepStrictEqual(query(Infinity), { skip: 0, limit: undefined });
+            assert.deepStrictEqual(query(Infinity), { skip: 0 });
         });
         it('should throw on negative buffer sizes and values that are not numbers', () => {
             const queryParams = getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 });
@@ -196,14 +199,33 @@ describe('result-window-buffer.test.ts', () => {
                 assert.throws(() => createResultWindowBuffer(queryParams, { skipBufferSize: size as any }), /RWB_SIZE/, String(size));
             });
             // not set means 0
-            assert.deepStrictEqual(getResultWindowBufferQuery(createResultWindowBuffer(queryParams, {})), { skip: 10, limit: 20 });
+            assert.deepStrictEqual(getResultWindowBufferQuery(createResultWindowBuffer(queryParams, {}), {}), { skip: 10, limit: 20 });
         });
         it('should have no limit for a query without a limit', () => {
             const resultWindowBuffer = createResultWindowBuffer(
                 getQueryParams({ sortDirection: 'asc', skip: 10 }),
                 { limitBufferSize: 5, skipBufferSize: 3 }
             );
-            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer), { skip: 7, limit: undefined });
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer, {}), { skip: 7 });
+        });
+        it('should keep the other fields of the query and not change it', () => {
+            const resultWindowBuffer = createResultWindowBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
+                { limitBufferSize: 5, skipBufferSize: 3 }
+            );
+            const query = { selector: { gender: 'm' }, sort: [{ age: 'asc' }], skip: 10, limit: 20 };
+            assert.deepStrictEqual(
+                getResultWindowBufferQuery(resultWindowBuffer, query),
+                { selector: { gender: 'm' }, sort: [{ age: 'asc' }], skip: 7, limit: 28 }
+            );
+            assert.deepStrictEqual(query, { selector: { gender: 'm' }, sort: [{ age: 'asc' }], skip: 10, limit: 20 });
+        });
+        it('should remove the limit of the query when all rows after the skip are needed', () => {
+            const resultWindowBuffer = createResultWindowBuffer(
+                getQueryParams({ sortDirection: 'asc', skip: 10, limit: 20 }),
+                { limitBufferSize: Infinity }
+            );
+            assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer, { skip: 10, limit: 20 }), { skip: 10 });
         });
     });
     describe('resetResultWindowBuffer()', () => {
@@ -304,6 +326,144 @@ describe('result-window-buffer.test.ts', () => {
             });
             assert.notStrictEqual(result, 'runFullQueryAgain');
             assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'a,b,c');
+        });
+    });
+    describe('applyChangeEventsToResultWindowBuffer()', () => {
+        it('should return the new results and if they changed', () => {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), { limitBufferSize: 3 });
+            resetResultWindowBuffer(resultWindowBuffer, [doc('a', 1), doc('b', 2), doc('c', 3), doc('d', 4), doc('e', 5)]);
+            // a row after the result window changes
+            const notVisible = applyChangeEventsToResultWindowBuffer<Doc>(resultWindowBuffer, [
+                { operation: 'UPDATE', id: 'e', doc: doc('e', 6), previous: doc('e', 5) }
+            ]);
+            assert.ok(!notVisible.runFullQueryAgain && !notVisible.changed);
+
+            const visible = applyChangeEventsToResultWindowBuffer<Doc>(resultWindowBuffer, [
+                { operation: 'DELETE', id: 'a', doc: null, previous: doc('a', 1) },
+                { operation: 'DELETE', id: 'b', doc: null, previous: doc('b', 2) }
+            ]);
+            assert.ok(!visible.runFullQueryAgain && visible.changed);
+            assert.strictEqual(ids(visible.runFullQueryAgain ? [] : visible.results), 'c,d');
+        });
+        it('should report a changed row at the same position as changed', () => {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), {});
+            resetResultWindowBuffer(resultWindowBuffer, [doc('a', 1), doc('b', 3)]);
+            const result = applyChangeEventsToResultWindowBuffer<Doc>(resultWindowBuffer, [
+                { operation: 'UPDATE', id: 'a', doc: doc('a', 2), previous: doc('a', 1) }
+            ]);
+            assert.ok(!result.runFullQueryAgain && result.changed);
+        });
+        it('should ask for a full query when the result window does not fit into the buffer', () => {
+            const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', limit: 2 }), {});
+            const empty = applyChangeEventsToResultWindowBuffer<Doc>(resultWindowBuffer, []);
+            assert.strictEqual(empty.runFullQueryAgain, true);
+
+            resetResultWindowBuffer(resultWindowBuffer, [doc('a', 1), doc('b', 2)]);
+            const result = applyChangeEventsToResultWindowBuffer<Doc>(resultWindowBuffer, [
+                { operation: 'DELETE', id: 'a', doc: null, previous: doc('a', 1) }
+            ]);
+            assert.strictEqual(result.runFullQueryAgain, true);
+        });
+        it('should return the same as a full query for random batches of events', () => {
+            const random = seededRandom(4242);
+            let idCounter = 0;
+            const newId = () => 'id-' + (idCounter++);
+            for (const query of QUERIES) {
+                const docs = new Map<string, Doc>();
+                for (let i = 0; i < 30; i++) {
+                    const changeEvent = randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 });
+                    docs.set(changeEvent.id, changeEvent.doc as Doc);
+                }
+                const queryParams = getQueryParams(query);
+                const skip = query.skip ? query.skip : 0;
+                const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 3, skipBufferSize: 3 });
+                fillResultWindowBuffer(resultWindowBuffer, docs);
+                let previousResults = runQuery(docs, queryParams, skip, query.limit);
+                for (let batch = 0; batch < 100; batch++) {
+                    const changeEvents: ChangeEvent<Doc>[] = [];
+                    const batchSize = 1 + Math.floor(random() * 5);
+                    for (let i = 0; i < batchSize; i++) {
+                        const changeEvent = randomChangeEvent(docs, random, newId, getWeights(batch * 5 + i));
+                        changeEvents.push(changeEvent);
+                        if (changeEvent.operation === 'DELETE') {
+                            docs.delete(changeEvent.id);
+                        } else {
+                            docs.set(changeEvent.id, changeEvent.doc);
+                        }
+                    }
+                    const result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents);
+                    const expected = runQuery(docs, queryParams, skip, query.limit);
+                    if (result.runFullQueryAgain) {
+                        fillResultWindowBuffer(resultWindowBuffer, docs);
+                    } else {
+                        assert.strictEqual(ids(result.results), ids(expected));
+                        const expectedChanged = expected.length !== previousResults.length ||
+                            expected.some((d, i) => d !== previousResults[i]);
+                        assert.strictEqual(result.changed, expectedChanged);
+                    }
+                    previousResults = expected;
+                }
+            }
+        });
+    });
+    describe('a buffer with both sizes 0', () => {
+        it('should never run the full query when EventReduce alone does not', () => {
+            let eventReduceFullQueries = 0;
+            let bufferFullQueries = 0;
+            let seed = 1000;
+            for (const query of QUERIES) {
+                for (const initialRows of INITIAL_ROWS) {
+                    seed++;
+                    const random = seededRandom(seed);
+                    let idCounter = 0;
+                    const newId = () => 'id-' + (idCounter++);
+                    const docs = new Map<string, Doc>();
+                    for (let i = 0; i < initialRows; i++) {
+                        const changeEvent = randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 });
+                        docs.set(changeEvent.id, changeEvent.doc as Doc);
+                    }
+                    const queryParams = getQueryParams(query);
+                    const skip = query.skip ? query.skip : 0;
+                    let previousResults = runQuery(docs, queryParams, skip, query.limit);
+                    let keyDocumentMap = new Map(previousResults.map(d => [d._id, d]));
+                    const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 0, skipBufferSize: 0 });
+                    fillResultWindowBuffer(resultWindowBuffer, docs);
+
+                    for (let i = 0; i < EVENTS_PER_RUN; i++) {
+                        const changeEvent = randomChangeEvent(docs, random, newId, getWeights(i));
+                        if (changeEvent.operation === 'DELETE') {
+                            docs.delete(changeEvent.id);
+                        } else {
+                            docs.set(changeEvent.id, changeEvent.doc);
+                        }
+
+                        const actionName = calculateActionName({ queryParams, changeEvent, previousResults, keyDocumentMap });
+                        const eventReduceNeedsQuery = actionName === 'runFullQueryAgain';
+                        if (eventReduceNeedsQuery) {
+                            eventReduceFullQueries++;
+                            previousResults = runQuery(docs, queryParams, skip, query.limit);
+                            keyDocumentMap = new Map(previousResults.map(d => [d._id, d]));
+                        } else {
+                            runAction(actionName, queryParams, changeEvent, previousResults, keyDocumentMap);
+                        }
+
+                        const bufferNeedsQuery = applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain';
+                        if (bufferNeedsQuery) {
+                            bufferFullQueries++;
+                            fillResultWindowBuffer(resultWindowBuffer, docs);
+                        }
+                        assert.ok(
+                            !bufferNeedsQuery || eventReduceNeedsQuery,
+                            'buffer needs a full query but EventReduce does not at event #' + i + ' (' + changeEvent.operation + ')'
+                        );
+                        assert.strictEqual(
+                            ids(getResultWindowBufferResults(resultWindowBuffer)),
+                            ids(runQuery(docs, queryParams, skip, query.limit))
+                        );
+                    }
+                }
+            }
+            assert.ok(bufferFullQueries <= eventReduceFullQueries, bufferFullQueries + ' > ' + eventReduceFullQueries);
         });
     });
     describe('randomized against a full query', () => {

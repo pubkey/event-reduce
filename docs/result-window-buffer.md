@@ -102,7 +102,9 @@ it needed the same number of full queries, but took 2 to 8 times as long in the 
 The slice rule compares the changed row with the first and last row of the buffer, while the EventReduce decision diagram
 often answers `doNothing` after a few checks.
 So the result window buffer keeps EventReduce in front. Its actions are verified by the EventReduce fuzzing, and the slice rule only handles the rest.
-With both buffer sizes at 0, the result window buffer behaves like plain EventReduce (see the tables below).
+With both buffer sizes at 0, the result window buffer never needs a full query where plain EventReduce does not,
+and sometimes saves one with the slice rule (see the tables below). A randomized test checks this for every event.
+So you can use the result window buffer for every query instead of plain EventReduce, and set the sizes to 0 where you want no buffer.
 
 ### Requirements
 
@@ -116,7 +118,7 @@ With both buffer sizes at 0, the result window buffer behaves like plain EventRe
 ```ts
 import {
     createResultWindowBuffer,
-    applyChangeEventToResultWindowBuffer,
+    applyChangeEventsToResultWindowBuffer,
     getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults,
@@ -129,26 +131,28 @@ const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSi
 
 async function runBufferQuery() {
     // the same query, with the skip and limit of the buffer
-    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
-    resetResultWindowBuffer(resultWindowBuffer, await db.find({ ...query, skip, limit }));
+    resetResultWindowBuffer(resultWindowBuffer, await db.find(getResultWindowBufferQuery(resultWindowBuffer, query)));
+    render(getResultWindowBufferResults(resultWindowBuffer));
 }
 await runBufferQuery();
-render(getResultWindowBufferResults(resultWindowBuffer));
 
-db.changes$.subscribe(async changeEvent => {
-    if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
+db.changes$.subscribe(async changeEvents => {
+    const result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents);
+    if (result.runFullQueryAgain) {
         await runBufferQuery();
+    } else if (result.changed) {
+        render(result.results);
     }
-    render(getResultWindowBufferResults(resultWindowBuffer));
 });
 ```
 
 | Function | Description |
 |---|---|
 | `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. Sizes are rounded down and `Infinity` keeps all rows on that side. Throws `EventReduce:RWB_SIZE` for negative sizes and values that are not numbers, like `NaN`. |
-| `getResultWindowBufferQuery(resultWindowBuffer)` | The `skip` and `limit` to run the query with: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. `limit` is `undefined` if the query has no limit. |
+| `getResultWindowBufferQuery(resultWindowBuffer, query)` | A copy of the query with the `skip` and `limit` of the buffer: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. The other fields of the query stay the same. `limit` is removed if all rows after the skip are needed. |
 | `resetResultWindowBuffer(resultWindowBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
-| `applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |
+| `applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents)` | Updates the buffer with all events. Returns `{ runFullQueryAgain: true }`, or `{ runFullQueryAgain: false, changed, results }` with the visible result and whether it changed. |
+| `applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent)` | Updates the buffer with one event. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |
 | `getResultWindowBufferResults(resultWindowBuffer)` | The visible result, the rows of the original skip and limit. Throws `EventReduce:RWB_OUTDATED` if the query must run first: before the first `resetResultWindowBuffer()` or after `'runFullQueryAgain'`. |
 | `getRecommendedResultWindowBufferSize(limit)` | The recommended size for each side of the buffer, see [Recommended sizes](#recommended-sizes). 0 for limit 1 and for queries without a limit. |
 

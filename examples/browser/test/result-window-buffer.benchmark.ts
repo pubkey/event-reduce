@@ -87,7 +87,7 @@ function resultWindowBufferStrategy(queryParams: QueryParams<Human>, bufferSize:
         limitBufferSize: bufferSize,
         skipBufferSize: bufferSize
     });
-    const bufferQuery = getResultWindowBufferQuery(resultWindowBuffer);
+    const bufferQuery = getResultWindowBufferQuery(resultWindowBuffer, {});
     resetResultWindowBuffer(resultWindowBuffer, table.query(queryParams, bufferQuery.limit, bufferQuery.skip));
     const strategy: Strategy = {
         name: 'result window buffer, bufferSize ' + bufferSize,

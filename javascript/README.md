@@ -169,7 +169,7 @@ The result window buffer avoids most of these full queries: it keeps `limitBuffe
 ```typescript
 import {
     createResultWindowBuffer,
-    applyChangeEventToResultWindowBuffer,
+    applyChangeEventsToResultWindowBuffer,
     getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults,
@@ -180,15 +180,17 @@ import {
 const size = getRecommendedResultWindowBufferSize(queryParams.limit);
 const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: size, skipBufferSize: size });
 // run the query with the skip and limit of the buffer
-const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
-resetResultWindowBuffer(resultWindowBuffer, await runQuery({ ...query, skip, limit }));
+resetResultWindowBuffer(resultWindowBuffer, await runQuery(getResultWindowBufferQuery(resultWindowBuffer, query)));
+let results = getResultWindowBufferResults(resultWindowBuffer); // the rows of the original skip and limit
 
-// on each change event
-if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
-    const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);
-    resetResultWindowBuffer(resultWindowBuffer, await runQuery({ ...query, skip, limit }));
+// on new change events
+const result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents);
+if (result.runFullQueryAgain) {
+    resetResultWindowBuffer(resultWindowBuffer, await runQuery(getResultWindowBufferQuery(resultWindowBuffer, query)));
+    results = getResultWindowBufferResults(resultWindowBuffer);
+} else if (result.changed) {
+    results = result.results;
 }
-const results = getResultWindowBufferResults(resultWindowBuffer); // the rows of the original skip and limit
 ```
 
 See [Result window buffer](https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md) for how it works, how to choose the buffer sizes and measurements.
