@@ -7,6 +7,7 @@ import 'src/types.dart';
 
 export 'src/actions.dart';
 export 'src/bdd.dart' show packedBdd, packedBddString, resolveInput;
+export 'src/result_window_buffer.dart';
 export 'src/states.dart';
 export 'src/types.dart';
 export 'src/util.dart';

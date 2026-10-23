@@ -236,6 +236,9 @@ pub enum EventReduceError {
     RunFullQueryAgain,
     /// The action is not known to give correct results.
     UnknownAction,
+    /// The results of a result window buffer were read
+    /// although its result window is not in the buffer.
+    ResultWindowOutdated,
 }
 
 impl fmt::Display for EventReduceError {
@@ -243,6 +246,7 @@ impl fmt::Display for EventReduceError {
         match self {
             EventReduceError::RunFullQueryAgain => f.write_str("EventReduce:RUN_FULL"),
             EventReduceError::UnknownAction => f.write_str("EventReduce:UNK_ACT"),
+            EventReduceError::ResultWindowOutdated => f.write_str("EventReduce:RWB_OUTDATED"),
         }
     }
 }
