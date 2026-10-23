@@ -47,5 +47,13 @@ for (const tech of techs) {
                 const state = await getLoadingState();
                 return state === DEFAULT_LOADING_STATE;
             });
+
+            await t.click('#test100EventsResultWindowBufferButton');
+            await wait(100);
+
+            await waitUntil(async () => {
+                const state = await getLoadingState();
+                return state === DEFAULT_LOADING_STATE;
+            });
         });
 }

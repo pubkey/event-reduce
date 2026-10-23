@@ -9,16 +9,27 @@ import {
     setExampleQueries,
     $queryTextArea,
     $invalidQuery,
-    buttonsDisabled
+    buttonsDisabled,
+    $test100EventsResultWindowBufferButton
 } from './dom';
 
 import {
     getInitialData,
     getRandomChangeEvents
 } from './data-generator';
-import { Human, IdToDocumentMap, DatabaseImplementation, Query } from './types';
+import { Human, IdToDocumentMap, DatabaseImplementation, Query, MongoQuery } from './types';
 import { idToDocMapFromList, removeOptions, getParameterByName, getImplementations } from './util';
-import { ChangeEvent, calculateActionName, StateResolveFunctionInput, runAction } from 'event-reduce-js';
+import {
+    ChangeEvent,
+    calculateActionName,
+    StateResolveFunctionInput,
+    runAction,
+    applyChangeEventToResultWindowBuffer,
+    createResultWindowBuffer,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults,
+    resetResultWindowBuffer
+} from 'event-reduce-js';
 import { performanceNow } from 'async-test-util';
 
 import '../style.less';
@@ -91,6 +102,9 @@ async function run() {
         async (clickedQuery: Query) => {
             $invalidQuery.style.display = 'none';
             currentResults = await implementation.getRawResults(clickedQuery);
+            // only use the query for the actions when the database could run it
+            query = clickedQuery;
+            currentDocMap = idToDocMapFromList(currentResults);
             setResults(currentResults);
         }
     );
@@ -192,6 +206,62 @@ async function run() {
 
         const queryTime = totalTimeInMs - totalWriteTime;
         appendToLog('running 100 events with event-reduce', {
+            totalTimeInMs,
+            totalWriteTime,
+            optimizedEventsCount,
+            queryTime
+        });
+
+        setButtonsDisableState(false);
+        setLoadingState();
+    };
+
+    // with event-reduce and a result window buffer
+    $test100EventsResultWindowBufferButton.onclick = async () => {
+        if (buttonsDisabled()) return;
+
+        setButtonsDisableState(true);
+        setLoadingState('Run with EventReduce and result window buffer..');
+
+        const prevData = await implementation.getAll();
+        const events = await getRandomChangeEvents(
+            prevData,
+            100
+        );
+        const queryParams = implementation.getQueryParams(query);
+        let optimizedEventsCount = 0;
+        let totalWriteTime = 0;
+        const timeStart = performanceNow();
+
+        /**
+         * Keep 10 rows before and after the result window in memory,
+         * so rows that move into the window can be taken from there.
+         */
+        const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 10, skipBufferSize: 10 });
+        const bufferQuery: MongoQuery = getResultWindowBufferQuery(resultWindowBuffer, query as MongoQuery);
+        resetResultWindowBuffer(resultWindowBuffer, await implementation.getRawResults(bufferQuery));
+
+        for (const changeEvent of events) {
+
+            const writeTime = await implementation.handleEvent(changeEvent);
+            totalWriteTime = totalWriteTime + writeTime;
+
+            if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
+                // the result window does not fit into the buffer anymore, run the query again
+                resetResultWindowBuffer(resultWindowBuffer, await implementation.getRawResults(bufferQuery));
+            } else {
+                optimizedEventsCount++;
+            }
+            currentResults = getResultWindowBufferResults(resultWindowBuffer);
+            setResults(currentResults);
+        }
+        currentDocMap = idToDocMapFromList(currentResults);
+
+        const timeEnd = performanceNow();
+        const totalTimeInMs = timeEnd - timeStart;
+
+        const queryTime = totalTimeInMs - totalWriteTime;
+        appendToLog('running 100 events with event-reduce and result window buffer', {
             totalTimeInMs,
             totalWriteTime,
             optimizedEventsCount,

@@ -4,7 +4,8 @@
     "scripts": {
         "lint": "eslint .",
         "start": "webpack-dev-server --config webpack.dev.js",
-        "test:e2e": "testcafe chrome -e test/ --hostname localhost --compiler-options \"typescript.customCompilerModulePath=../typescript;typescript.configPath=test/tsconfig.json\"",
+        "benchmark:result-window-buffer": "tsx test/result-window-buffer.benchmark.ts",
+        "test:e2e": "testcafe chrome -e test/e2e.test.ts --hostname localhost --compiler-options \"typescript.customCompilerModulePath=../typescript;typescript.configPath=test/tsconfig.json\"",
         "test": "concurrently \"npm run serve\" \"sleep 4 && npm run test:e2e\" --kill-others --success first",
         "mongo": "bash mongodb.bash",
         "serve": "ws -p 8888 -d dist/",
@@ -51,6 +52,7 @@
         "style-loader": "4.0.0",
         "testcafe": "3.7.6",
         "ts-loader": "9.6.2",
+        "tsx": "4.23.15",
         "typescript": "6.0.3",
         "typescript-eslint": "8.72.0",
         "util": "0.12.5",

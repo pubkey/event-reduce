@@ -160,6 +160,41 @@ if (action === runFullQueryAgain) {
 }
 ```
 
+## Additional Optimization: Result Window Buffer
+
+For a query with a limit or a skip, EventReduce returns `runFullQueryAgain` when a row has to move into the result window that is not in the previous results:
+the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
+The result window buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
+
+```typescript
+import {
+    createResultWindowBuffer,
+    applyChangeEventsToResultWindowBuffer,
+    getRecommendedResultWindowBufferSize,
+    getResultWindowBufferQuery,
+    getResultWindowBufferResults,
+    resetResultWindowBuffer
+} from 'event-reduce-js';
+
+// recommended size: about log2(limit), at most 30, see the docs link below
+const size = getRecommendedResultWindowBufferSize(queryParams.limit);
+const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: size, skipBufferSize: size });
+// run the query with the skip and limit of the buffer
+resetResultWindowBuffer(resultWindowBuffer, await runQuery(getResultWindowBufferQuery(resultWindowBuffer, query)));
+let results = getResultWindowBufferResults(resultWindowBuffer); // the rows of the original skip and limit
+
+// on new change events
+const result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents);
+if (result.runFullQueryAgain) {
+    resetResultWindowBuffer(resultWindowBuffer, await runQuery(getResultWindowBufferQuery(resultWindowBuffer, query)));
+    results = getResultWindowBufferResults(resultWindowBuffer);
+} else if (result.changed) {
+    results = result.results;
+}
+```
+
+See [Result window buffer](https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md) for how it works, how to choose the buffer sizes and measurements.
+
 ## Error codes
 
 To keep the bundle small, errors only contain a short code:
@@ -168,5 +203,7 @@ To keep the bundle small, errors only contain a short code:
 | --- | --- |
 | `EventReduce:RUN_FULL` | The `runFullQueryAgain` action was called. You have to re-run the query yourself. |
 | `EventReduce:UNK_ACT` | The `unknownAction` action was called, or `runAction()` was called with `alwaysWrong`. This should never happen. |
+| `EventReduce:RWB_SIZE` | `createResultWindowBuffer()` got a buffer size that is negative or not a number, like `NaN`. |
+| `EventReduce:RWB_OUTDATED` | `getResultWindowBufferResults()` was called while the result window is not in the buffer: before `resetResultWindowBuffer()`, or after `applyChangeEventToResultWindowBuffer()` returned `'runFullQueryAgain'` and the query did not run again. |
 | `EventReduce:UNK_STATE` | `resolveState()` was called with an unknown state name. |
 | `EventReduce:FALSY` | `ensureNotFalsy()` got a falsy value. |

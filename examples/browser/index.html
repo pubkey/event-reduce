@@ -55,6 +55,17 @@
                 This will run 100 random events and after each event it will use EventReduce to calculate the new
                 results
             </p>
+            <hr />
+            <div
+                id="test100EventsResultWindowBufferButton"
+                class="button"
+            >100 events (with EventReduce + result window buffer)</div>
+            <p>
+                This will run 100 random events and use EventReduce with a
+                <a href="https://github.com/pubkey/event-reduce/blob/master/docs/result-window-buffer.md">result window buffer</a>
+                that keeps 10 rows before and after the result window in memory,
+                so rows that move into the window do not need a new query
+            </p>
             <br /><br />
         </div>
         <div class="panel">
