@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import {
     applyChangeEventToResultWindowBuffer,
     createResultWindowBuffer,
+    getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults,
     resetResultWindowBuffer
@@ -152,6 +153,17 @@ function getWeights(eventIndex: number) {
 }
 
 describe('result-window-buffer.test.ts', () => {
+    describe('getRecommendedResultWindowBufferSize()', () => {
+        it('should return the recommended size for each limit', () => {
+            const expected: [number | undefined, number][] = [
+                [undefined, 0], [0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [10, 3], [20, 4],
+                [100, 7], [200, 11], [500, 20], [1000, 26], [2711, 29], [2712, 30], [100000, 30]
+            ];
+            expected.forEach(([limit, size]) => {
+                assert.strictEqual(getRecommendedResultWindowBufferSize(limit), size, 'limit ' + limit);
+            });
+        });
+    });
     describe('getResultWindowBufferQuery()', () => {
         it('should add the buffer sizes to the skip and limit', () => {
             const resultWindowBuffer = createResultWindowBuffer(

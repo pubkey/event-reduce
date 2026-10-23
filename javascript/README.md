@@ -170,13 +170,14 @@ The result window buffer avoids most of these full queries: it keeps `limitBuffe
 import {
     createResultWindowBuffer,
     applyChangeEventToResultWindowBuffer,
+    getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults,
     resetResultWindowBuffer
 } from 'event-reduce-js';
 
 // recommended size: about log2(limit), at most 30, see the docs link below
-const size = queryParams.limit ? Math.min(30, Math.floor(Math.log2(queryParams.limit) + 19 / (1 + (400 / queryParams.limit) ** 2))) : 0;
+const size = getRecommendedResultWindowBufferSize(queryParams.limit);
 const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: size, skipBufferSize: size });
 // run the query with the skip and limit of the buffer
 const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer);

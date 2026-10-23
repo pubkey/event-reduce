@@ -117,13 +117,14 @@ With both buffer sizes at 0, the result window buffer behaves like plain EventRe
 import {
     createResultWindowBuffer,
     applyChangeEventToResultWindowBuffer,
+    getRecommendedResultWindowBufferSize,
     getResultWindowBufferQuery,
     getResultWindowBufferResults,
     resetResultWindowBuffer
 } from 'event-reduce-js';
 
 // queryParams as for EventReduce, with the skip and limit that the user sees
-const size = recommendedBufferSize(queryParams.limit); // see "Choosing the buffer sizes"
+const size = getRecommendedResultWindowBufferSize(queryParams.limit); // see "Recommended sizes"
 const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: size, skipBufferSize: size });
 
 async function runBufferQuery() {
@@ -149,6 +150,7 @@ db.changes$.subscribe(async changeEvent => {
 | `resetResultWindowBuffer(resultWindowBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
 | `applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent)` | Updates the buffer. Returns `'eventReduce'` (an EventReduce action did it), `'buffer'` (the slice rule did it) or `'runFullQueryAgain'`. |
 | `getResultWindowBufferResults(resultWindowBuffer)` | The visible result, the rows of the original skip and limit. Throws `EventReduce:RWB_OUTDATED` if the query must run first: before the first `resetResultWindowBuffer()` or after `'runFullQueryAgain'`. |
+| `getRecommendedResultWindowBufferSize(limit)` | The recommended size for each side of the buffer, see [Recommended sizes](#recommended-sizes). 0 for limit 1 and for queries without a limit. |
 
 The functions mutate the `resultWindowBuffer` object. Treat its fields as read only.
 It works for any query: with a limit, with a skip, with both or with neither.
@@ -184,15 +186,10 @@ with 5, 20 and 50 rows. `skip 20 + limit 20` behaves the same: 1,501 without a b
 
 ### Recommended sizes
 
-We recommend this function for both sizes:
+We recommend `getRecommendedResultWindowBufferSize(limit)` for both sizes. It returns:
 
 ```ts
-function recommendedBufferSize(limit?: number): number {
-    if (!limit) {
-        return 0;
-    }
-    return Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2)));
-}
+limit ? Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2))) : 0
 ```
 
 | limit | 1 | 2 | 3 | 4 | 10 | 20 | 100 | 200 | 500 | 1,000 | 2,712+ |
