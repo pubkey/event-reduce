@@ -134,10 +134,14 @@ export function createResultWindowBuffer<DocType>(
     queryParams: QueryParams<DocType>,
     sizes: ResultWindowBufferSizes
 ): ResultWindowBuffer<DocType> {
+    const limitBufferSize = toBufferSize(sizes.limitBufferSize);
+    const skipBufferSize = toBufferSize(sizes.skipBufferSize);
+    // with limit 0 the result is always empty, so no rows are kept
+    const isEmptyQuery = queryParams.limit === 0;
     return {
         queryParams,
-        limitBufferSize: toBufferSize(sizes.limitBufferSize),
-        skipBufferSize: toBufferSize(sizes.skipBufferSize),
+        limitBufferSize: isEmptyQuery ? 0 : limitBufferSize,
+        skipBufferSize: isEmptyQuery ? 0 : skipBufferSize,
         buffer: [],
         keyDocumentMap: new Map(),
         offset: 0,
@@ -237,6 +241,10 @@ export function applyChangeEventToResultWindowBuffer<DocType>(
     changeEvent: ChangeEvent<DocType>
 ): ResultWindowBufferResult {
     const buffer = resultWindowBuffer.buffer;
+    if (resultWindowBuffer.queryParams.limit === 0) {
+        // the result of a query with limit 0 is always empty, nothing can change it
+        return 'eventReduce';
+    }
     if (!resultWindowBuffer.complete && buffer.length === 0) {
         return 'runFullQueryAgain';
     }

@@ -329,7 +329,8 @@ describe('result-window-buffer.test.ts', () => {
                 const queryParams = getQueryParams({ sortDirection: 'asc', skip, limit: 0 });
                 const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 2, skipBufferSize: 2 });
                 fillResultWindowBuffer(resultWindowBuffer, docs);
-                assert.strictEqual(getResultWindowBufferQuery(resultWindowBuffer, {}).limit, skip + 2);
+                // no rows are kept, so the buffer query asks for none
+                assert.deepStrictEqual(getResultWindowBufferQuery(resultWindowBuffer, {}), { skip, limit: 0 });
                 assert.deepStrictEqual(getResultWindowBufferResults(resultWindowBuffer), []);
                 for (let i = 0; i < 100; i++) {
                     const changeEvent = randomChangeEvent(docs, random, newId, getWeights(i));
@@ -338,11 +339,9 @@ describe('result-window-buffer.test.ts', () => {
                     } else {
                         docs.set(changeEvent.id, changeEvent.doc);
                     }
-                    if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
-                        fillResultWindowBuffer(resultWindowBuffer, docs);
-                    }
+                    assert.strictEqual(applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent), 'eventReduce');
                     assert.deepStrictEqual(getResultWindowBufferResults(resultWindowBuffer), []);
-                    assert.ok(resultWindowBuffer.buffer.length <= 4);
+                    assert.strictEqual(resultWindowBuffer.buffer.length, 0);
                 }
             }
         });

@@ -160,6 +160,7 @@ The functions mutate the `resultWindowBuffer` object. Treat its fields as read o
 It works for any query: with a limit, with a skip, with both or with neither.
 Without a limit, the buffer always runs to the end of the result, so `limitBufferSize` is not used.
 Without a skip, `skipBufferSize` is not used.
+With `limit: 0`, the result is always empty, so the buffer keeps no rows and never needs a full query.
 
 ### Proof by test
 
