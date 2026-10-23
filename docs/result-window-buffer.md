@@ -9,8 +9,6 @@ When a row has to move into the window, it comes from memory instead of a new qu
 - Demo: the "100 events (with EventReduce + result window buffer)" button of the [browser demo](https://pubkey.github.io/event-reduce/),
   which keeps 10 rows before and after the result window
 
-![Browser demo after running 100 events with EventReduce and with the result window buffer](./files/result-window-buffer-demo.png)
-
 ## The problem
 
 EventReduce calculates the new result of a query from the old result and a change event.
