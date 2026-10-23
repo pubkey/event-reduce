@@ -188,7 +188,7 @@ function getBufferSkipAndLimit(resultWindowBuffer: ResultWindowBuffer<any>): { s
     const skip = getSkip(resultWindowBuffer);
     const bufferSkip = Math.max(0, skip - resultWindowBuffer.skipBufferSize);
     const limit = resultWindowBuffer.queryParams.limit;
-    const bufferLimit = limit ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize : undefined;
+    const bufferLimit = typeof limit === 'number' ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize : undefined;
     return {
         skip: bufferSkip,
         limit: bufferLimit !== undefined && Number.isFinite(bufferLimit) ? bufferLimit : undefined
@@ -225,7 +225,7 @@ export function getResultWindowBufferResults<DocType>(resultWindowBuffer: Result
     }
     const start = getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
     const limit = resultWindowBuffer.queryParams.limit;
-    return resultWindowBuffer.buffer.slice(start, limit ? start + limit : undefined);
+    return resultWindowBuffer.buffer.slice(start, typeof limit === 'number' ? start + limit : undefined);
 }
 
 /**
@@ -332,7 +332,7 @@ function isResultWindowInBuffer(resultWindowBuffer: ResultWindowBuffer<any>): bo
         return true;
     }
     const limit = resultWindowBuffer.queryParams.limit;
-    return !!limit && resultWindowBuffer.buffer.length >= start + limit;
+    return typeof limit === 'number' && resultWindowBuffer.buffer.length >= start + limit;
 }
 
 function getSkip(resultWindowBuffer: ResultWindowBuffer<any>): number {
@@ -357,7 +357,7 @@ function trimBuffer<DocType>(resultWindowBuffer: ResultWindowBuffer<DocType>): v
     }
 
     const limit = queryParams.limit;
-    if (limit) {
+    if (typeof limit === 'number') {
         const maxLength = Math.max(0, getSkip(resultWindowBuffer) - resultWindowBuffer.offset) + limit + resultWindowBuffer.limitBufferSize;
         if (buffer.length > maxLength) {
             buffer.splice(maxLength).forEach(doc => keyDocumentMap.delete(getDocumentId(queryParams, doc)));

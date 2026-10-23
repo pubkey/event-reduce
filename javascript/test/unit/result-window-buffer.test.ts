@@ -316,6 +316,36 @@ describe('result-window-buffer.test.ts', () => {
             assert.strictEqual(resultWindowBuffer.offset, 2);
             assert.strictEqual(ids(getResultWindowBufferResults(resultWindowBuffer)), 'b');
         });
+        it('should return no rows for a query with limit 0', () => {
+            const random = seededRandom(77);
+            let idCounter = 0;
+            const newId = () => 'id-' + (idCounter++);
+            for (const skip of [0, 2]) {
+                const docs = new Map<string, Doc>();
+                for (let i = 0; i < 10; i++) {
+                    const changeEvent = randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 });
+                    docs.set(changeEvent.id, changeEvent.doc as Doc);
+                }
+                const queryParams = getQueryParams({ sortDirection: 'asc', skip, limit: 0 });
+                const resultWindowBuffer = createResultWindowBuffer(queryParams, { limitBufferSize: 2, skipBufferSize: 2 });
+                fillResultWindowBuffer(resultWindowBuffer, docs);
+                assert.strictEqual(getResultWindowBufferQuery(resultWindowBuffer, {}).limit, skip + 2);
+                assert.deepStrictEqual(getResultWindowBufferResults(resultWindowBuffer), []);
+                for (let i = 0; i < 100; i++) {
+                    const changeEvent = randomChangeEvent(docs, random, newId, getWeights(i));
+                    if (changeEvent.operation === 'DELETE') {
+                        docs.delete(changeEvent.id);
+                    } else {
+                        docs.set(changeEvent.id, changeEvent.doc);
+                    }
+                    if (applyChangeEventToResultWindowBuffer(resultWindowBuffer, changeEvent) === 'runFullQueryAgain') {
+                        fillResultWindowBuffer(resultWindowBuffer, docs);
+                    }
+                    assert.deepStrictEqual(getResultWindowBufferResults(resultWindowBuffer), []);
+                    assert.ok(resultWindowBuffer.buffer.length <= 4);
+                }
+            }
+        });
         it('should handle a query with a skip but without a limit', () => {
             const resultWindowBuffer = createResultWindowBuffer(getQueryParams({ sortDirection: 'asc', skip: 1 }), { skipBufferSize: 1 });
             const rows = [doc('a', 1), doc('b', 2), doc('c', 3)];
