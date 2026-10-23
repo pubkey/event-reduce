@@ -58,6 +58,36 @@ and `runAction()` keeps it in sync with the results.
 - `runAction()` throws an `EventReduceException` for `RunFullQueryAgain` and `UnknownAction`.
   `AlwaysWrong` is only used by the truth-table generator and throws like `UnknownAction`.
 
+## Result window buffer
+
+For a query with a limit or a skip, EventReduce returns `RunFullQueryAgain` when a row has to move into the result window that is not in the previous results:
+the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
+The result window buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
+It works like the [result window buffer of the JavaScript implementation](../docs/result-window-buffer.md),
+which explains how it works, how to choose the buffer sizes and has measurements.
+
+```kotlin
+// recommended size: about log2(limit), at most 30
+val size = getRecommendedResultWindowBufferSize(queryParams.limit)
+val resultWindowBuffer = createResultWindowBuffer(queryParams, limitBufferSize = size, skipBufferSize = size)
+// run the query with the skip and limit of the buffer
+resetResultWindowBuffer(resultWindowBuffer, runQuery(getResultWindowBufferQuery(resultWindowBuffer)))
+// the rows of the original skip and limit
+var results = getResultWindowBufferResults(resultWindowBuffer)
+
+// on new change events
+when (val result = applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents)) {
+    is ResultWindowBufferChangeResult.RunFullQueryAgain -> {
+        resetResultWindowBuffer(resultWindowBuffer, runQuery(getResultWindowBufferQuery(resultWindowBuffer)))
+        results = getResultWindowBufferResults(resultWindowBuffer)
+    }
+    is ResultWindowBufferChangeResult.Results -> if (result.changed) results = result.results
+}
+```
+
+`getResultWindowBufferQuery()` returns the `skip` and `limit` to run the query with, `limit` is null if all rows after the skip are needed.
+`RESULT_WINDOW_BUFFER_ALL_ROWS` as a buffer size keeps all rows on that side.
+
 ## Development
 
 ```sh

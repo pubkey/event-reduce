@@ -65,6 +65,37 @@ and `runAction()` keeps it in sync with the results.
   and `EventReduceError.unknownAction`.
   `alwaysWrong` is only used by the truth-table generator and throws like `unknownAction`.
 
+## Result window buffer
+
+For a query with a limit or a skip, EventReduce returns `runFullQueryAgain` when a row has to move into the result window that is not in the previous results:
+the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
+The result window buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
+It works like the [result window buffer of the JavaScript implementation](../docs/result-window-buffer.md),
+which explains how it works, how to choose the buffer sizes and has measurements.
+
+```swift
+// recommended size: about log2(limit), at most 30
+let size = getRecommendedResultWindowBufferSize(queryParams.limit)
+let resultWindowBuffer = try createResultWindowBuffer(queryParams, limitBufferSize: size, skipBufferSize: size)
+// run the query with the skip and limit of the buffer
+resetResultWindowBuffer(resultWindowBuffer, try await runQuery(getResultWindowBufferQuery(resultWindowBuffer)))
+// the rows of the original skip and limit
+var results = try getResultWindowBufferResults(resultWindowBuffer)
+
+// on new change events
+switch applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents) {
+case .runFullQueryAgain:
+    resetResultWindowBuffer(resultWindowBuffer, try await runQuery(getResultWindowBufferQuery(resultWindowBuffer)))
+    results = try getResultWindowBufferResults(resultWindowBuffer)
+case .results(let changed, let newResults):
+    if changed { results = newResults }
+}
+```
+
+`getResultWindowBufferQuery()` returns the `skip` and `limit` to run the query with, `limit` is nil if all rows after the skip are needed.
+`resultWindowBufferAllRows` as a buffer size keeps all rows on that side.
+`applyChangeEventsToResultWindowBuffer()` needs `Equatable` documents to find out if the results changed.
+
 ## Development
 
 ```sh

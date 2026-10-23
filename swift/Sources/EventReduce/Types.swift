@@ -150,4 +150,9 @@ public enum EventReduceError: Error, Equatable {
     case runFullQueryAgain
     /// The action is not known to give correct results.
     case unknownAction
+    /// The results of a result window buffer were read
+    /// although its result window is not in the buffer.
+    case resultWindowOutdated
+    /// A buffer size of a result window buffer is negative.
+    case invalidResultWindowBufferSize
 }

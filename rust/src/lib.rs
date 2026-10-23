@@ -3,6 +3,7 @@
 mod actions;
 mod bdd;
 mod bdd_generated;
+mod result_window_buffer;
 mod states;
 mod types;
 mod util;
@@ -11,6 +12,7 @@ use std::hash::Hash;
 
 pub use actions::*;
 pub use bdd::{resolve_input, PACKED_BDD, PACKED_BDD_STRING};
+pub use result_window_buffer::*;
 pub use states::*;
 pub use types::*;
 pub use util::*;
