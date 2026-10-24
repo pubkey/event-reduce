@@ -1,0 +1,14 @@
+[package]
+name = "event-reduce"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Update live query results from database change events without re-running the query."
+license = "MIT"
+repository = "https://github.com/pubkey/event-reduce"
+homepage = "https://github.com/pubkey/event-reduce"
+readme = "README.md"
+keywords = ["live-query", "reactive", "realtime", "database", "bdd"]
+categories = ["database", "algorithms", "data-structures"]
+
+[dependencies]

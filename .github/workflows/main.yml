@@ -60,3 +60,71 @@ jobs:
       - name: lint
         working-directory: ./javascript
         run: npm run lint
+
+  rust:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: rust format
+        working-directory: ./rust
+        run: cargo fmt --check
+      - name: rust clippy
+        working-directory: ./rust
+        run: cargo clippy --all-targets -- -D warnings
+      - name: rust tests
+        working-directory: ./rust
+        run: cargo test
+
+  dart:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+      - name: dart install
+        working-directory: ./dart
+        run: dart pub get
+      - name: dart format
+        working-directory: ./dart
+        run: dart format --set-exit-if-changed .
+      - name: dart analyze
+        working-directory: ./dart
+        run: dart analyze --fatal-infos
+      - name: dart tests
+        working-directory: ./dart
+        run: dart test
+      - name: dart example
+        working-directory: ./dart
+        run: dart run example/example.dart
+
+  kotlin:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: kotlin tests
+        working-directory: ./kotlin
+        run: ./gradlew test
+
+  swift:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    container:
+      image: swift:6.1
+    steps:
+      - uses: actions/checkout@v7
+      - name: swift format
+        working-directory: ./swift
+        run: swift format lint -r -s Package.swift Sources Tests
+      - name: swift tests
+        working-directory: ./swift
+        run: swift test
