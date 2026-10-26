@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFileSync } from 'child_process';
 import { parse } from 'acorn';
 import { full } from 'acorn-walk';
 
@@ -50,6 +51,21 @@ describe('es5.test.ts', () => {
                 throw new Error(path.relative(cjsDir, file) + ' is not ES5: ' + (err as Error).message);
             }
         });
+    });
+    it('the ES module build should be importable as an ES module', () => {
+        // Also imports the ES module build of binary-decision-diagram.
+        const output = execFileSync(process.execPath, [
+            '--input-type=module',
+            '-e',
+            'const m = await import(' + JSON.stringify('file://' + path.join(esmDir, 'index.js')) + ');' +
+            'console.log(typeof m.calculateActionFunction + typeof m.applyChangeEventsToResultWindowBuffer);'
+        ], { cwd: path.join(__dirname, '..', '..', '..', '..') }).toString().trim();
+        assert.strictEqual(output, 'functionfunction');
+    });
+    it('the CommonJS build should be requireable', () => {
+        const m = require(path.join(cjsDir, 'index.es5.js'));
+        assert.strictEqual(typeof m.calculateActionFunction, 'function');
+        assert.strictEqual(typeof m.applyChangeEventsToResultWindowBuffer, 'function');
     });
     it('the ES module build should only contain ES5 syntax besides import and export', () => {
         const files = jsFiles(esmDir);
