@@ -10,6 +10,7 @@ import './fuzzing.test.js';
 import './calculate-bdd-quality.test.js';
 import './truth-table-generator.test.js';
 import './result-window-buffer.test.js';
+import './es5.test.js';
 
 // should be last
 import './generated-stuff.test.js';

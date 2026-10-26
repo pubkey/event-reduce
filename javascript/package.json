@@ -110,6 +110,8 @@
     "@types/deep-equal": "1.0.4",
     "@types/mocha": "10.0.10",
     "@types/node": "26.6.5",
+    "acorn": "8.19.0",
+    "acorn-walk": "8.3.5",
     "array-shuffle": "4.1.0",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
@@ -129,6 +131,6 @@
   },
   "dependencies": {
     "array-push-at-sort-position": "5.0.0",
-    "binary-decision-diagram": "5.0.0"
+    "binary-decision-diagram": "6.0.0"
   }
 }

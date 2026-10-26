@@ -69,7 +69,7 @@ export function runCheckedAction<DocType = any>(
         primary,
         input.previousResults
     );
-    for (const [key, doc] of input.keyDocumentMap) {
+    for (const [key, doc] of Array.from(input.keyDocumentMap)) {
         const fromOwn = ownMap.get(key);
         assert.deepStrictEqual(fromOwn, doc);
     }
@@ -445,7 +445,7 @@ describe('actions.test.ts', () => {
             };
             insertAtSortPositionRemoveLast(input);
             assert.deepStrictEqual(previousResults.map(getDocumentId), ['a', 'b']);
-            assert.deepStrictEqual([...keyDocumentMap.keys()].sort(), ['a', 'b']);
+            assert.deepStrictEqual(Array.from(keyDocumentMap.keys()).sort(), ['a', 'b']);
         });
     });
     describe('.insertAtSortPositionRemoveFirst()', () => {
@@ -517,7 +517,7 @@ describe('actions.test.ts', () => {
             };
             insertAtSortPositionRemoveFirst(input);
             assert.deepStrictEqual(previousResults.map(getDocumentId), ['b', 'c']);
-            assert.deepStrictEqual([...keyDocumentMap.keys()].sort(), ['b', 'c']);
+            assert.deepStrictEqual(Array.from(keyDocumentMap.keys()).sort(), ['b', 'c']);
         });
     });
 

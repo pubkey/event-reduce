@@ -99,7 +99,7 @@ function ensurePackedBddMatchesTruthTable(
     truthTable: TruthTable
 ) {
     const resolvers = getStateSetResolvers();
-    for (const [key, value] of truthTable.entries()) {
+    for (const [key, value] of Array.from(truthTable.entries())) {
         const bddValue = resolveWithPackedBdd(
             packedBdd,
             resolvers,
