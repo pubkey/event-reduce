@@ -111,10 +111,8 @@ export function ensureNotFalsy<T>(obj: T | false | undefined | null): T {
 }
 
 export function mergeSets<T>(sets: Set<T>[]): Set<T> {
-    let ret: Set<T> = new Set();
-    sets.forEach(set => {
-        ret = new Set([...ret, ...set]);
-    });
+    const ret: Set<T> = new Set();
+    sets.forEach(set => set.forEach(value => ret.add(value)));
     return ret;
 }
 

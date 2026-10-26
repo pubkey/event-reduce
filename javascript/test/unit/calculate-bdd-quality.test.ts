@@ -30,7 +30,7 @@ describe('calculate-bdd-quality.test.ts', () => {
         readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
     );
     const truthTableWithActionName = new Map();
-    for (const [key, value] of truthTable.entries()) {
+    for (const [key, value] of Array.from(truthTable.entries())) {
         const actionName = orderedActionList[value];
         truthTableWithActionName.set(key, actionName);
     }

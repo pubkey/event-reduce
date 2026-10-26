@@ -256,11 +256,18 @@ export function applyChangeEventToResultWindowBuffer<DocType>(
      * If the buffer is complete, we use buffer.length + 1, so EventReduce
      * knows that the limit is not reached and there are no more rows.
      */
+    const queryParams = resultWindowBuffer.queryParams;
     const input: ActionFunctionInput<DocType> = {
+        // Copied field by field: an object spread is compiled to a slow
+        // __assign() loop in the ES5 build and this runs on every change event.
         queryParams: {
-            ...resultWindowBuffer.queryParams,
+            primaryKey: queryParams.primaryKey,
+            getDocumentId: queryParams.getDocumentId,
+            sortFields: queryParams.sortFields,
             skip: resultWindowBuffer.offset > 0 ? resultWindowBuffer.offset : undefined,
-            limit: resultWindowBuffer.complete ? buffer.length + 1 : buffer.length
+            limit: resultWindowBuffer.complete ? buffer.length + 1 : buffer.length,
+            queryMatcher: queryParams.queryMatcher,
+            sortComparator: queryParams.sortComparator
         },
         changeEvent,
         previousResults: buffer,

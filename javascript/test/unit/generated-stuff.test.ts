@@ -45,7 +45,7 @@ describe('generated-stuff.test.ts', () => {
         readJsonFile(OUTPUT_TRUTH_TABLE_PATH)
     );
     const truthTableWithActionName = new Map();
-    for (const [key, value] of truthTable.entries()) {
+    for (const [key, value] of Array.from(truthTable.entries())) {
         const actionName = orderedActionList[value];
         truthTableWithActionName.set(key, actionName);
     }
@@ -63,7 +63,7 @@ describe('generated-stuff.test.ts', () => {
         it('the bdd should have the same values as the truth table', () => {
             const resolvers = getResolverFunctions();
             console.dir(truthTable);
-            for (const [key, value] of truthTable.entries()) {
+            for (const [key, value] of Array.from(truthTable.entries())) {
                 const bddValue = resolveWithPackedBdd(
                     getPackedBdd(),
                     resolvers,
@@ -526,7 +526,7 @@ describe('generated-stuff.test.ts (insert into a full limit window)', () => {
         const { action, ids, keyDocumentMap } = run(2, insertEvent);
         assert.strictEqual(action, 'insertAtSortPositionRemoveLast');
         assert.deepStrictEqual(ids, ['1', '2']);
-        assert.deepStrictEqual([...keyDocumentMap.keys()].sort(), ['1', '2']);
+        assert.deepStrictEqual(Array.from(keyDocumentMap.keys()).sort(), ['1', '2']);
     });
     it('should do the same for an update of a document that did not match before', () => {
         const { action, ids } = run(2, {
