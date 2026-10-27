@@ -15,25 +15,14 @@ pub fn index_of_document_id<D, K: Eq>(
 
 /// Inserts the item at its sort position, which is much faster than re-sorting the array.
 /// Items that are equal to the new item stay before it.
-/// Returns the index at which the item was inserted.
-pub fn push_at_sort_position<D>(
-    array: &mut Vec<D>,
-    item: D,
-    compare: impl Fn(&D, &D) -> Ordering,
-) -> usize {
+pub fn push_at_sort_position<D>(array: &mut Vec<D>, item: D, compare: impl Fn(&D, &D) -> Ordering) {
     // Shortcut: the item belongs at the end, push() is O(1).
     match array.last() {
-        None => {
-            array.push(item);
-            return 0;
+        Some(last) if compare(last, &item) == Ordering::Greater => {
+            let index =
+                array.partition_point(|existing| compare(existing, &item) != Ordering::Greater);
+            array.insert(index, item);
         }
-        Some(last) if compare(last, &item) != Ordering::Greater => {
-            array.push(item);
-            return array.len() - 1;
-        }
-        _ => {}
+        _ => array.push(item),
     }
-    let index = array.partition_point(|existing| compare(existing, &item) != Ordering::Greater);
-    array.insert(index, item);
-    index
 }

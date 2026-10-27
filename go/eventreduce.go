@@ -6,11 +6,6 @@ func CalculateActionName[D any](input *StateResolveFunctionInput[D]) ActionName 
 	return OrderedActionList[ResolveInput(input)]
 }
 
-// CalculateActionFunction is like CalculateActionName but returns the action function directly.
-func CalculateActionFunction[D any](input *StateResolveFunctionInput[D]) ActionFunction[D] {
-	return GetActionFunction[D](CalculateActionName(input))
-}
-
 // RunAction applies the action to the results and returns the new results.
 // Like append(), the returned slice can share memory with previousResults.
 // The keyDocumentMap, if not nil, is kept in sync with the results.

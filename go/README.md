@@ -5,7 +5,7 @@ It takes the previous results of a query and a change event of the database
 and calculates the new results **in memory, without running the query over the database again**.
 
 It uses the BDD that the [JavaScript implementation](../javascript/) created,
-so both always decide on the same action. It needs Go 1.21 or newer and has no dependencies.
+so both always decide on the same action. It needs Go 1.22 or newer and has no dependencies.
 
 ## Usage
 

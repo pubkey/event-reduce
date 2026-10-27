@@ -1,9 +1,6 @@
 import 'types.dart';
 import 'util.dart';
 
-typedef StateResolveFunction<D> = bool Function(
-    StateResolveFunctionInput<D> input);
-
 /// All states, in the same order as the JavaScript implementation.
 /// The BDD references the states by their index in this list.
 const List<StateName> orderedStateList = StateName.values;
@@ -187,6 +184,7 @@ bool resolveState<D>(StateName state, StateResolveFunctionInput<D> input) =>
 
 /// Returns the binary representation of all states
 /// like '010110110111...' where the first '0' means that the first state is false.
-String getStateSet<D>(StateResolveFunctionInput<D> input) => orderedStateList
-    .map((state) => resolveState(state, input) ? '1' : '0')
-    .join();
+String getStateSet<D>(StateResolveFunctionInput<D> input) =>
+    orderedStateList
+        .map((state) => resolveState(state, input) ? '1' : '0')
+        .join();

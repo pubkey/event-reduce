@@ -27,11 +27,13 @@ void main() {
   // a change event from the change stream of your database
   const changeEvent = ChangeEvent<User>.insert(id: 'c', doc: User('c', 25));
 
-  final action = calculateActionName(StateResolveFunctionInput(
-    queryParams: queryParams,
-    changeEvent: changeEvent,
-    previousResults: results,
-  ));
+  final action = calculateActionName(
+    StateResolveFunctionInput(
+      queryParams: queryParams,
+      changeEvent: changeEvent,
+      previousResults: results,
+    ),
+  );
 
   if (action == ActionName.runFullQueryAgain) {
     // EventReduce could not optimize this event,

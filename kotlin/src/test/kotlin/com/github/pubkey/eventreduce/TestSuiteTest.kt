@@ -8,11 +8,13 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -66,22 +68,14 @@ class TestSuiteTest {
     private fun bufferSize(element: JsonElement): Int =
         if (element.jsonPrimitive.content == "all") RESULT_WINDOW_BUFFER_ALL_ROWS else element.jsonPrimitive.int
 
-    private fun json(vararg pairs: Pair<String, Any?>): JsonObject = JsonObject(
-        pairs.associate { (key, value) ->
-            key to when (value) {
-                null -> JsonNull
-                is JsonElement -> value
-                is Boolean -> JsonPrimitive(value)
-                is Number -> JsonPrimitive(value)
-                else -> JsonPrimitive(value.toString())
-            }
-        },
-    )
-
     @Test
     fun stateSets() {
         val suite = load("state-sets.json")
-        assertEquals(suite.str("packedBddString"), PACKED_BDD_STRING, "BddGenerated.kt is out of sync with the JavaScript BDD")
+        assertEquals(
+            suite.getValue("packedBdd").jsonArray.map { it.jsonPrimitive.int },
+            PACKED_BDD.toList(),
+            "BddGenerated.kt is out of sync with the JavaScript BDD",
+        )
         suite.getValue("cases").jsonArray.forEachIndexed { index, element ->
             val testCase = element.jsonObject
             val input = StateResolveFunctionInput(
@@ -142,7 +136,11 @@ class TestSuiteTest {
                 when (op) {
                     "query" -> {
                         val query = getResultWindowBufferQuery(buffer)
-                        assertEquals(step.getValue("expected"), json("skip" to query.skip, "limit" to query.limit), context)
+                        val actual = buildJsonObject {
+                            put("skip", query.skip)
+                            put("limit", query.limit)
+                        }
+                        assertEquals(step.getValue("expected"), actual, context)
                     }
                     "reset" -> resetResultWindowBuffer(buffer, docs(step.getValue("rows")))
                     "results" -> try {
@@ -153,22 +151,30 @@ class TestSuiteTest {
                     }
                     "applyChangeEvent" -> {
                         val result = applyChangeEventToResultWindowBuffer(buffer, changeEvent(step.getValue("changeEvent")))
-                        assertEquals(step.str("expected"), result.name.replaceFirstChar { it.lowercaseChar() }, context)
+                        assertEquals(step.str("expected"), result.jsName, context)
                     }
                     "applyChangeEvents" -> {
                         val changeEvents = step.getValue("changeEvents").jsonArray.map { changeEvent(it) }
                         val actual = when (val result = applyChangeEventsToResultWindowBuffer(buffer, changeEvents)) {
-                            is ResultWindowBufferChangeResult.RunFullQueryAgain -> json("runFullQueryAgain" to true)
-                            is ResultWindowBufferChangeResult.Results ->
-                                json("runFullQueryAgain" to false, "changed" to result.changed, "results" to ids(result.results))
+                            is ResultWindowBufferChangeResult.RunFullQueryAgain -> buildJsonObject {
+                                put("runFullQueryAgain", true)
+                            }
+                            is ResultWindowBufferChangeResult.Results -> buildJsonObject {
+                                put("runFullQueryAgain", false)
+                                put("changed", result.changed)
+                                put("results", ids(result.results))
+                            }
                         }
                         assertEquals(step.getValue("expected"), actual, context)
                     }
-                    "inspect" -> assertEquals(
-                        step.getValue("expected"),
-                        json("buffer" to ids(buffer.buffer), "offset" to buffer.offset, "complete" to buffer.complete),
-                        context,
-                    )
+                    "inspect" -> {
+                        val actual = buildJsonObject {
+                            put("buffer", ids(buffer.buffer))
+                            put("offset", buffer.offset)
+                            put("complete", buffer.complete)
+                        }
+                        assertEquals(step.getValue("expected"), actual, context)
+                    }
                     else -> fail("$context: unknown op")
                 }
             }

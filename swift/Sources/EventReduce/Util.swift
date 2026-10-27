@@ -7,13 +7,11 @@ public func indexOfDocumentId<D>(_ queryParams: QueryParams<D>, _ docs: [D], _ i
 
 /// Inserts the item at its sort position, which is much faster than re-sorting the array.
 /// Items that are equal to the new item stay before it.
-/// Returns the index at which the item was inserted.
-@discardableResult
 public func pushAtSortPosition<D>(
     _ array: inout [D],
     _ item: D,
     by areInIncreasingOrder: (D, D) -> Bool
-) -> Int {
+) {
     // Shortcut: the item belongs at the end, append() is O(1).
     if let last = array.last, areInIncreasingOrder(item, last) {
         var low = 0
@@ -27,8 +25,7 @@ public func pushAtSortPosition<D>(
             }
         }
         array.insert(item, at: low)
-        return low
+    } else {
+        array.append(item)
     }
-    array.append(item)
-    return array.count - 1
 }

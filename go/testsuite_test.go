@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -36,8 +37,8 @@ type changeEvent struct {
 }
 
 type stateSets struct {
-	PackedBddString string `json:"packedBddString"`
-	Cases           []struct {
+	PackedBdd []int `json:"packedBdd"`
+	Cases     []struct {
 		Query           query       `json:"query"`
 		PreviousResults []doc       `json:"previousResults"`
 		ChangeEvent     changeEvent `json:"changeEvent"`
@@ -179,7 +180,7 @@ func expectJSON(t *testing.T, context string, actual any, expected json.RawMessa
 func TestStateSets(t *testing.T) {
 	var suite stateSets
 	readJSON(t, "state-sets.json", &suite)
-	if suite.PackedBddString != eventreduce.PackedBddString {
+	if !slices.Equal(suite.PackedBdd, eventreduce.PackedBdd) {
 		t.Fatal("bdd_generated.go is out of sync with the JavaScript BDD")
 	}
 	for index, c := range suite.Cases {
@@ -226,9 +227,6 @@ func TestActions(t *testing.T) {
 			newResults, err := eventreduce.RunAction(action, queryParams, changeEvent, results, keyDocumentMap)
 			if errorCode(err) != c.ExpectedError {
 				t.Fatalf("error: got %q, want %q", errorCode(err), c.ExpectedError)
-			}
-			if err != nil {
-				newResults = results
 			}
 			if !reflect.DeepEqual(append([]doc{}, newResults...), c.ExpectedResults) {
 				t.Errorf("results: got %v, want %v", newResults, c.ExpectedResults)

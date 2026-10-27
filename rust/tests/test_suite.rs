@@ -97,9 +97,14 @@ fn buffer_size(value: &Value) -> usize {
 #[test]
 fn state_sets() {
     let suite = load("state-sets.json");
+    let packed_bdd: Vec<u16> = suite["packedBdd"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_u64().unwrap() as u16)
+        .collect();
     assert_eq!(
-        suite["packedBddString"].as_str().unwrap(),
-        PACKED_BDD_STRING,
+        packed_bdd, PACKED_BDD,
         "bdd_generated.rs is out of sync with the JavaScript BDD"
     );
     for (index, case) in suite["cases"].as_array().unwrap().iter().enumerate() {
@@ -202,12 +207,9 @@ fn result_window_buffer() {
                     }
                 },
                 "applyChangeEvent" => {
-                    let result =
-                        match buffer.apply_change_event(&change_event(&step["changeEvent"])) {
-                            ResultWindowBufferResult::EventReduce => "eventReduce",
-                            ResultWindowBufferResult::Buffer => "buffer",
-                            ResultWindowBufferResult::RunFullQueryAgain => "runFullQueryAgain",
-                        };
+                    let result = buffer
+                        .apply_change_event(&change_event(&step["changeEvent"]))
+                        .as_str();
                     assert_eq!(result, step["expected"], "{}", context);
                 }
                 "applyChangeEvents" => {

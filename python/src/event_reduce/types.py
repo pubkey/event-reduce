@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, TypeVar
 
@@ -66,9 +66,6 @@ class QueryParams(Generic[D]):
     skip: int | None = None
     limit: int | None = None
 
-    def with_skip_and_limit(self, skip: int | None, limit: int | None) -> QueryParams[D]:
-        return replace(self, skip=skip, limit=limit)
-
 
 ResultKeyDocumentMap = dict[str, D]
 """Map from the id of each document in the results to the document."""
@@ -85,9 +82,6 @@ class StateResolveFunctionInput(Generic[D]):
     change_event: ChangeEvent[D]
     previous_results: list[D]
     key_document_map: dict[str, D] | None = None
-
-
-ActionFunctionInput = StateResolveFunctionInput
 
 
 class ActionName(str, Enum):

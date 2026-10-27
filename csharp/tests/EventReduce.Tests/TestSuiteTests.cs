@@ -55,21 +55,20 @@ namespace EventReduce.Tests
         private static int BufferSize(JsonNode? json) =>
             json!.GetValueKind() == System.Text.Json.JsonValueKind.String ? ResultWindowBuffer.AllRows : json.GetValue<int>();
 
-        private static string LowerFirst(string name) => char.ToLowerInvariant(name[0]) + name.Substring(1);
-
         [Fact]
         public void StateSets()
         {
             var suite = Load("state-sets.json");
-            Assert.True(suite["packedBddString"]!.GetValue<string>() == BddGenerated.PackedBddString, "BddGenerated.cs is out of sync with the JavaScript BDD");
-            var index = 0;
-            foreach (var testCase in suite["cases"]!.AsArray())
+            // BddGenerated.cs must be in sync with the JavaScript BDD
+            Assert.Equal(suite["packedBdd"]!.AsArray().Select(e => e!.GetValue<int>()), BddGenerated.PackedBdd);
+            var cases = suite["cases"]!.AsArray();
+            for (var index = 0; index < cases.Count; index++)
             {
+                var testCase = cases[index]!;
                 var input = new StateResolveFunctionInput<Doc>(
-                    QueryParams(testCase!["query"]!), ToChangeEvent(testCase["changeEvent"]), ToDocs(testCase["previousResults"]));
-                Assert.True(States.GetStateSet(input) == testCase["stateSet"]!.GetValue<string>(), $"state set of case #{index}");
-                Assert.True(EventReducer.CalculateActionName(input).ToJsName() == testCase["action"]!.GetValue<string>(), $"action of case #{index}");
-                index++;
+                    QueryParams(testCase["query"]!), ToChangeEvent(testCase["changeEvent"]), ToDocs(testCase["previousResults"]));
+                var expected = (testCase["stateSet"]!.GetValue<string>(), testCase["action"]!.GetValue<string>());
+                Assert.Equal((index, expected), (index, (States.GetStateSet(input), EventReducer.CalculateActionName(input).ToJsName())));
             }
         }
 
@@ -92,7 +91,7 @@ namespace EventReduce.Tests
                 else
                 {
                     action = EventReducer.CalculateActionName(new StateResolveFunctionInput<Doc>(queryParams, changeEvent, results, keyDocumentMap));
-                    Assert.True(action.ToJsName() == testCase["expectedAction"]!.GetValue<string>(), name);
+                    Assert.Equal((name, testCase["expectedAction"]!.GetValue<string>()), (name, action.ToJsName()));
                 }
                 string? error = null;
                 try
@@ -103,13 +102,11 @@ namespace EventReduce.Tests
                 {
                     error = e.Code;
                 }
-                Assert.True(error == testCase["expectedError"]?.GetValue<string>(), $"{name}: error {error}");
-                Assert.True(results.SequenceEqual(ToDocs(testCase["expectedResults"])), $"{name}: results");
+                Assert.Equal((name, testCase["expectedError"]?.GetValue<string>()), (name, error));
+                Assert.Equal(ToDocs(testCase["expectedResults"]), results);
                 if (keyDocumentMap != null)
                 {
-                    Assert.True(
-                        keyDocumentMap.Values.OrderBy(d => d.Id, StringComparer.Ordinal).SequenceEqual(ToDocs(testCase["expectedKeyDocumentMap"])),
-                        $"{name}: key document map");
+                    Assert.Equal(ToDocs(testCase["expectedKeyDocumentMap"]), keyDocumentMap.Values.OrderBy(d => d.Id, StringComparer.Ordinal));
                 }
             }
         }
@@ -122,10 +119,11 @@ namespace EventReduce.Tests
                 var name = scenario!["name"]!.GetValue<string>();
                 var buffer = new ResultWindowBuffer<Doc>(
                     QueryParams(scenario["query"]!), BufferSize(scenario["limitBufferSize"]), BufferSize(scenario["skipBufferSize"]));
-                var index = 0;
-                foreach (var step in scenario["steps"]!.AsArray())
+                var steps = scenario["steps"]!.AsArray();
+                for (var index = 0; index < steps.Count; index++)
                 {
-                    var op = step!["op"]!.GetValue<string>();
+                    var step = steps[index]!;
+                    var op = step["op"]!.GetValue<string>();
                     var context = $"{name}: step #{index} {op}";
                     switch (op)
                     {
@@ -148,11 +146,11 @@ namespace EventReduce.Tests
                                 error = e.Code;
                             }
                             AssertJson(step["expected"], results, context);
-                            Assert.True(error == step["expectedError"]?.GetValue<string>(), context);
+                            Assert.Equal((context, step["expectedError"]?.GetValue<string>()), (context, error));
                             break;
                         case "applyChangeEvent":
                             var result = buffer.ApplyChangeEvent(ToChangeEvent(step["changeEvent"]));
-                            Assert.True(LowerFirst(result.ToString()) == step["expected"]!.GetValue<string>(), $"{context}: got {result}");
+                            Assert.Equal((context, step["expected"]!.GetValue<string>()), (context, result.ToJsName()));
                             break;
                         case "applyChangeEvents":
                             var change = buffer.ApplyChangeEvents(step["changeEvents"]!.AsArray().Select(ToChangeEvent).ToList());
@@ -173,7 +171,6 @@ namespace EventReduce.Tests
                             Assert.Fail($"{context}: unknown op");
                             break;
                     }
-                    index++;
                 }
             }
         }
@@ -184,7 +181,7 @@ namespace EventReduce.Tests
             foreach (var pair in Load("cases.json")["recommendedResultWindowBufferSize"]!.AsArray())
             {
                 var limit = pair![0]?.GetValue<int>();
-                Assert.True(ResultWindowBuffer.GetRecommendedSize(limit) == pair[1]!.GetValue<int>(), $"limit {limit}");
+                Assert.Equal((limit, pair[1]!.GetValue<int>()), (limit, ResultWindowBuffer.GetRecommendedSize(limit)));
             }
         }
     }

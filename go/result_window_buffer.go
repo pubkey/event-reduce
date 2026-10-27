@@ -1,8 +1,10 @@
 package eventreduce
 
 import (
+	"cmp"
 	"math"
 	"reflect"
+	"slices"
 )
 
 // Result window buffer
@@ -192,7 +194,7 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvent(changeEvent ChangeEvent[D]) Res
 	}
 	action := CalculateActionName(input)
 	var result ResultWindowBufferResult
-	if action == RunFullQueryAgain || action == UnknownAction || dropsARow(action) {
+	if action == RunFullQueryAgain || dropsARow(action) {
 		// 2. EventReduce needs a row before or after the buffer, which it does not know,
 		// or it would drop a row to keep the length of the result.
 		// But the buffer does not have to keep its length, only to stay an exact slice,
@@ -201,11 +203,9 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvent(changeEvent ChangeEvent[D]) Res
 		result = ResultBuffer
 	} else {
 		if err := GetActionFunction[D](action)(input); err != nil {
-			// only possible on a broken BDD, make sure the buffer is filled again
-			b.Buffer = nil
-			b.KeyDocumentMap = map[string]D{}
-			b.Complete = false
-			return ResultRunFullQueryAgain
+			// action functions only fail for RunFullQueryAgain and UnknownAction,
+			// which the BDD never returns here
+			panic("eventreduce: action " + action.String() + " failed in the result window buffer: " + err.Error())
 		}
 		b.Buffer = input.PreviousResults
 		result = ResultEventReduce
@@ -240,10 +240,7 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvents(changeEvents []ChangeEvent[D])
 	if err != nil {
 		return ResultWindowBufferChangeResult[D]{RunFullQueryAgain: true}
 	}
-	changed := len(results) != len(previousResults)
-	for i := 0; !changed && i < len(results); i++ {
-		changed = !reflect.DeepEqual(results[i], previousResults[i])
-	}
+	changed := !slices.EqualFunc(results, previousResults, func(a, c D) bool { return reflect.DeepEqual(a, c) })
 	return ResultWindowBufferChangeResult[D]{Changed: changed, Results: results}
 }
 
@@ -273,27 +270,29 @@ func (b *ResultWindowBuffer[D]) isResultWindowInBuffer() bool {
 // trim removes rows before the window that are more than SkipBufferSize
 // and rows after the window that are more than LimitBufferSize.
 func (b *ResultWindowBuffer[D]) trim() {
-	getID := b.QueryParams.GetDocumentID
 	rowsBeforeWindow := b.skip() - b.Offset
 	removeFromStart := min(rowsBeforeWindow-b.SkipBufferSize, len(b.Buffer))
 	if removeFromStart > 0 {
-		for _, doc := range b.Buffer[:removeFromStart] {
-			delete(b.KeyDocumentMap, getID(doc))
-		}
-		b.Buffer = append(b.Buffer[:0], b.Buffer[removeFromStart:]...)
+		b.removeRows(0, removeFromStart)
 		b.Offset += removeFromStart
 	}
 
 	if b.QueryParams.Limit != nil {
 		maxLength := max(0, b.skip()-b.Offset) + *b.QueryParams.Limit + b.LimitBufferSize
 		if len(b.Buffer) > maxLength {
-			for _, doc := range b.Buffer[maxLength:] {
-				delete(b.KeyDocumentMap, getID(doc))
-			}
-			b.Buffer = b.Buffer[:maxLength]
+			b.removeRows(maxLength, len(b.Buffer))
 			b.Complete = false
 		}
 	}
+}
+
+// removeRows removes the rows Buffer[start:end] and their entries in the KeyDocumentMap.
+// slices.Delete zeroes the freed slots, so the backing array keeps no references to them.
+func (b *ResultWindowBuffer[D]) removeRows(start, end int) {
+	for _, doc := range b.Buffer[start:end] {
+		delete(b.KeyDocumentMap, b.QueryParams.GetDocumentID(doc))
+	}
+	b.Buffer = slices.Delete(b.Buffer, start, end)
 }
 
 // applySliceRule applies the slice rule:
@@ -336,7 +335,7 @@ func (b *ResultWindowBuffer[D]) applySliceRule(changeEvent ChangeEvent[D]) {
 	if _, ok := b.KeyDocumentMap[id]; ok {
 		delete(b.KeyDocumentMap, id)
 		if index := IndexOfDocumentID(queryParams, b.Buffer, id); index >= 0 {
-			b.Buffer = removeAt(b.Buffer, index)
+			b.Buffer = slices.Delete(b.Buffer, index, index+1)
 		}
 	}
 	if doesMatchNow && !isBeforeNow && (b.Complete || b.compareRows(changeEvent.Doc, last) <= 0) {
@@ -352,11 +351,11 @@ func (b *ResultWindowBuffer[D]) applySliceRule(changeEvent ChangeEvent[D]) {
 func (b *ResultWindowBuffer[D]) compareRows(a, c D) int {
 	idA := b.QueryParams.GetDocumentID(a)
 	idC := b.QueryParams.GetDocumentID(c)
-	result := sign(b.QueryParams.SortComparator(a, c))
+	result := cmp.Compare(b.QueryParams.SortComparator(a, c), 0)
 	if idA == idC {
 		// A deterministic comparator breaks ties by the primary key,
 		// which gives the same answer for both directions when the sort values are equal.
-		if result == 0 || result == sign(b.QueryParams.SortComparator(c, a)) {
+		if result == 0 || result == cmp.Compare(b.QueryParams.SortComparator(c, a), 0) {
 			return 0
 		}
 		return result
@@ -364,35 +363,14 @@ func (b *ResultWindowBuffer[D]) compareRows(a, c D) int {
 	if result != 0 {
 		return result
 	}
-	if idA < idC {
-		return -1
-	}
-	return 1
+	return cmp.Compare(idA, idC)
 }
 
+// insertAtSortPosition inserts the row at its sort position and adds it to the KeyDocumentMap.
+// compareRows returns 0 only for the same row, which was removed before.
 func (b *ResultWindowBuffer[D]) insertAtSortPosition(doc D) {
-	// binary search for the first row that sorts after doc
-	low, high := 0, len(b.Buffer)
-	for low < high {
-		mid := int(uint(low+high) >> 1)
-		if b.compareRows(b.Buffer[mid], doc) < 0 {
-			low = mid + 1
-		} else {
-			high = mid
-		}
-	}
-	b.Buffer = insertAt(b.Buffer, low, doc)
+	b.Buffer = PushAtSortPosition(b.Buffer, doc, b.compareRows)
 	b.KeyDocumentMap[b.QueryParams.GetDocumentID(doc)] = doc
-}
-
-func sign(value int) int {
-	switch {
-	case value < 0:
-		return -1
-	case value > 0:
-		return 1
-	}
-	return 0
 }
 
 func boolToInt(value bool) int {

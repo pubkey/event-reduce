@@ -55,30 +55,10 @@ pub fn state_resolve_function<D, K: Eq + Hash>(state: StateName) -> StateResolve
 /// Resolves the state with the given index in ORDERED_STATE_LIST.
 #[inline]
 pub(crate) fn resolve_state_by_index<D, K: Eq + Hash>(
-    index: u8,
+    index: usize,
     input: &StateResolveFunctionInput<D, K>,
 ) -> bool {
-    match index {
-        0 => is_insert(input),
-        1 => is_update(input),
-        2 => is_delete(input),
-        3 => has_limit(input),
-        4 => is_find_one(input),
-        5 => has_skip(input),
-        6 => was_results_empty(input),
-        7 => was_limit_reached(input),
-        8 => was_first(input),
-        9 => was_last(input),
-        10 => sort_params_changed(input),
-        11 => was_in_result(input),
-        12 => was_sorted_before_first(input),
-        13 => was_sorted_after_last(input),
-        14 => is_sorted_before_first(input),
-        15 => is_sorted_after_last(input),
-        16 => was_matching(input),
-        17 => does_match_now(input),
-        _ => panic!("EventReduce:UNK_STATE {}", index),
-    }
+    state_resolve_function(ORDERED_STATE_LIST[index])(input)
 }
 
 pub fn resolve_state<D, K: Eq + Hash>(
@@ -148,17 +128,17 @@ pub fn was_in_result<D, K: Eq + Hash>(input: &StateResolveFunctionInput<D, K>) -
 }
 
 pub fn was_first<D, K: Eq>(input: &StateResolveFunctionInput<D, K>) -> bool {
-    match input.previous_results.first() {
-        Some(first) => input.query_params.document_id(first) == input.change_event.id(),
-        None => false,
-    }
+    input
+        .previous_results
+        .first()
+        .is_some_and(|first| input.query_params.document_id(first) == input.change_event.id())
 }
 
 pub fn was_last<D, K: Eq>(input: &StateResolveFunctionInput<D, K>) -> bool {
-    match input.previous_results.last() {
-        Some(last) => input.query_params.document_id(last) == input.change_event.id(),
-        None => false,
-    }
+    input
+        .previous_results
+        .last()
+        .is_some_and(|last| input.query_params.document_id(last) == input.change_event.id())
 }
 
 /// Compares the given document with the given result item.
@@ -235,17 +215,17 @@ pub fn is_sorted_after_last<D, K: Eq>(input: &StateResolveFunctionInput<D, K>) -
 }
 
 pub fn was_matching<D, K>(input: &StateResolveFunctionInput<D, K>) -> bool {
-    match input.change_event.previous() {
-        Some(prev) => (input.query_params.query_matcher)(prev),
-        None => false,
-    }
+    input
+        .change_event
+        .previous()
+        .is_some_and(|prev| (input.query_params.query_matcher)(prev))
 }
 
 pub fn does_match_now<D, K>(input: &StateResolveFunctionInput<D, K>) -> bool {
-    match input.change_event.doc() {
-        Some(doc) => (input.query_params.query_matcher)(doc),
-        None => false,
-    }
+    input
+        .change_event
+        .doc()
+        .is_some_and(|doc| (input.query_params.query_matcher)(doc))
 }
 
 pub fn was_results_empty<D, K>(input: &StateResolveFunctionInput<D, K>) -> bool {

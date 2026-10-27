@@ -1,7 +1,5 @@
 package com.github.pubkey.eventreduce
 
-public typealias StateResolveFunction<D> = (StateResolveFunctionInput<D>) -> Boolean
-
 /**
  * All states, in the same order as the JavaScript implementation.
  * The BDD references the states by their index in this list.

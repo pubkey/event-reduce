@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace EventReduce
@@ -11,12 +10,7 @@ namespace EventReduce
         /// If it is <see cref="ActionName.RunFullQueryAgain"/>, the query must be run over the database again.
         /// </summary>
         public static ActionName CalculateActionName<TDoc>(StateResolveFunctionInput<TDoc> input) =>
-            Actions.OrderedActionList[Bdd.ResolveInput(input)];
-
-        /// <summary>Like <see cref="CalculateActionName"/> but returns the action function directly.</summary>
-        public static Action<StateResolveFunctionInput<TDoc>> CalculateActionFunction<TDoc>(
-            StateResolveFunctionInput<TDoc> input) =>
-            Actions.GetActionFunction<TDoc>(CalculateActionName(input));
+            Actions.OrderedActions[Bdd.ResolveInput(input)];
 
         /// <summary>
         /// Applies the action to the results.
@@ -31,8 +25,7 @@ namespace EventReduce
             List<TDoc> previousResults,
             Dictionary<string, TDoc>? keyDocumentMap = null)
         {
-            Actions.GetActionFunction<TDoc>(action)(
-                new StateResolveFunctionInput<TDoc>(queryParams, changeEvent, previousResults, keyDocumentMap));
+            Actions.Run(action, new StateResolveFunctionInput<TDoc>(queryParams, changeEvent, previousResults, keyDocumentMap));
             return previousResults;
         }
     }

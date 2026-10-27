@@ -6,13 +6,6 @@ use std::fmt;
 /// Pass it to speed up the lookups of documents in the results.
 pub type ResultKeyDocumentMap<D, K> = HashMap<K, D>;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum WriteOperation {
-    Insert,
-    Update,
-    Delete,
-}
-
 /// A write event on the database.
 /// `id` is the value of the primary key of the changed document.
 #[derive(Clone, Debug, PartialEq)]
@@ -23,14 +16,6 @@ pub enum ChangeEvent<D, K> {
 }
 
 impl<D, K> ChangeEvent<D, K> {
-    pub fn operation(&self) -> WriteOperation {
-        match self {
-            ChangeEvent::Insert { .. } => WriteOperation::Insert,
-            ChangeEvent::Update { .. } => WriteOperation::Update,
-            ChangeEvent::Delete { .. } => WriteOperation::Delete,
-        }
-    }
-
     pub fn id(&self) -> &K {
         match self {
             ChangeEvent::Insert { id, .. }

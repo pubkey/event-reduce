@@ -4,11 +4,6 @@ public func calculateActionName<D>(_ input: StateResolveFunctionInput<D>) -> Act
     orderedActionList[resolveInput(input)]
 }
 
-/// Like `calculateActionName()` but returns the action function directly.
-public func calculateActionFunction<D>(_ input: StateResolveFunctionInput<D>) -> ActionFunction<D> {
-    actionFunction(calculateActionName(input))
-}
-
 /// Applies the action to the results, which are mutated in place.
 /// The key document map is kept in sync with the results.
 /// Throws `EventReduceError.runFullQueryAgain` and `EventReduceError.unknownAction`,

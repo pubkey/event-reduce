@@ -1,21 +1,9 @@
-public enum WriteOperation {
-    case insert, update, delete
-}
-
 /// A write event on the database.
 /// `id` is the value of the primary key of the changed document.
 public enum ChangeEvent<D> {
     case insert(id: String, doc: D)
     case update(id: String, doc: D, previous: D)
     case delete(id: String, previous: D)
-
-    public var operation: WriteOperation {
-        switch self {
-        case .insert: return .insert
-        case .update: return .update
-        case .delete: return .delete
-        }
-    }
 
     public var id: String {
         switch self {
@@ -155,4 +143,14 @@ public enum EventReduceError: Error, Equatable {
     case resultWindowOutdated
     /// A buffer size of a result window buffer is negative.
     case invalidResultWindowBufferSize
+
+    /// The error code that the JavaScript implementation throws as `EventReduce:<code>`.
+    public var code: String {
+        switch self {
+        case .runFullQueryAgain: return "RUN_FULL"
+        case .unknownAction: return "UNK_ACT"
+        case .resultWindowOutdated: return "RWB_OUTDATED"
+        case .invalidResultWindowBufferSize: return "RWB_SIZE"
+        }
+    }
 }

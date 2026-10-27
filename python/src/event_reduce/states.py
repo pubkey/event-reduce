@@ -111,20 +111,28 @@ def _compare_doc_with_result(
     return expected(input.query_params.sort_comparator(doc, result_item))
 
 
+def _is_negative(c: int) -> bool:
+    return c < 0
+
+
+def _is_positive(c: int) -> bool:
+    return c > 0
+
+
 def was_sorted_before_first(input: StateResolveFunctionInput[Any]) -> bool:
-    return _compare_previous_with_result(input, True, lambda c: c < 0)
+    return _compare_previous_with_result(input, True, _is_negative)
 
 
 def was_sorted_after_last(input: StateResolveFunctionInput[Any]) -> bool:
-    return _compare_previous_with_result(input, False, lambda c: c > 0)
+    return _compare_previous_with_result(input, False, _is_positive)
 
 
 def is_sorted_before_first(input: StateResolveFunctionInput[Any]) -> bool:
-    return _compare_doc_with_result(input, True, lambda c: c < 0)
+    return _compare_doc_with_result(input, True, _is_negative)
 
 
 def is_sorted_after_last(input: StateResolveFunctionInput[Any]) -> bool:
-    return _compare_doc_with_result(input, False, lambda c: c > 0)
+    return _compare_doc_with_result(input, False, _is_positive)
 
 
 def was_matching(input: StateResolveFunctionInput[Any]) -> bool:
@@ -163,13 +171,9 @@ STATE_RESOLVE_FUNCTION_BY_INDEX: list[StateResolveFunction] = [
 ]
 """The state functions in the same order as ORDERED_STATE_LIST."""
 
-STATE_RESOLVE_FUNCTIONS: dict[StateName, StateResolveFunction] = dict(
-    zip(ORDERED_STATE_LIST, STATE_RESOLVE_FUNCTION_BY_INDEX, strict=False)
-)
-
 
 def resolve_state(state: StateName, input: StateResolveFunctionInput[Any]) -> bool:
-    return STATE_RESOLVE_FUNCTIONS[state](input)
+    return STATE_RESOLVE_FUNCTION_BY_INDEX[ORDERED_STATE_LIST.index(state)](input)
 
 
 def get_state_set(input: StateResolveFunctionInput[Any]) -> str:

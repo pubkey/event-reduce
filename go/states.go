@@ -2,9 +2,6 @@ package eventreduce
 
 import "strings"
 
-// StateResolveFunction returns a boolean for the input.
-type StateResolveFunction[D any] func(input *StateResolveFunctionInput[D]) bool
-
 // StateHasLimit is the state hasLimit.
 func StateHasLimit[D any](input *StateResolveFunctionInput[D]) bool {
 	limit := input.QueryParams.Limit

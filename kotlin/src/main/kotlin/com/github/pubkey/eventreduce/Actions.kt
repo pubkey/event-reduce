@@ -67,19 +67,11 @@ public fun <D> insertLast(input: ActionFunctionInput<D>) {
 }
 
 public fun <D> removeFirstItem(input: ActionFunctionInput<D>) {
-    if (input.previousResults.isEmpty()) {
-        return
-    }
-    val first = input.previousResults.removeAt(0)
-    input.keyDocumentMap?.remove(input.queryParams.getDocumentId(first))
+    input.previousResults.removeFirstOrNull()?.let { input.keyDocumentMap?.remove(input.queryParams.getDocumentId(it)) }
 }
 
 public fun <D> removeLastItem(input: ActionFunctionInput<D>) {
-    if (input.previousResults.isEmpty()) {
-        return
-    }
-    val last = input.previousResults.removeAt(input.previousResults.size - 1)
-    input.keyDocumentMap?.remove(input.queryParams.getDocumentId(last))
+    input.previousResults.removeLastOrNull()?.let { input.keyDocumentMap?.remove(input.queryParams.getDocumentId(it)) }
 }
 
 public fun <D> removeFirstInsertLast(input: ActionFunctionInput<D>) {
@@ -142,33 +134,34 @@ public fun <D> removeExistingAndInsertAtSortPosition(input: ActionFunctionInput<
 }
 
 /**
+ * Inserts the document at its sort position and then removes a document with [remove].
+ * insertAtSortPosition() does nothing if the document is already in the results,
+ * then nothing is removed.
+ */
+private inline fun <D> insertAtSortPositionAndRemove(input: ActionFunctionInput<D>, remove: (ActionFunctionInput<D>) -> Unit) {
+    val sizeBefore = input.previousResults.size
+    insertAtSortPosition(input)
+    if (input.previousResults.size > sizeBefore) {
+        remove(input)
+    }
+}
+
+/**
  * Inserts the document at its sort position and then removes the last document.
  * Used when the limit was reached and the new document
  * sorts in between the first and the last document,
  * so the previous last document is pushed out of the results.
  */
-public fun <D> insertAtSortPositionRemoveLast(input: ActionFunctionInput<D>) {
-    val sizeBefore = input.previousResults.size
-    insertAtSortPosition(input)
-    // insertAtSortPosition() does nothing if the document is already in the results
-    if (input.previousResults.size > sizeBefore) {
-        removeLastItem(input)
-    }
-}
+public fun <D> insertAtSortPositionRemoveLast(input: ActionFunctionInput<D>): Unit =
+    insertAtSortPositionAndRemove(input, ::removeLastItem)
 
 /**
  * Inserts the document at its sort position and then removes the first document.
  * Used when a document moves out of the skipped documents into the results,
  * so the previous first document is pushed into the skipped documents.
  */
-public fun <D> insertAtSortPositionRemoveFirst(input: ActionFunctionInput<D>) {
-    val sizeBefore = input.previousResults.size
-    insertAtSortPosition(input)
-    // insertAtSortPosition() does nothing if the document is already in the results
-    if (input.previousResults.size > sizeBefore) {
-        removeFirstItem(input)
-    }
-}
+public fun <D> insertAtSortPositionRemoveFirst(input: ActionFunctionInput<D>): Unit =
+    insertAtSortPositionAndRemove(input, ::removeFirstItem)
 
 public fun <D> runFullQueryAgain(@Suppress("UNUSED_PARAMETER") input: ActionFunctionInput<D>) {
     throw EventReduceException("RUN_FULL")

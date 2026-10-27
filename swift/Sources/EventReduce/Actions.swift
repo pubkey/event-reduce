@@ -187,12 +187,7 @@ public func insertAtSortPositionRemoveLast<D>(
     _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
     _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
 ) throws {
-    let countBefore = results.count
-    try insertAtSortPosition(queryParams, changeEvent, &results, &map)
-    // insertAtSortPosition() does nothing if the document is already in the results
-    if results.count > countBefore {
-        try removeLastItem(queryParams, changeEvent, &results, &map)
-    }
+    try insertAtSortPositionAndRemove(removeLastItem, queryParams, changeEvent, &results, &map)
 }
 
 /// Inserts the document at its sort position and then removes the first document.
@@ -202,11 +197,19 @@ public func insertAtSortPositionRemoveFirst<D>(
     _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
     _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
 ) throws {
+    try insertAtSortPositionAndRemove(removeFirstItem, queryParams, changeEvent, &results, &map)
+}
+
+private func insertAtSortPositionAndRemove<D>(
+    _ remove: ActionFunction<D>,
+    _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
+    _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
+) throws {
     let countBefore = results.count
     try insertAtSortPosition(queryParams, changeEvent, &results, &map)
     // insertAtSortPosition() does nothing if the document is already in the results
     if results.count > countBefore {
-        try removeFirstItem(queryParams, changeEvent, &results, &map)
+        try remove(queryParams, changeEvent, &results, &map)
     }
 }
 

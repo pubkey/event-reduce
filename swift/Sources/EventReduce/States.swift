@@ -1,5 +1,3 @@
-public typealias StateResolveFunction<D> = (StateResolveFunctionInput<D>) -> Bool
-
 /// All states, in the same order as the JavaScript implementation.
 /// The BDD references the states by their index in this list.
 public let orderedStateList: [StateName] = StateName.allCases
@@ -19,15 +17,18 @@ public func hasSkip<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
 }
 
 public func isDelete<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
-    input.changeEvent.operation == .delete
+    if case .delete = input.changeEvent { return true }
+    return false
 }
 
 public func isInsert<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
-    input.changeEvent.operation == .insert
+    if case .insert = input.changeEvent { return true }
+    return false
 }
 
 public func isUpdate<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
-    input.changeEvent.operation == .update
+    if case .update = input.changeEvent { return true }
+    return false
 }
 
 public func wasLimitReached<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
@@ -115,33 +116,32 @@ public func wasResultsEmpty<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
     input.previousResults.isEmpty
 }
 
-/// Resolves the state with the given index in `orderedStateList`.
-public func resolveStateByIndex<D>(_ index: Int, _ input: StateResolveFunctionInput<D>) -> Bool {
-    switch index {
-    case 0: return isInsert(input)
-    case 1: return isUpdate(input)
-    case 2: return isDelete(input)
-    case 3: return hasLimit(input)
-    case 4: return isFindOne(input)
-    case 5: return hasSkip(input)
-    case 6: return wasResultsEmpty(input)
-    case 7: return wasLimitReached(input)
-    case 8: return wasFirst(input)
-    case 9: return wasLast(input)
-    case 10: return sortParamsChanged(input)
-    case 11: return wasInResult(input)
-    case 12: return wasSortedBeforeFirst(input)
-    case 13: return wasSortedAfterLast(input)
-    case 14: return isSortedBeforeFirst(input)
-    case 15: return isSortedAfterLast(input)
-    case 16: return wasMatching(input)
-    case 17: return doesMatchNow(input)
-    default: fatalError("EventReduce:UNK_STATE \(index)")
+public func resolveState<D>(_ state: StateName, _ input: StateResolveFunctionInput<D>) -> Bool {
+    switch state {
+    case .isInsert: return isInsert(input)
+    case .isUpdate: return isUpdate(input)
+    case .isDelete: return isDelete(input)
+    case .hasLimit: return hasLimit(input)
+    case .isFindOne: return isFindOne(input)
+    case .hasSkip: return hasSkip(input)
+    case .wasResultsEmpty: return wasResultsEmpty(input)
+    case .wasLimitReached: return wasLimitReached(input)
+    case .wasFirst: return wasFirst(input)
+    case .wasLast: return wasLast(input)
+    case .sortParamsChanged: return sortParamsChanged(input)
+    case .wasInResult: return wasInResult(input)
+    case .wasSortedBeforeFirst: return wasSortedBeforeFirst(input)
+    case .wasSortedAfterLast: return wasSortedAfterLast(input)
+    case .isSortedBeforeFirst: return isSortedBeforeFirst(input)
+    case .isSortedAfterLast: return isSortedAfterLast(input)
+    case .wasMatching: return wasMatching(input)
+    case .doesMatchNow: return doesMatchNow(input)
     }
 }
 
-public func resolveState<D>(_ state: StateName, _ input: StateResolveFunctionInput<D>) -> Bool {
-    resolveStateByIndex(orderedStateList.firstIndex(of: state)!, input)
+/// Resolves the state with the given index in `orderedStateList`.
+public func resolveStateByIndex<D>(_ index: Int, _ input: StateResolveFunctionInput<D>) -> Bool {
+    resolveState(orderedStateList[index], input)
 }
 
 /// Returns the binary representation of all states

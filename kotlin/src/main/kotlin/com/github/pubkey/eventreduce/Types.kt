@@ -1,7 +1,5 @@
 package com.github.pubkey.eventreduce
 
-public enum class WriteOperation { INSERT, UPDATE, DELETE }
-
 /**
  * A write event on the database.
  * [id] is the value of the primary key of the changed document.
@@ -14,31 +12,26 @@ public sealed class ChangeEvent<out D> {
 
     /** The document before the write, null on inserts. */
     public abstract val previous: D?
-    public abstract val operation: WriteOperation
 
     public data class Insert<D>(override val id: String, override val doc: D) : ChangeEvent<D>() {
         override val previous: D? get() = null
-        override val operation: WriteOperation get() = WriteOperation.INSERT
     }
 
     public data class Update<D>(
         override val id: String,
         override val doc: D,
         override val previous: D,
-    ) : ChangeEvent<D>() {
-        override val operation: WriteOperation get() = WriteOperation.UPDATE
-    }
+    ) : ChangeEvent<D>()
 
     public data class Delete<D>(override val id: String, override val previous: D) : ChangeEvent<D>() {
         override val doc: D? get() = null
-        override val operation: WriteOperation get() = WriteOperation.DELETE
     }
 }
 
 /**
  * Describes the query whose results are kept up to date.
  */
-public class QueryParams<D>(
+public data class QueryParams<D>(
     /**
      * Returns the id of a document.
      * Must return the same value as the id of the change events.
@@ -62,21 +55,24 @@ public class QueryParams<D>(
 )
 
 /** The input of the state functions and of calculateActionName(). */
-public class StateResolveFunctionInput<D>(
+public open class StateResolveFunctionInput<D>(
     public val queryParams: QueryParams<D>,
     public val changeEvent: ChangeEvent<D>,
-    public val previousResults: List<D>,
+    public open val previousResults: List<D>,
     /** Map from the id of each document in the results to the document. */
-    public val keyDocumentMap: Map<String, D>? = null,
+    public open val keyDocumentMap: Map<String, D>? = null,
 )
 
-/** The input of the action functions, which mutate the results and the map in place. */
+/**
+ * The input of the action functions, which mutate the results and the map in place.
+ * It is also a [StateResolveFunctionInput], so the same input can calculate and run the action.
+ */
 public class ActionFunctionInput<D>(
-    public val queryParams: QueryParams<D>,
-    public val changeEvent: ChangeEvent<D>,
-    public val previousResults: MutableList<D>,
-    public val keyDocumentMap: MutableMap<String, D>? = null,
-)
+    queryParams: QueryParams<D>,
+    changeEvent: ChangeEvent<D>,
+    override val previousResults: MutableList<D>,
+    override val keyDocumentMap: MutableMap<String, D>? = null,
+) : StateResolveFunctionInput<D>(queryParams, changeEvent, previousResults, keyDocumentMap)
 
 public enum class ActionName {
     DoNothing,

@@ -4,7 +4,7 @@ import {
     calculateActionName,
     getStateSet
 } from '../../src/index.js';
-import { packedBddString } from '../../src/bdd/bdd.generated.js';
+import { getPackedBdd } from '../../src/bdd/bdd.generated.js';
 import type {
     ActionName,
     ChangeEvent,
@@ -34,7 +34,7 @@ export type StateSetCase = {
     action: ActionName;
 };
 export type StateSets = {
-    packedBddString: string;
+    packedBdd: number[];
     cases: StateSetCase[];
 };
 
@@ -68,9 +68,9 @@ export function getTestSuiteQueryParams(query: TestSuiteQuery): QueryParams<Test
 
 /**
  * Seeded random number generator (mulberry32),
- * so that every run produces the same cases.
+ * so that every run produces the same values.
  */
-function seededRandom(seed: number): () => number {
+export function seededRandom(seed: number): () => number {
     let state = seed >>> 0;
     return () => {
         state = (state + 0x6D2B79F5) >>> 0;
@@ -134,19 +134,14 @@ export function generateStateSets(): StateSets {
         caseByStateSet.set(stateSet, {
             query,
             previousResults,
-            changeEvent: {
-                operation: changeEvent.operation,
-                id: changeEvent.id,
-                doc: changeEvent.doc,
-                previous: changeEvent.previous
-            },
+            changeEvent,
             stateSet,
             action: calculateActionName(input)
         });
     }
 
     return {
-        packedBddString,
+        packedBdd: Array.from(getPackedBdd()),
         cases: Array.from(caseByStateSet.values()).sort((a, b) => a.stateSet < b.stateSet ? -1 : 1)
     };
 }
@@ -154,7 +149,7 @@ export function generateStateSets(): StateSets {
 export function stateSetsToJson(stateSets: StateSets): string {
     // one case per line, so diffs stay readable
     return '{\n' +
-        '  "packedBddString": ' + JSON.stringify(stateSets.packedBddString) + ',\n' +
+        '  "packedBdd": ' + JSON.stringify(stateSets.packedBdd) + ',\n' +
         '  "cases": [\n' +
         stateSets.cases.map(c => '    ' + JSON.stringify(c)).join(',\n') +
         '\n  ]\n}\n';

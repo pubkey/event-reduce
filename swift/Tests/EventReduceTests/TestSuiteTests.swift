@@ -100,32 +100,18 @@ private func changeEvent(_ json: JSON) -> ChangeEvent<Doc> {
 }
 
 private func errorCode(_ error: Error) -> String {
-    switch error as? EventReduceError {
-    case .runFullQueryAgain: return "RUN_FULL"
-    case .unknownAction: return "UNK_ACT"
-    case .resultWindowOutdated: return "RWB_OUTDATED"
-    case .invalidResultWindowBufferSize: return "RWB_SIZE"
-    case nil: return "\(error)"
-    }
+    (error as? EventReduceError)?.code ?? "\(error)"
 }
 
 private func bufferSize(_ json: JSON?) -> Int {
     json == .string("all") ? resultWindowBufferAllRows : json!.int!
 }
 
-private func resultName(_ result: ResultWindowBufferResult) -> String {
-    switch result {
-    case .eventReduce: return "eventReduce"
-    case .buffer: return "buffer"
-    case .runFullQueryAgain: return "runFullQueryAgain"
-    }
-}
-
 final class TestSuiteTests: XCTestCase {
     func testStateSets() throws {
         let suite = try load("state-sets.json")
         XCTAssertEqual(
-            suite["packedBddString"]?.string, packedBddString,
+            suite["packedBdd"]?.array.map { $0.int ?? -1 }, packedBdd,
             "BddGenerated.swift is out of sync with the JavaScript BDD")
         for (index, testCase) in suite["cases"]!.array.enumerated() {
             let input = StateResolveFunctionInput(
@@ -203,7 +189,7 @@ final class TestSuiteTests: XCTestCase {
                     XCTAssertEqual(error, step["expectedError"]?.string, context)
                 case "applyChangeEvent":
                     let result = applyChangeEventToResultWindowBuffer(buffer, changeEvent(step["changeEvent"]!))
-                    XCTAssertEqual(resultName(result), step["expected"]?.string, context)
+                    XCTAssertEqual(result.rawValue, step["expected"]?.string, context)
                 case "applyChangeEvents":
                     let actual: JSON
                     switch applyChangeEventsToResultWindowBuffer(buffer, step["changeEvents"]!.array.map(changeEvent)) {

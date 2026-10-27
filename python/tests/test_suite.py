@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 
 from event_reduce import (
-    PACKED_BDD_STRING,
+    PACKED_BDD,
     ActionName,
     ChangeEvent,
     EventReduceError,
@@ -64,12 +64,8 @@ def ids(docs: list[Doc]) -> list[str]:
     return [doc["id"] for doc in docs]
 
 
-def error_code(error: EventReduceError) -> str:
-    return error.code
-
-
 def test_state_sets() -> None:
-    assert STATE_SETS["packedBddString"] == PACKED_BDD_STRING, "bdd_generated.py is out of sync with the JavaScript BDD"
+    assert tuple(STATE_SETS["packedBdd"]) == PACKED_BDD, "bdd_generated.py is out of sync with the JavaScript BDD"
     for index, case in enumerate(STATE_SETS["cases"]):
         input = StateResolveFunctionInput(
             query_params(case["query"]), change_event(case["changeEvent"]), list(case["previousResults"])
@@ -93,7 +89,7 @@ def test_actions(case: dict[str, Any]) -> None:
     try:
         run_action(action, params, event, results, key_document_map)
     except EventReduceError as err:
-        error = error_code(err)
+        error = err.code
     assert error == case.get("expectedError")
     assert results == case["expectedResults"]
     if key_document_map is not None:
@@ -125,7 +121,7 @@ def test_result_window_buffer(scenario: dict[str, Any]) -> None:
             try:
                 results = ids(buffer.results())
             except EventReduceError as err:
-                error = error_code(err)
+                error = err.code
             assert results == step.get("expected"), context
             assert error == step.get("expectedError"), context
         elif op == "applyChangeEvent":

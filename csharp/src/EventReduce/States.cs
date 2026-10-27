@@ -13,34 +13,26 @@ namespace EventReduce
         /// </summary>
         public static readonly IReadOnlyList<StateName> OrderedStateList = (StateName[])Enum.GetValues(typeof(StateName));
 
-        /// <summary>hasLimit</summary>
         public static bool HasLimit<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.QueryParams.Limit is int limit && limit > 0;
 
-        /// <summary>isFindOne</summary>
         public static bool IsFindOne<TDoc>(StateResolveFunctionInput<TDoc> input) => input.QueryParams.Limit == 1;
 
-        /// <summary>hasSkip</summary>
         public static bool HasSkip<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.QueryParams.Skip is int skip && skip > 0;
 
-        /// <summary>isDelete</summary>
         public static bool IsDelete<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.ChangeEvent.Operation == WriteOperation.Delete;
 
-        /// <summary>isInsert</summary>
         public static bool IsInsert<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.ChangeEvent.Operation == WriteOperation.Insert;
 
-        /// <summary>isUpdate</summary>
         public static bool IsUpdate<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.ChangeEvent.Operation == WriteOperation.Update;
 
-        /// <summary>wasLimitReached</summary>
         public static bool WasLimitReached<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.QueryParams.Limit is int limit && limit > 0 && input.PreviousResults.Count >= limit;
 
-        /// <summary>sortParamsChanged</summary>
         public static bool SortParamsChanged<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var changeEvent = input.ChangeEvent;
@@ -55,7 +47,6 @@ namespace EventReduce
             return input.QueryParams.SortFieldsChanged(changeEvent.Previous, changeEvent.Doc);
         }
 
-        /// <summary>wasInResult</summary>
         public static bool WasInResult<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var id = input.ChangeEvent.Id;
@@ -66,14 +57,12 @@ namespace EventReduce
             return Util.IndexOfDocumentId(input.QueryParams, input.PreviousResults, id) >= 0;
         }
 
-        /// <summary>wasFirst</summary>
         public static bool WasFirst<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var results = input.PreviousResults;
             return results.Count > 0 && input.QueryParams.GetDocumentId(results[0]) == input.ChangeEvent.Id;
         }
 
-        /// <summary>wasLast</summary>
         public static bool WasLast<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var results = input.PreviousResults;
@@ -131,31 +120,24 @@ namespace EventReduce
             return expected(input.QueryParams.SortComparator(input.ChangeEvent.Doc, resultItem));
         }
 
-        /// <summary>wasSortedBeforeFirst</summary>
         public static bool WasSortedBeforeFirst<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             ComparePreviousWithResult(input, true, c => c < 0);
 
-        /// <summary>wasSortedAfterLast</summary>
         public static bool WasSortedAfterLast<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             ComparePreviousWithResult(input, false, c => c > 0);
 
-        /// <summary>isSortedBeforeFirst</summary>
         public static bool IsSortedBeforeFirst<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             CompareDocWithResult(input, true, c => c < 0);
 
-        /// <summary>isSortedAfterLast</summary>
         public static bool IsSortedAfterLast<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             CompareDocWithResult(input, false, c => c > 0);
 
-        /// <summary>wasMatching</summary>
         public static bool WasMatching<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.ChangeEvent.HasPrevious && input.QueryParams.QueryMatcher(input.ChangeEvent.Previous);
 
-        /// <summary>doesMatchNow</summary>
         public static bool DoesMatchNow<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.ChangeEvent.HasDoc && input.QueryParams.QueryMatcher(input.ChangeEvent.Doc);
 
-        /// <summary>wasResultsEmpty</summary>
         public static bool WasResultsEmpty<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             input.PreviousResults.Count == 0;
 
@@ -196,10 +178,11 @@ namespace EventReduce
         /// </summary>
         public static string GetStateSet<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
-            var set = new StringBuilder(OrderedStateList.Count);
-            foreach (var state in OrderedStateList)
+            var count = OrderedStateList.Count;
+            var set = new StringBuilder(count);
+            for (var i = 0; i < count; i++)
             {
-                set.Append(ResolveState(state, input) ? '1' : '0');
+                set.Append(ResolveStateByIndex(i, input) ? '1' : '0');
             }
             return set.ToString();
         }

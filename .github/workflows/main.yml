@@ -65,45 +65,46 @@ jobs:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: ./rust
     steps:
       - uses: actions/checkout@v7
       - name: rust format
-        working-directory: ./rust
         run: cargo fmt --check
       - name: rust clippy
-        working-directory: ./rust
         run: cargo clippy --all-targets -- -D warnings
       - name: rust tests
-        working-directory: ./rust
         run: cargo test
 
   dart:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: ./dart
     steps:
       - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
       - name: dart install
-        working-directory: ./dart
         run: dart pub get
       - name: dart format
-        working-directory: ./dart
         run: dart format --set-exit-if-changed .
       - name: dart analyze
-        working-directory: ./dart
         run: dart analyze --fatal-infos
       - name: dart tests
-        working-directory: ./dart
         run: dart test
       - name: dart example
-        working-directory: ./dart
         run: dart run example/example.dart
 
   kotlin:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: ./kotlin
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
@@ -111,7 +112,6 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: kotlin tests
-        working-directory: ./kotlin
         run: ./gradlew test
 
   swift:
@@ -120,68 +120,70 @@ jobs:
       contents: read
     container:
       image: swift:6.1
+    defaults:
+      run:
+        working-directory: ./swift
     steps:
       - uses: actions/checkout@v7
       - name: swift format
-        working-directory: ./swift
         run: swift format lint -r -s Package.swift Sources Tests
       - name: swift tests
-        working-directory: ./swift
         run: swift test
 
   csharp:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: ./csharp
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
       - name: csharp format
-        working-directory: ./csharp
         run: dotnet format --verify-no-changes
       - name: csharp tests
-        working-directory: ./csharp
         run: dotnet test
 
   python:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: ./python
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: python install
-        working-directory: ./python
         run: pip install pytest ruff mypy
       - name: python lint
-        working-directory: ./python
         run: |
           ruff check .
           ruff format --check .
           mypy src
       - name: python tests
-        working-directory: ./python
         run: pytest
 
   go:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: ./go
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version-file: go/go.mod
       - name: go format
-        working-directory: ./go
         run: test -z "$(gofmt -l .)"
       - name: go vet
-        working-directory: ./go
         run: go vet ./...
       - name: go tests
-        working-directory: ./go
         run: go test ./...

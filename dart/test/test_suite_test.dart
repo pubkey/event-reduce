@@ -40,7 +40,10 @@ ChangeEvent<Doc> changeEvent(Map<String, dynamic> event) {
       return ChangeEvent.insert(id: id, doc: copy(event['doc']));
     case 'UPDATE':
       return ChangeEvent.update(
-          id: id, doc: copy(event['doc']), previous: copy(event['previous']));
+        id: id,
+        doc: copy(event['doc']),
+        previous: copy(event['previous']),
+      );
     default:
       return ChangeEvent.delete(id: id, previous: copy(event['previous']));
   }
@@ -57,21 +60,31 @@ void main() {
   final cases = load('cases.json') as Map<String, dynamic>;
 
   test('state sets', () {
-    expect(stateSets['packedBddString'], packedBddString,
-        reason: 'bdd_generated.dart is out of sync with the JavaScript BDD');
+    expect(
+      stateSets['packedBdd'],
+      packedBdd,
+      reason: 'bdd_generated.dart is out of sync with the JavaScript BDD',
+    );
     final stateSetCases = stateSets['cases'] as List<dynamic>;
     for (var index = 0; index < stateSetCases.length; index++) {
       final testCase = stateSetCases[index] as Map<String, dynamic>;
       final input = StateResolveFunctionInput<Doc>(
         queryParams: queryParams(testCase['query'] as Map<String, dynamic>),
-        changeEvent:
-            changeEvent(testCase['changeEvent'] as Map<String, dynamic>),
+        changeEvent: changeEvent(
+          testCase['changeEvent'] as Map<String, dynamic>,
+        ),
         previousResults: copyAll(testCase['previousResults']),
       );
-      expect(getStateSet(input), testCase['stateSet'],
-          reason: 'state set of case #$index');
-      expect(calculateActionName(input).name, testCase['action'],
-          reason: 'action of case #$index');
+      expect(
+        getStateSet(input),
+        testCase['stateSet'],
+        reason: 'state set of case #$index',
+      );
+      expect(
+        calculateActionName(input).name,
+        testCase['action'],
+        reason: 'action of case #$index',
+      );
     }
   });
 
@@ -80,22 +93,26 @@ void main() {
       testCase as Map<String, dynamic>;
       test(testCase['name'] as String, () {
         final params = queryParams(testCase['query'] as Map<String, dynamic>);
-        final event =
-            changeEvent(testCase['changeEvent'] as Map<String, dynamic>);
+        final event = changeEvent(
+          testCase['changeEvent'] as Map<String, dynamic>,
+        );
         final results = copyAll(testCase['previousResults']);
-        final keyDocumentMap = testCase['useKeyDocumentMap'] == true
-            ? {for (final doc in results) doc['id'] as String: doc}
-            : null;
+        final keyDocumentMap =
+            testCase['useKeyDocumentMap'] == true
+                ? {for (final doc in results) doc['id'] as String: doc}
+                : null;
         ActionName action;
         if (testCase['action'] != null) {
           action = ActionName.values.byName(testCase['action'] as String);
         } else {
-          action = calculateActionName(StateResolveFunctionInput(
-            queryParams: params,
-            changeEvent: event,
-            previousResults: results,
-            keyDocumentMap: keyDocumentMap,
-          ));
+          action = calculateActionName(
+            StateResolveFunctionInput(
+              queryParams: params,
+              changeEvent: event,
+              previousResults: results,
+              keyDocumentMap: keyDocumentMap,
+            ),
+          );
           expect(action.name, testCase['expectedAction']);
         }
         String? error;
@@ -107,8 +124,10 @@ void main() {
         expect(error, testCase['expectedError']);
         expect(results, testCase['expectedResults']);
         if (keyDocumentMap != null) {
-          final mapDocs = keyDocumentMap.values.toList()
-            ..sort((a, b) => (a['id'] as String).compareTo(b['id'] as String));
+          final mapDocs =
+              keyDocumentMap.values.toList()..sort(
+                (a, b) => (a['id'] as String).compareTo(b['id'] as String),
+              );
           expect(mapDocs, testCase['expectedKeyDocumentMap']);
         }
       });
@@ -132,8 +151,10 @@ void main() {
             case 'query':
               final query = getResultWindowBufferQuery(buffer);
               expect(
-                  {'skip': query.skip, 'limit': query.limit}, step['expected'],
-                  reason: context);
+                {'skip': query.skip, 'limit': query.limit},
+                step['expected'],
+                reason: context,
+              );
             case 'reset':
               resetResultWindowBuffer(buffer, copyAll(step['rows']));
             case 'results':
@@ -147,31 +168,39 @@ void main() {
               expect(results, step['expected'], reason: context);
               expect(error, step['expectedError'], reason: context);
             case 'applyChangeEvent':
-              final result = applyChangeEventToResultWindowBuffer(buffer,
-                  changeEvent(step['changeEvent'] as Map<String, dynamic>));
+              final result = applyChangeEventToResultWindowBuffer(
+                buffer,
+                changeEvent(step['changeEvent'] as Map<String, dynamic>),
+              );
               expect(result.name, step['expected'], reason: context);
             case 'applyChangeEvents':
               final result = applyChangeEventsToResultWindowBuffer(
-                  buffer,
-                  (step['changeEvents'] as List<dynamic>)
-                      .map((e) => changeEvent(e as Map<String, dynamic>))
-                      .toList());
+                buffer,
+                (step['changeEvents'] as List<dynamic>)
+                    .map((e) => changeEvent(e as Map<String, dynamic>))
+                    .toList(),
+              );
               expect(
-                  result.runFullQueryAgain
-                      ? {'runFullQueryAgain': true}
-                      : {
-                          'runFullQueryAgain': false,
-                          'changed': result.changed,
-                          'results': ids(result.results),
-                        },
-                  step['expected'],
-                  reason: context);
+                result.runFullQueryAgain
+                    ? {'runFullQueryAgain': true}
+                    : {
+                      'runFullQueryAgain': false,
+                      'changed': result.changed,
+                      'results': ids(result.results),
+                    },
+                step['expected'],
+                reason: context,
+              );
             case 'inspect':
-              expect({
-                'buffer': ids(buffer.buffer),
-                'offset': buffer.offset,
-                'complete': buffer.complete,
-              }, step['expected'], reason: context);
+              expect(
+                {
+                  'buffer': ids(buffer.buffer),
+                  'offset': buffer.offset,
+                  'complete': buffer.complete,
+                },
+                step['expected'],
+                reason: context,
+              );
             default:
               fail('$context: unknown op');
           }
@@ -184,8 +213,11 @@ void main() {
     for (final pair
         in cases['recommendedResultWindowBufferSize'] as List<dynamic>) {
       final limit = (pair as List<dynamic>)[0] as int?;
-      expect(getRecommendedResultWindowBufferSize(limit), pair[1],
-          reason: 'limit $limit');
+      expect(
+        getRecommendedResultWindowBufferSize(limit),
+        pair[1],
+        reason: 'limit $limit',
+      );
     }
   });
 }

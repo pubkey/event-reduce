@@ -10,7 +10,7 @@ topics:
   - realtime
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.7.0
 
 dev_dependencies:
   lints: ^6.0.0

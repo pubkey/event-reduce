@@ -9,11 +9,40 @@ namespace EventReduce
     /// </summary>
     public static class Actions
     {
+        /// <summary>The array behind <see cref="OrderedActionList"/>, avoids interface calls on the hot path.</summary>
+        internal static readonly ActionName[] OrderedActions = (ActionName[])Enum.GetValues(typeof(ActionName));
+
         /// <summary>
         /// All actions, in the same order as the JavaScript implementation.
         /// The BDD references the actions by their index in this list.
         /// </summary>
-        public static readonly IReadOnlyList<ActionName> OrderedActionList = (ActionName[])Enum.GetValues(typeof(ActionName));
+        public static readonly IReadOnlyList<ActionName> OrderedActionList = OrderedActions;
+
+        /// <summary>The cached delegates of the action functions, indexed by (int)ActionName.</summary>
+        private static class ActionTable<TDoc>
+        {
+            internal static readonly Action<StateResolveFunctionInput<TDoc>>[] Functions =
+            {
+                DoNothing,
+                InsertFirst,
+                InsertLast,
+                RemoveFirstItem,
+                RemoveLastItem,
+                RemoveFirstInsertLast,
+                RemoveLastInsertFirst,
+                RemoveFirstInsertFirst,
+                RemoveLastInsertLast,
+                RemoveExisting,
+                ReplaceExisting,
+                UnknownAction, // AlwaysWrong
+                InsertAtSortPosition,
+                RemoveExistingAndInsertAtSortPosition,
+                InsertAtSortPositionRemoveLast,
+                InsertAtSortPositionRemoveFirst,
+                RunFullQueryAgain,
+                UnknownAction,
+            };
+        }
 
         /// <summary>
         /// Returns the function of the given action.
@@ -22,27 +51,14 @@ namespace EventReduce
         /// </summary>
         public static Action<StateResolveFunctionInput<TDoc>> GetActionFunction<TDoc>(ActionName action)
         {
-            switch (action)
-            {
-                case ActionName.DoNothing: return DoNothing;
-                case ActionName.InsertFirst: return InsertFirst;
-                case ActionName.InsertLast: return InsertLast;
-                case ActionName.RemoveFirstItem: return RemoveFirstItem;
-                case ActionName.RemoveLastItem: return RemoveLastItem;
-                case ActionName.RemoveFirstInsertLast: return RemoveFirstInsertLast;
-                case ActionName.RemoveLastInsertFirst: return RemoveLastInsertFirst;
-                case ActionName.RemoveFirstInsertFirst: return RemoveFirstInsertFirst;
-                case ActionName.RemoveLastInsertLast: return RemoveLastInsertLast;
-                case ActionName.RemoveExisting: return RemoveExisting;
-                case ActionName.ReplaceExisting: return ReplaceExisting;
-                case ActionName.InsertAtSortPosition: return InsertAtSortPosition;
-                case ActionName.RemoveExistingAndInsertAtSortPosition: return RemoveExistingAndInsertAtSortPosition;
-                case ActionName.InsertAtSortPositionRemoveLast: return InsertAtSortPositionRemoveLast;
-                case ActionName.InsertAtSortPositionRemoveFirst: return InsertAtSortPositionRemoveFirst;
-                case ActionName.RunFullQueryAgain: return RunFullQueryAgain;
-                default: return UnknownAction;
-            }
+            var functions = ActionTable<TDoc>.Functions;
+            var index = (int)action;
+            return functions[(uint)index < (uint)functions.Length ? index : (int)ActionName.UnknownAction];
         }
+
+        /// <summary>Runs the function of the given action on the input.</summary>
+        internal static void Run<TDoc>(ActionName action, StateResolveFunctionInput<TDoc> input) =>
+            GetActionFunction<TDoc>(action)(input);
 
         /// <summary>Returns the index of the changed document inside of the previous results or -1.</summary>
         private static int FindIndexOfChangedDoc<TDoc>(StateResolveFunctionInput<TDoc> input)
@@ -68,34 +84,35 @@ namespace EventReduce
             return input.ChangeEvent.Doc;
         }
 
-        /// <summary>doNothing</summary>
+        private static void AddToMap<TDoc>(StateResolveFunctionInput<TDoc> input, TDoc doc)
+        {
+            if (input.KeyDocumentMap != null)
+            {
+                input.KeyDocumentMap[input.ChangeEvent.Id] = doc;
+            }
+        }
+
+        private static void RemoveFromMap<TDoc>(StateResolveFunctionInput<TDoc> input, TDoc doc) =>
+            input.KeyDocumentMap?.Remove(input.QueryParams.GetDocumentId(doc));
+
         public static void DoNothing<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
         }
 
-        /// <summary>insertFirst</summary>
         public static void InsertFirst<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var doc = ChangedDoc(input);
             input.PreviousResults.Insert(0, doc);
-            if (input.KeyDocumentMap != null)
-            {
-                input.KeyDocumentMap[input.ChangeEvent.Id] = doc;
-            }
+            AddToMap(input, doc);
         }
 
-        /// <summary>insertLast</summary>
         public static void InsertLast<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var doc = ChangedDoc(input);
             input.PreviousResults.Add(doc);
-            if (input.KeyDocumentMap != null)
-            {
-                input.KeyDocumentMap[input.ChangeEvent.Id] = doc;
-            }
+            AddToMap(input, doc);
         }
 
-        /// <summary>removeFirstItem</summary>
         public static void RemoveFirstItem<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var results = input.PreviousResults;
@@ -105,10 +122,9 @@ namespace EventReduce
             }
             var first = results[0];
             results.RemoveAt(0);
-            input.KeyDocumentMap?.Remove(input.QueryParams.GetDocumentId(first));
+            RemoveFromMap(input, first);
         }
 
-        /// <summary>removeLastItem</summary>
         public static void RemoveLastItem<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var results = input.PreviousResults;
@@ -118,38 +134,33 @@ namespace EventReduce
             }
             var last = results[results.Count - 1];
             results.RemoveAt(results.Count - 1);
-            input.KeyDocumentMap?.Remove(input.QueryParams.GetDocumentId(last));
+            RemoveFromMap(input, last);
         }
 
-        /// <summary>removeFirstInsertLast</summary>
         public static void RemoveFirstInsertLast<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             RemoveFirstItem(input);
             InsertLast(input);
         }
 
-        /// <summary>removeLastInsertFirst</summary>
         public static void RemoveLastInsertFirst<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             RemoveLastItem(input);
             InsertFirst(input);
         }
 
-        /// <summary>removeFirstInsertFirst</summary>
         public static void RemoveFirstInsertFirst<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             RemoveFirstItem(input);
             InsertFirst(input);
         }
 
-        /// <summary>removeLastInsertLast</summary>
         public static void RemoveLastInsertLast<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             RemoveLastItem(input);
             InsertLast(input);
         }
 
-        /// <summary>removeExisting</summary>
         public static void RemoveExisting<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var index = FindIndexOfChangedDoc(input);
@@ -160,7 +171,6 @@ namespace EventReduce
             }
         }
 
-        /// <summary>replaceExisting</summary>
         public static void ReplaceExisting<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var index = FindIndexOfChangedDoc(input);
@@ -170,13 +180,9 @@ namespace EventReduce
             }
             var doc = ChangedDoc(input);
             input.PreviousResults[index] = doc;
-            if (input.KeyDocumentMap != null)
-            {
-                input.KeyDocumentMap[input.ChangeEvent.Id] = doc;
-            }
+            AddToMap(input, doc);
         }
 
-        /// <summary>insertAtSortPosition</summary>
         public static void InsertAtSortPosition<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             var doc = ChangedDoc(input);
@@ -191,14 +197,10 @@ namespace EventReduce
             {
                 return;
             }
-            if (map != null)
-            {
-                map[id] = doc;
-            }
+            AddToMap(input, doc);
             Util.PushAtSortPosition(input.PreviousResults, doc, input.QueryParams.SortComparator);
         }
 
-        /// <summary>removeExistingAndInsertAtSortPosition</summary>
         public static void RemoveExistingAndInsertAtSortPosition<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
             RemoveExisting(input);
@@ -211,38 +213,40 @@ namespace EventReduce
         /// sorts in between the first and the last document,
         /// so the previous last document is pushed out of the results.
         /// </summary>
-        public static void InsertAtSortPositionRemoveLast<TDoc>(StateResolveFunctionInput<TDoc> input)
-        {
-            var countBefore = input.PreviousResults.Count;
-            InsertAtSortPosition(input);
-            // InsertAtSortPosition() does nothing if the document is already in the results
-            if (input.PreviousResults.Count > countBefore)
-            {
-                RemoveLastItem(input);
-            }
-        }
+        public static void InsertAtSortPositionRemoveLast<TDoc>(StateResolveFunctionInput<TDoc> input) =>
+            InsertAtSortPositionAndRemove(input, removeFirst: false);
 
         /// <summary>
         /// Inserts the document at its sort position and then removes the first document.
         /// Used when a document moves out of the skipped documents into the results,
         /// so the previous first document is pushed into the skipped documents.
         /// </summary>
-        public static void InsertAtSortPositionRemoveFirst<TDoc>(StateResolveFunctionInput<TDoc> input)
+        public static void InsertAtSortPositionRemoveFirst<TDoc>(StateResolveFunctionInput<TDoc> input) =>
+            InsertAtSortPositionAndRemove(input, removeFirst: true);
+
+        private static void InsertAtSortPositionAndRemove<TDoc>(StateResolveFunctionInput<TDoc> input, bool removeFirst)
         {
             var countBefore = input.PreviousResults.Count;
             InsertAtSortPosition(input);
             // InsertAtSortPosition() does nothing if the document is already in the results
             if (input.PreviousResults.Count > countBefore)
             {
-                RemoveFirstItem(input);
+                if (removeFirst)
+                {
+                    RemoveFirstItem(input);
+                }
+                else
+                {
+                    RemoveLastItem(input);
+                }
             }
         }
 
-        /// <summary>runFullQueryAgain, always throws.</summary>
+        /// <summary>Always throws an <see cref="EventReduceException"/> with the code RUN_FULL.</summary>
         public static void RunFullQueryAgain<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             throw new EventReduceException("RUN_FULL");
 
-        /// <summary>unknownAction, always throws.</summary>
+        /// <summary>Always throws an <see cref="EventReduceException"/> with the code UNK_ACT.</summary>
         public static void UnknownAction<TDoc>(StateResolveFunctionInput<TDoc> input) =>
             throw new EventReduceException("UNK_ACT");
     }

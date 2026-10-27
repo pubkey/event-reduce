@@ -13,8 +13,8 @@ class ChangeEvent<D> {
   final D? previous;
 
   const ChangeEvent.insert({required this.id, required D this.doc})
-      : operation = WriteOperation.insert,
-        previous = null;
+    : operation = WriteOperation.insert,
+      previous = null;
 
   const ChangeEvent.update({
     required this.id,
@@ -23,8 +23,8 @@ class ChangeEvent<D> {
   }) : operation = WriteOperation.update;
 
   const ChangeEvent.delete({required this.id, required D this.previous})
-      : operation = WriteOperation.delete,
-        doc = null;
+    : operation = WriteOperation.delete,
+      doc = null;
 
   @override
   String toString() =>
@@ -63,6 +63,16 @@ class QueryParams<D> {
     required this.sortComparator,
     required this.sortFieldsChanged,
   });
+
+  /// A copy with the given skip and limit.
+  QueryParams<D> withSkipAndLimit(int? skip, int? limit) => QueryParams(
+    getDocumentId: getDocumentId,
+    skip: skip,
+    limit: limit,
+    queryMatcher: queryMatcher,
+    sortComparator: sortComparator,
+    sortFieldsChanged: sortFieldsChanged,
+  );
 }
 
 /// The input of the state functions and of the action functions.
@@ -80,8 +90,6 @@ class StateResolveFunctionInput<D> {
     this.keyDocumentMap,
   });
 }
-
-typedef ActionFunctionInput<D> = StateResolveFunctionInput<D>;
 
 enum ActionName {
   doNothing,

@@ -4,18 +4,12 @@ import 'types.dart';
 /// or -1 if it is not in the given documents.
 int indexOfDocumentId<D>(QueryParams<D> queryParams, List<D> docs, String id) {
   final getId = queryParams.getDocumentId;
-  for (var i = 0; i < docs.length; i++) {
-    if (getId(docs[i]) == id) {
-      return i;
-    }
-  }
-  return -1;
+  return docs.indexWhere((doc) => getId(doc) == id);
 }
 
 /// Inserts the item at its sort position, which is much faster than re-sorting the list.
 /// Items that are equal to the new item stay before it.
-/// Returns the index at which the item was inserted.
-int pushAtSortPosition<D>(
+void pushAtSortPosition<D>(
   List<D> list,
   D item,
   int Function(D a, D b) compare,
@@ -23,7 +17,7 @@ int pushAtSortPosition<D>(
   // Shortcut: the item belongs at the end, add() is O(1).
   if (list.isEmpty || compare(list.last, item) <= 0) {
     list.add(item);
-    return list.length - 1;
+    return;
   }
   var low = 0;
   var high = list.length;
@@ -36,5 +30,4 @@ int pushAtSortPosition<D>(
     }
   }
   list.insert(low, item);
-  return low;
 }

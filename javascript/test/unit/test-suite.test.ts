@@ -64,18 +64,21 @@ type Cases = {
 };
 
 const toChangeEvent = (event: TestSuiteChangeEvent) => event as ChangeEvent<TestSuiteDoc>;
+const errorCode = (err: Error) => err.message.replace('EventReduce:', '');
 const ids = (docs: TestSuiteDoc[]) => docs.map(doc => doc.id);
 const bufferSize = (size: BufferSize) => size === 'all' ? Infinity : size;
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
 describe('test-suite.test.ts', () => {
-    const stateSets: StateSets = JSON.parse(fs.readFileSync(getTestSuitePath('state-sets.json'), 'utf-8'));
+    const stateSetsJson = fs.readFileSync(getTestSuitePath('state-sets.json'), 'utf-8');
+    const stateSets: StateSets = JSON.parse(stateSetsJson);
     const cases: Cases = JSON.parse(fs.readFileSync(getTestSuitePath('cases.json'), 'utf-8'));
 
     it('state-sets.json must match the current BDD', () => {
-        const expected = stateSetsToJson(generateStateSets());
-        const actual = fs.readFileSync(getTestSuitePath('state-sets.json'), 'utf-8');
-        assert.ok(actual === expected, 'test-suite/state-sets.json is outdated, run: npm run generate-test-suite');
+        assert.ok(
+            stateSetsJson === stateSetsToJson(generateStateSets()),
+            'test-suite/state-sets.json is outdated, run: npm run generate-test-suite'
+        );
     });
     it('state sets and actions', () => {
         stateSets.cases.forEach((testCase, index) => {
@@ -104,7 +107,7 @@ describe('test-suite.test.ts', () => {
                 try {
                     runAction(action, queryParams, changeEvent, results, keyDocumentMap);
                 } catch (err: any) {
-                    error = err.message.replace('EventReduce:', '');
+                    error = errorCode(err);
                 }
                 assert.strictEqual(error, testCase.expectedError);
                 assert.deepStrictEqual(results, testCase.expectedResults);
@@ -143,7 +146,7 @@ describe('test-suite.test.ts', () => {
                             try {
                                 results = ids(getResultWindowBufferResults(buffer));
                             } catch (err: any) {
-                                error = err.message.replace('EventReduce:', '');
+                                error = errorCode(err);
                             }
                             assert.deepStrictEqual(results, step.expected, context);
                             assert.strictEqual(error, step.expectedError, context);

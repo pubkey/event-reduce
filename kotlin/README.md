@@ -54,7 +54,7 @@ and `runAction()` keeps it in sync with the results.
 - Instead of `primaryKey` and `sortFields`, the `QueryParams` take `getDocumentId`
   and `sortFieldsChanged`, so documents can be any Kotlin class.
 - `sortComparator` is a `Comparator`.
-- `ActionName` and `StateName` are enums, `jsName` returns the name used by JavaScript.
+- `ActionName`, `StateName` and `ResultWindowBufferResult` are enums, `jsName` returns the name used by JavaScript.
 - `runAction()` throws an `EventReduceException` for `RunFullQueryAgain` and `UnknownAction`.
   `AlwaysWrong` is only used by the truth-table generator and throws like `UnknownAction`.
 

@@ -7,10 +7,6 @@ package com.github.pubkey.eventreduce
 public fun <D> calculateActionName(input: StateResolveFunctionInput<D>): ActionName =
     orderedActionList[resolveInput(input)]
 
-/** Like [calculateActionName] but returns the action function directly. */
-public fun <D> calculateActionFunction(input: StateResolveFunctionInput<D>): ActionFunction<D> =
-    actionFunction(calculateActionName(input))
-
 /**
  * Applies the action to the results.
  * For performance reasons, it mutates [previousResults] and the [keyDocumentMap]

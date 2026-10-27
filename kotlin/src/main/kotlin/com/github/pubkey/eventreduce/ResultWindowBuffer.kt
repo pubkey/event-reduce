@@ -71,6 +71,10 @@ public enum class ResultWindowBufferResult {
      * getResultWindowBufferQuery() and pass the rows to resetResultWindowBuffer().
      */
     RunFullQueryAgain,
+    ;
+
+    /** The name as used by the JavaScript implementation. */
+    public val jsName: String get() = name.replaceFirstChar { it.lowercaseChar() }
 }
 
 /** What applyChangeEventsToResultWindowBuffer() returns. */
@@ -207,22 +211,17 @@ public fun <D> applyChangeEventToResultWindowBuffer(
      * If the buffer is complete, we use buffer.size + 1, so EventReduce
      * knows that the limit is not reached and there are no more rows.
      */
-    val bufferQueryParams = QueryParams(
-        getDocumentId = queryParams.getDocumentId,
-        skip = if (resultWindowBuffer.offset > 0) resultWindowBuffer.offset else null,
-        limit = if (resultWindowBuffer.complete) buffer.size + 1 else buffer.size,
-        queryMatcher = queryParams.queryMatcher,
-        sortComparator = queryParams.sortComparator,
-        sortFieldsChanged = queryParams.sortFieldsChanged,
+    val input = ActionFunctionInput(
+        queryParams.copy(
+            skip = if (resultWindowBuffer.offset > 0) resultWindowBuffer.offset else null,
+            limit = if (resultWindowBuffer.complete) buffer.size + 1 else buffer.size,
+        ),
+        changeEvent,
+        buffer,
+        resultWindowBuffer.keyDocumentMap,
     )
-    val action = calculateActionName(
-        StateResolveFunctionInput(bufferQueryParams, changeEvent, buffer, resultWindowBuffer.keyDocumentMap),
-    )
-    val result = if (
-        action == ActionName.RunFullQueryAgain ||
-        action == ActionName.UnknownAction ||
-        action in ACTIONS_THAT_DROP_A_ROW
-    ) {
+    val action = calculateActionName(input)
+    val result = if (action == ActionName.RunFullQueryAgain || action in ACTIONS_THAT_DROP_A_ROW) {
         /*
          * 2. EventReduce needs a row before or after the buffer, which it does not know,
          * or it would drop a row to keep the length of the result.
@@ -232,7 +231,7 @@ public fun <D> applyChangeEventToResultWindowBuffer(
         applySliceRule(resultWindowBuffer, changeEvent)
         ResultWindowBufferResult.Buffer
     } else {
-        runAction(action, bufferQueryParams, changeEvent, buffer, resultWindowBuffer.keyDocumentMap)
+        actionFunction<D>(action)(input)
         ResultWindowBufferResult.EventReduce
     }
 
@@ -271,12 +270,7 @@ public fun <D> applyChangeEventsToResultWindowBuffer(
     val results = getResultWindowBufferResults(resultWindowBuffer)
     // Changed rows are always new objects from the change events,
     // so comparing the rows by reference finds every change.
-    var changed = results.size != previousResults.size
-    var index = 0
-    while (!changed && index < results.size) {
-        changed = results[index] !== previousResults[index]
-        index++
-    }
+    val changed = results.size != previousResults.size || results.indices.any { results[it] !== previousResults[it] }
     return ResultWindowBufferChangeResult.Results(changed, results)
 }
 
@@ -299,15 +293,17 @@ private fun isResultWindowInBuffer(resultWindowBuffer: ResultWindowBuffer<*>): B
  */
 private fun <D> trimBuffer(resultWindowBuffer: ResultWindowBuffer<D>) {
     val buffer = resultWindowBuffer.buffer
-    val keyDocumentMap = resultWindowBuffer.keyDocumentMap
     val getId = resultWindowBuffer.queryParams.getDocumentId
+    fun removeRows(from: Int, to: Int) {
+        val removed = buffer.subList(from, to)
+        removed.forEach { resultWindowBuffer.keyDocumentMap.remove(getId(it)) }
+        removed.clear()
+    }
 
     val rowsBeforeWindow = getSkip(resultWindowBuffer) - resultWindowBuffer.offset
     val removeFromStart = minOf(rowsBeforeWindow - resultWindowBuffer.skipBufferSize, buffer.size)
     if (removeFromStart > 0) {
-        val removed = buffer.subList(0, removeFromStart)
-        removed.forEach { keyDocumentMap.remove(getId(it)) }
-        removed.clear()
+        removeRows(0, removeFromStart)
         resultWindowBuffer.offset += removeFromStart
     }
 
@@ -316,9 +312,7 @@ private fun <D> trimBuffer(resultWindowBuffer: ResultWindowBuffer<D>) {
         val maxLength = maxOf(0, getSkip(resultWindowBuffer) - resultWindowBuffer.offset).toLong() +
             limit + resultWindowBuffer.limitBufferSize
         if (buffer.size > maxLength) {
-            val removed = buffer.subList(maxLength.toInt(), buffer.size)
-            removed.forEach { keyDocumentMap.remove(getId(it)) }
-            removed.clear()
+            removeRows(maxLength.toInt(), buffer.size)
             resultWindowBuffer.complete = false
         }
     }
@@ -368,8 +362,7 @@ private fun <D> applySliceRule(resultWindowBuffer: ResultWindowBuffer<D>, change
 
     val id = changeEvent.id
     if (keyDocumentMap.remove(id) != null) {
-        val getId = queryParams.getDocumentId
-        buffer.removeAt(buffer.indexOfFirst { getId(it) == id })
+        buffer.removeAt(indexOfDocumentId(queryParams, buffer, id))
     }
     if (doc != null &&
         doesMatchNow &&
@@ -405,20 +398,12 @@ private fun <D> compareRows(queryParams: QueryParams<D>, a: D, b: D): Int {
     return idA.compareTo(idB)
 }
 
+/**
+ * compareRows() returns 0 only for two versions of the same row,
+ * and the old version was removed before, so the position is exact.
+ */
 private fun <D> insertAtSortPosition(resultWindowBuffer: ResultWindowBuffer<D>, doc: D) {
-    val buffer = resultWindowBuffer.buffer
     val queryParams = resultWindowBuffer.queryParams
-    // binary search for the first row that sorts after doc
-    var low = 0
-    var high = buffer.size
-    while (low < high) {
-        val mid = (low + high) ushr 1
-        if (compareRows(queryParams, buffer[mid], doc) < 0) {
-            low = mid + 1
-        } else {
-            high = mid
-        }
-    }
-    buffer.add(low, doc)
+    pushAtSortPosition(resultWindowBuffer.buffer, doc) { a, b -> compareRows(queryParams, a, b) }
     resultWindowBuffer.keyDocumentMap[queryParams.getDocumentId(doc)] = doc
 }

@@ -17,8 +17,8 @@
 import 'dart:math' as math;
 
 import 'actions.dart';
-import 'bdd.dart';
 import 'types.dart';
+import 'util.dart';
 
 /// Pass it as a buffer size to keep all rows on that side of the result window.
 /// It is the largest integer that is exact on all platforms, also on the web.
@@ -49,29 +49,15 @@ class ResultWindowBuffer<D> {
   bool complete = false;
 
   ResultWindowBuffer._(
-      this.queryParams, this.limitBufferSize, this.skipBufferSize);
+    this.queryParams,
+    this.limitBufferSize,
+    this.skipBufferSize,
+  );
 }
 
 /// The skip and limit to run the query of the buffer with.
-/// [limit] is null if all rows after the skip are needed.
-class ResultWindowBufferQuery {
-  final int skip;
-  final int? limit;
-
-  const ResultWindowBufferQuery(this.skip, this.limit);
-
-  @override
-  bool operator ==(Object other) =>
-      other is ResultWindowBufferQuery &&
-      other.skip == skip &&
-      other.limit == limit;
-
-  @override
-  int get hashCode => Object.hash(skip, limit);
-
-  @override
-  String toString() => 'ResultWindowBufferQuery(skip: $skip, limit: $limit)';
-}
+/// limit is null if all rows after the skip are needed.
+typedef ResultWindowBufferQuery = ({int skip, int? limit});
 
 /// What applyChangeEventToResultWindowBuffer() did:
 /// - eventReduce: an EventReduce action calculated the new buffer
@@ -90,7 +76,10 @@ class ResultWindowBufferChangeResult<D> {
   final List<D> results;
 
   const ResultWindowBufferChangeResult._(
-      this.runFullQueryAgain, this.changed, this.results);
+    this.runFullQueryAgain,
+    this.changed,
+    this.results,
+  );
 }
 
 /// Actions that keep the length of the result by dropping its first or last row.
@@ -113,7 +102,8 @@ int getRecommendedResultWindowBufferSize(int? limit) {
   if (limit == null || limit == 0) {
     return 0;
   }
-  final size = math.log(limit) / math.ln2 +
+  final size =
+      math.log(limit) / math.ln2 +
       19 / (1 + math.pow(400 / limit, 2).toDouble());
   return math.min(30, size.floor());
 }
@@ -142,13 +132,14 @@ ResultWindowBuffer<D> createResultWindowBuffer<D>(
   );
 }
 
-int _getSkip(ResultWindowBuffer<dynamic> resultWindowBuffer) =>
+int _getSkip<D>(ResultWindowBuffer<D> resultWindowBuffer) =>
     resultWindowBuffer.queryParams.skip ?? 0;
 
 /// The skip and limit to run the query of the buffer with.
 /// limit is null if all rows after the skip are needed.
-ResultWindowBufferQuery getResultWindowBufferQuery(
-    ResultWindowBuffer<dynamic> resultWindowBuffer) {
+ResultWindowBufferQuery getResultWindowBufferQuery<D>(
+  ResultWindowBuffer<D> resultWindowBuffer,
+) {
   final skip = _getSkip(resultWindowBuffer);
   final bufferSkip = math.max(0, skip - resultWindowBuffer.skipBufferSize);
   final limit = resultWindowBuffer.queryParams.limit;
@@ -156,19 +147,22 @@ ResultWindowBufferQuery getResultWindowBufferQuery(
       limit != null && resultWindowBuffer.limitBufferSize < _maxBufferSize
           ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize
           : null;
-  return ResultWindowBufferQuery(bufferSkip, bufferLimit);
+  return (skip: bufferSkip, limit: bufferLimit);
 }
 
 /// Set the buffer to the rows of a fresh query
 /// that ran with the skip and limit of getResultWindowBufferQuery().
 void resetResultWindowBuffer<D>(
-    ResultWindowBuffer<D> resultWindowBuffer, List<D> rows) {
+  ResultWindowBuffer<D> resultWindowBuffer,
+  List<D> rows,
+) {
   final query = getResultWindowBufferQuery(resultWindowBuffer);
   final getId = resultWindowBuffer.queryParams.getDocumentId;
   resultWindowBuffer.buffer = List.of(rows);
-  resultWindowBuffer.keyDocumentMap
-    ..clear()
-    ..addAll({for (final doc in rows) getId(doc): doc});
+  final keyDocumentMap = resultWindowBuffer.keyDocumentMap..clear();
+  for (final doc in rows) {
+    keyDocumentMap[getId(doc)] = doc;
+  }
   resultWindowBuffer.offset = query.skip;
   // fewer rows than requested means there are no more rows
   final limit = query.limit;
@@ -181,13 +175,16 @@ void resetResultWindowBuffer<D>(
 /// or when applyChangeEventToResultWindowBuffer() returned runFullQueryAgain
 /// and the query did not run again.
 List<D> getResultWindowBufferResults<D>(
-    ResultWindowBuffer<D> resultWindowBuffer) {
+  ResultWindowBuffer<D> resultWindowBuffer,
+) {
   if (!_isResultWindowInBuffer(resultWindowBuffer)) {
     throw EventReduceError('RWB_OUTDATED');
   }
   final buffer = resultWindowBuffer.buffer;
   final start = math.min(
-      _getSkip(resultWindowBuffer) - resultWindowBuffer.offset, buffer.length);
+    _getSkip(resultWindowBuffer) - resultWindowBuffer.offset,
+    buffer.length,
+  );
   final limit = resultWindowBuffer.queryParams.limit;
   final end =
       limit == null ? buffer.length : math.min(start + limit, buffer.length);
@@ -216,22 +213,17 @@ ResultWindowBufferResult applyChangeEventToResultWindowBuffer<D>(
   // If the buffer is complete, we use buffer.length + 1, so EventReduce
   // knows that the limit is not reached and there are no more rows.
   final input = StateResolveFunctionInput<D>(
-    queryParams: QueryParams<D>(
-      getDocumentId: queryParams.getDocumentId,
-      skip: resultWindowBuffer.offset > 0 ? resultWindowBuffer.offset : null,
-      limit: resultWindowBuffer.complete ? buffer.length + 1 : buffer.length,
-      queryMatcher: queryParams.queryMatcher,
-      sortComparator: queryParams.sortComparator,
-      sortFieldsChanged: queryParams.sortFieldsChanged,
+    queryParams: queryParams.withSkipAndLimit(
+      resultWindowBuffer.offset > 0 ? resultWindowBuffer.offset : null,
+      resultWindowBuffer.complete ? buffer.length + 1 : buffer.length,
     ),
     changeEvent: changeEvent,
     previousResults: buffer,
     keyDocumentMap: resultWindowBuffer.keyDocumentMap,
   );
-  final action = orderedActionList[resolveInput(input)];
+  final action = calculateActionName(input);
   final ResultWindowBufferResult result;
   if (action == ActionName.runFullQueryAgain ||
-      action == ActionName.unknownAction ||
       _actionsThatDropARow.contains(action)) {
     // 2. EventReduce needs a row before or after the buffer, which it does not know,
     // or it would drop a row to keep the length of the result.
@@ -263,8 +255,11 @@ ResultWindowBufferChangeResult<D> applyChangeEventsToResultWindowBuffer<D>(
   ResultWindowBuffer<D> resultWindowBuffer,
   List<ChangeEvent<D>> changeEvents,
 ) {
-  const runFullQueryAgain =
-      ResultWindowBufferChangeResult<Never>._(true, false, []);
+  const runFullQueryAgain = ResultWindowBufferChangeResult<Never>._(
+    true,
+    false,
+    [],
+  );
   if (!_isResultWindowInBuffer(resultWindowBuffer)) {
     return runFullQueryAgain;
   }
@@ -286,7 +281,7 @@ ResultWindowBufferChangeResult<D> applyChangeEventsToResultWindowBuffer<D>(
 }
 
 /// True if all rows of the result window are in the buffer.
-bool _isResultWindowInBuffer(ResultWindowBuffer<dynamic> resultWindowBuffer) {
+bool _isResultWindowInBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
   final start = _getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
   if (start < 0) {
     return false;
@@ -308,10 +303,12 @@ void _trimBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
   final rowsBeforeWindow =
       _getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
   final removeFromStart = math.min(
-      rowsBeforeWindow - resultWindowBuffer.skipBufferSize, buffer.length);
+    rowsBeforeWindow - resultWindowBuffer.skipBufferSize,
+    buffer.length,
+  );
   if (removeFromStart > 0) {
-    for (final doc in buffer.sublist(0, removeFromStart)) {
-      keyDocumentMap.remove(getId(doc));
+    for (var index = 0; index < removeFromStart; index++) {
+      keyDocumentMap.remove(getId(buffer[index]));
     }
     buffer.removeRange(0, removeFromStart);
     resultWindowBuffer.offset += removeFromStart;
@@ -321,11 +318,11 @@ void _trimBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
   if (limit != null) {
     final maxLength =
         math.max(0, _getSkip(resultWindowBuffer) - resultWindowBuffer.offset) +
-            limit +
-            resultWindowBuffer.limitBufferSize;
+        limit +
+        resultWindowBuffer.limitBufferSize;
     if (buffer.length > maxLength) {
-      for (final doc in buffer.sublist(maxLength)) {
-        keyDocumentMap.remove(getId(doc));
+      for (var index = maxLength; index < buffer.length; index++) {
+        keyDocumentMap.remove(getId(buffer[index]));
       }
       buffer.removeRange(maxLength, buffer.length);
       resultWindowBuffer.complete = false;
@@ -380,8 +377,7 @@ void _applySliceRule<D>(
 
   final id = changeEvent.id;
   if (keyDocumentMap.containsKey(id)) {
-    final getId = queryParams.getDocumentId;
-    buffer.removeAt(buffer.indexWhere((d) => getId(d) == id));
+    buffer.removeAt(indexOfDocumentId(queryParams, buffer, id));
     keyDocumentMap.remove(id);
   }
   if (doc != null &&
@@ -417,19 +413,12 @@ int _compareRows<D>(QueryParams<D> queryParams, D a, D b) {
 }
 
 void _insertAtSortPosition<D>(ResultWindowBuffer<D> resultWindowBuffer, D doc) {
-  final buffer = resultWindowBuffer.buffer;
   final queryParams = resultWindowBuffer.queryParams;
-  // binary search for the first row that sorts after doc
-  var low = 0;
-  var high = buffer.length;
-  while (low < high) {
-    final mid = (low + high) >> 1;
-    if (_compareRows(queryParams, buffer[mid], doc) < 0) {
-      low = mid + 1;
-    } else {
-      high = mid;
-    }
-  }
-  buffer.insert(low, doc);
+  // The row was removed before, so _compareRows() never returns 0 here.
+  pushAtSortPosition(
+    resultWindowBuffer.buffer,
+    doc,
+    (D a, D b) => _compareRows(queryParams, a, b),
+  );
   resultWindowBuffer.keyDocumentMap[queryParams.getDocumentId(doc)] = doc;
 }

@@ -29,6 +29,16 @@ def _changed_doc(input: StateResolveFunctionInput[Any]) -> Any:
     return doc
 
 
+def _add_to_map(input: StateResolveFunctionInput[Any], doc: Any) -> None:
+    if input.key_document_map is not None:
+        input.key_document_map[input.change_event.id] = doc
+
+
+def _remove_from_map(input: StateResolveFunctionInput[Any], id: str) -> None:
+    if input.key_document_map is not None:
+        input.key_document_map.pop(id, None)
+
+
 def do_nothing(input: StateResolveFunctionInput[Any]) -> None:
     pass
 
@@ -36,31 +46,27 @@ def do_nothing(input: StateResolveFunctionInput[Any]) -> None:
 def insert_first(input: StateResolveFunctionInput[Any]) -> None:
     doc = _changed_doc(input)
     input.previous_results.insert(0, doc)
-    if input.key_document_map is not None:
-        input.key_document_map[input.change_event.id] = doc
+    _add_to_map(input, doc)
 
 
 def insert_last(input: StateResolveFunctionInput[Any]) -> None:
     doc = _changed_doc(input)
     input.previous_results.append(doc)
-    if input.key_document_map is not None:
-        input.key_document_map[input.change_event.id] = doc
+    _add_to_map(input, doc)
 
 
 def remove_first_item(input: StateResolveFunctionInput[Any]) -> None:
     if not input.previous_results:
         return
     first = input.previous_results.pop(0)
-    if input.key_document_map is not None:
-        input.key_document_map.pop(input.query_params.get_document_id(first), None)
+    _remove_from_map(input, input.query_params.get_document_id(first))
 
 
 def remove_last_item(input: StateResolveFunctionInput[Any]) -> None:
     if not input.previous_results:
         return
     last = input.previous_results.pop()
-    if input.key_document_map is not None:
-        input.key_document_map.pop(input.query_params.get_document_id(last), None)
+    _remove_from_map(input, input.query_params.get_document_id(last))
 
 
 def remove_first_insert_last(input: StateResolveFunctionInput[Any]) -> None:
@@ -85,8 +91,7 @@ def remove_last_insert_last(input: StateResolveFunctionInput[Any]) -> None:
 
 def remove_existing(input: StateResolveFunctionInput[Any]) -> None:
     index = _find_index_of_changed_doc(input)
-    if input.key_document_map is not None:
-        input.key_document_map.pop(input.change_event.id, None)
+    _remove_from_map(input, input.change_event.id)
     if index >= 0:
         del input.previous_results[index]
 
@@ -96,8 +101,7 @@ def replace_existing(input: StateResolveFunctionInput[Any]) -> None:
     if index >= 0:
         doc = _changed_doc(input)
         input.previous_results[index] = doc
-        if input.key_document_map is not None:
-            input.key_document_map[input.change_event.id] = doc
+        _add_to_map(input, doc)
 
 
 def insert_at_sort_position(input: StateResolveFunctionInput[Any]) -> None:
@@ -120,6 +124,14 @@ def remove_existing_and_insert_at_sort_position(input: StateResolveFunctionInput
     insert_at_sort_position(input)
 
 
+def _insert_at_sort_position_and_remove(input: StateResolveFunctionInput[Any], remove: ActionFunction) -> None:
+    length_before = len(input.previous_results)
+    insert_at_sort_position(input)
+    # insert_at_sort_position() does nothing if the document is already in the results
+    if len(input.previous_results) > length_before:
+        remove(input)
+
+
 def insert_at_sort_position_remove_last(input: StateResolveFunctionInput[Any]) -> None:
     """
     Inserts the document at its sort position and then removes the last document.
@@ -127,11 +139,7 @@ def insert_at_sort_position_remove_last(input: StateResolveFunctionInput[Any]) -
     sorts in between the first and the last document,
     so the previous last document is pushed out of the results.
     """
-    length_before = len(input.previous_results)
-    insert_at_sort_position(input)
-    # insert_at_sort_position() does nothing if the document is already in the results
-    if len(input.previous_results) > length_before:
-        remove_last_item(input)
+    _insert_at_sort_position_and_remove(input, remove_last_item)
 
 
 def insert_at_sort_position_remove_first(input: StateResolveFunctionInput[Any]) -> None:
@@ -140,11 +148,7 @@ def insert_at_sort_position_remove_first(input: StateResolveFunctionInput[Any]) 
     Used when a document moves out of the skipped documents into the results,
     so the previous first document is pushed into the skipped documents.
     """
-    length_before = len(input.previous_results)
-    insert_at_sort_position(input)
-    # insert_at_sort_position() does nothing if the document is already in the results
-    if len(input.previous_results) > length_before:
-        remove_first_item(input)
+    _insert_at_sort_position_and_remove(input, remove_first_item)
 
 
 def run_full_query_again(input: StateResolveFunctionInput[Any]) -> None:
@@ -177,5 +181,3 @@ ACTION_FUNCTION_LIST: list[ActionFunction] = [
     unknown_action,
 ]
 """The action functions in the same order as ORDERED_ACTION_LIST."""
-
-ACTION_FUNCTIONS: dict[ActionName, ActionFunction] = dict(zip(ORDERED_ACTION_LIST, ACTION_FUNCTION_LIST, strict=False))

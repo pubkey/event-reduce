@@ -12,6 +12,7 @@ import {
 } from '../../src/index.js';
 import type { ResultWindowBuffer, ResultWindowBufferResult, ResultWindowBufferSizes } from '../../src/index.js';
 import type { ChangeEvent, QueryParams } from '../../src/types/index.js';
+import { seededRandom } from '../helper/test-suite.js';
 
 /**
  * Randomized test of the result window buffer against a full query.
@@ -30,21 +31,6 @@ type TestQuery = {
     skip?: number;
     limit?: number;
 };
-
-/**
- * Seeded random number generator (mulberry32),
- * so that every run produces the same events.
- */
-function seededRandom(seed: number): () => number {
-    let state = seed >>> 0;
-    return () => {
-        state = (state + 0x6D2B79F5) >>> 0;
-        let t = state;
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-}
 
 /**
  * The query is always: gender === 'f', sorted by age, then by _id.

@@ -26,15 +26,14 @@ namespace EventReduce
         /// <summary>
         /// Inserts the item at its sort position, which is much faster than re-sorting the list.
         /// Items that are equal to the new item stay before it.
-        /// Returns the index at which the item was inserted.
         /// </summary>
-        public static int PushAtSortPosition<TDoc>(List<TDoc> list, TDoc item, Comparison<TDoc> compare)
+        public static void PushAtSortPosition<TDoc>(List<TDoc> list, TDoc item, Comparison<TDoc> compare)
         {
             // Shortcut: the item belongs at the end, Add() is O(1).
             if (list.Count == 0 || compare(list[list.Count - 1], item) <= 0)
             {
                 list.Add(item);
-                return list.Count - 1;
+                return;
             }
             var low = 0;
             var high = list.Count;
@@ -51,7 +50,6 @@ namespace EventReduce
                 }
             }
             list.Insert(low, item);
-            return low;
         }
     }
 }

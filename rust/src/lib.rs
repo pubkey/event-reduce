@@ -11,7 +11,7 @@ mod util;
 use std::hash::Hash;
 
 pub use actions::*;
-pub use bdd::{resolve_input, PACKED_BDD, PACKED_BDD_STRING};
+pub use bdd::{resolve_input, PACKED_BDD};
 pub use result_window_buffer::*;
 pub use states::*;
 pub use types::*;
@@ -23,13 +23,6 @@ pub fn calculate_action_name<D, K: Eq + Hash>(
     input: &StateResolveFunctionInput<D, K>,
 ) -> ActionName {
     ORDERED_ACTION_LIST[resolve_input(input)]
-}
-
-/// Like calculate_action_name() but returns the action function directly.
-pub fn calculate_action_function<D: Clone, K: Eq + Hash + Clone>(
-    input: &StateResolveFunctionInput<D, K>,
-) -> ActionFunction<D, K> {
-    action_function(calculate_action_name(input))
 }
 
 /// Applies the action to the results, which are mutated in place.

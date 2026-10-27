@@ -115,11 +115,7 @@ pub fn insert_last<D: Clone, K: Eq + Hash + Clone>(
 pub fn remove_first_item<D, K: Eq + Hash>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
-    let first = if input.previous_results.is_empty() {
-        None
-    } else {
-        Some(input.previous_results.remove(0))
-    };
+    let first = (!input.previous_results.is_empty()).then(|| input.previous_results.remove(0));
     remove_from_map(input, first);
     Ok(())
 }
@@ -187,7 +183,6 @@ pub fn replace_existing<D: Clone, K: Eq + Hash + Clone>(
 pub fn insert_at_sort_position<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
-    let doc = changed_doc(input)?;
     let id = input.change_event.id();
     /*
      * If document is already in results,
@@ -200,6 +195,7 @@ pub fn insert_at_sort_position<D: Clone, K: Eq + Hash + Clone>(
     if is_doc_in_results {
         return Ok(());
     }
+    let doc = changed_doc(input)?;
     add_to_map(input, &doc);
     push_at_sort_position(
         input.previous_results,
@@ -216,6 +212,21 @@ pub fn remove_existing_and_insert_at_sort_position<D: Clone, K: Eq + Hash + Clon
     insert_at_sort_position(input)
 }
 
+/// Inserts the document at its sort position and then runs `remove`.
+/// insert_at_sort_position() does nothing if the document is already in the results,
+/// then nothing is removed either.
+fn insert_at_sort_position_and_remove<D: Clone, K: Eq + Hash + Clone>(
+    input: &mut ActionFunctionInput<D, K>,
+    remove: ActionFunction<D, K>,
+) -> Result<(), EventReduceError> {
+    let length_before = input.previous_results.len();
+    insert_at_sort_position(input)?;
+    if input.previous_results.len() > length_before {
+        remove(input)?;
+    }
+    Ok(())
+}
+
 /// Inserts the document at its sort position and then removes the last document.
 /// Used when the limit was reached and the new document
 /// sorts in between the first and the last document,
@@ -223,13 +234,7 @@ pub fn remove_existing_and_insert_at_sort_position<D: Clone, K: Eq + Hash + Clon
 pub fn insert_at_sort_position_remove_last<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
-    let length_before = input.previous_results.len();
-    insert_at_sort_position(input)?;
-    // insert_at_sort_position() does nothing if the document is already in the results
-    if input.previous_results.len() > length_before {
-        remove_last_item(input)?;
-    }
-    Ok(())
+    insert_at_sort_position_and_remove(input, remove_last_item)
 }
 
 /// Inserts the document at its sort position and then removes the first document.
@@ -238,13 +243,7 @@ pub fn insert_at_sort_position_remove_last<D: Clone, K: Eq + Hash + Clone>(
 pub fn insert_at_sort_position_remove_first<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
-    let length_before = input.previous_results.len();
-    insert_at_sort_position(input)?;
-    // insert_at_sort_position() does nothing if the document is already in the results
-    if input.previous_results.len() > length_before {
-        remove_first_item(input)?;
-    }
-    Ok(())
+    insert_at_sort_position_and_remove(input, remove_first_item)
 }
 
 pub fn run_full_query_again<D, K>(

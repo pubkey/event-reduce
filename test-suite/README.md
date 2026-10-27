@@ -27,7 +27,7 @@ Errors are the codes of the JavaScript implementation without the `EventReduce:`
 Created by the JavaScript implementation with `npm run generate-test-suite` in `./javascript`,
 a JavaScript test fails if it is outdated after the BDD changed.
 
-- `packedBddString`: the BDD of the JavaScript implementation, the generated BDD of each implementation must be equal to it.
+- `packedBdd`: the entries of the packed BDD of the JavaScript implementation, the generated BDD entries of each implementation must be equal to them.
 - `cases`: one realistic case for each state set that was found.
   For the `query`, the `previousResults` and the `changeEvent`, the state set must be `stateSet`
   and the calculated action must be `action`.

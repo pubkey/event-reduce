@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- members whose name says everything have no doc comment -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <RootNamespace>EventReduce</RootNamespace>
     <PackageId>EventReduce</PackageId>
     <Version>0.1.0</Version>

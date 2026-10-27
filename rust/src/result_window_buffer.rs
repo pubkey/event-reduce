@@ -17,10 +17,11 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::ops::RangeBounds;
 
 use crate::{
-    calculate_action_name, run_action, ActionName, ChangeEvent, EventReduceError, QueryParams,
-    StateResolveFunctionInput,
+    calculate_action_name, index_of_document_id, push_at_sort_position, run_action, ActionName,
+    ChangeEvent, EventReduceError, QueryParams, StateResolveFunctionInput,
 };
 
 /// Pass it as a buffer size to keep all rows on that side of the result window.
@@ -50,6 +51,17 @@ pub enum ResultWindowBufferResult {
     /// The caller must run the query with the skip and limit of query()
     /// and pass the rows to reset().
     RunFullQueryAgain,
+}
+
+impl ResultWindowBufferResult {
+    /// The name as used by the JavaScript implementation.
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ResultWindowBufferResult::EventReduce => "eventReduce",
+            ResultWindowBufferResult::Buffer => "buffer",
+            ResultWindowBufferResult::RunFullQueryAgain => "runFullQueryAgain",
+        }
+    }
 }
 
 /// The skip and limit to run the query of the buffer with.
@@ -84,12 +96,13 @@ pub fn get_recommended_result_window_buffer_size(limit: Option<usize>) -> usize 
     }
 }
 
-/// Actions that keep the length of the result by dropping its first or last row.
-/// The slice rule can keep that row instead.
-fn drops_a_row(action: ActionName) -> bool {
+/// RunFullQueryAgain, and the actions that keep the length of the result
+/// by dropping its first or last row. The slice rule handles them instead.
+fn needs_slice_rule(action: ActionName) -> bool {
     matches!(
         action,
-        ActionName::RemoveFirstItem
+        ActionName::RunFullQueryAgain
+            | ActionName::RemoveFirstItem
             | ActionName::RemoveLastItem
             | ActionName::RemoveFirstInsertLast
             | ActionName::RemoveLastInsertFirst
@@ -139,17 +152,9 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
         }
     }
 
-    pub fn query_params(&self) -> &QueryParams<D, K> {
-        &self.query_params
-    }
-
     /// All rows that are kept in memory, the result window and the rows around it.
     pub fn buffer(&self) -> &[D] {
         &self.buffer
-    }
-
-    pub fn key_document_map(&self) -> &HashMap<K, D> {
-        &self.key_document_map
     }
 
     /// Number of matching rows that sort before the first row of the buffer.
@@ -248,12 +253,19 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
             previous_results: &self.buffer,
             key_document_map: Some(&self.key_document_map),
         });
-        let result = if matches!(
-            action,
-            ActionName::RunFullQueryAgain | ActionName::UnknownAction
-        ) || drops_a_row(action)
-        {
-            (self.query_params.skip, self.query_params.limit) = original;
+        let use_slice_rule = needs_slice_rule(action);
+        if !use_slice_rule {
+            run_action(
+                action,
+                &self.query_params,
+                change_event,
+                &mut self.buffer,
+                Some(&mut self.key_document_map),
+            )
+            .expect("the BDD never returns an action that fails here");
+        }
+        (self.query_params.skip, self.query_params.limit) = original;
+        let result = if use_slice_rule {
             // 2. EventReduce needs a row before or after the buffer, which it does not know,
             // or it would drop a row to keep the length of the result.
             // But the buffer does not have to keep its length, only to stay an exact slice,
@@ -261,21 +273,6 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
             self.apply_slice_rule(change_event);
             ResultWindowBufferResult::Buffer
         } else {
-            let applied = run_action(
-                action,
-                &self.query_params,
-                change_event,
-                &mut self.buffer,
-                Some(&mut self.key_document_map),
-            );
-            (self.query_params.skip, self.query_params.limit) = original;
-            if applied.is_err() {
-                // only possible on a broken BDD, make sure the buffer is filled again
-                self.buffer.clear();
-                self.key_document_map.clear();
-                self.complete = false;
-                return ResultWindowBufferResult::RunFullQueryAgain;
-            }
             ResultWindowBufferResult::EventReduce
         };
 
@@ -337,14 +334,11 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
     /// Removes rows before the window that are more than skip_buffer_size
     /// and rows after the window that are more than limit_buffer_size.
     fn trim(&mut self) {
-        let get_id = self.query_params.get_document_id;
         let rows_before_window = self.skip() - self.offset as i64;
         let remove_from_start =
             (rows_before_window - self.skip_buffer_size as i64).min(self.buffer.len() as i64);
         if remove_from_start > 0 {
-            for doc in self.buffer.drain(..remove_from_start as usize) {
-                self.key_document_map.remove(get_id(&doc));
-            }
+            self.remove_rows(..remove_from_start as usize);
             self.offset += remove_from_start as usize;
         }
 
@@ -352,11 +346,17 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
             let max_length =
                 (self.skip() - self.offset as i64).max(0) as usize + limit + self.limit_buffer_size;
             if self.buffer.len() > max_length {
-                for doc in self.buffer.drain(max_length..) {
-                    self.key_document_map.remove(get_id(&doc));
-                }
+                self.remove_rows(max_length..);
                 self.complete = false;
             }
+        }
+    }
+
+    /// Removes the rows of the range from the buffer and the key document map.
+    fn remove_rows(&mut self, range: impl RangeBounds<usize>) {
+        let get_id = self.query_params.get_document_id;
+        for doc in self.buffer.drain(range) {
+            self.key_document_map.remove(get_id(&doc));
         }
     }
 
@@ -406,8 +406,7 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
 
         let id = change_event.id();
         if self.key_document_map.remove(id).is_some() {
-            let get_id = self.query_params.get_document_id;
-            if let Some(index) = self.buffer.iter().position(|d| get_id(d) == id) {
+            if let Some(index) = index_of_document_id(&self.query_params, &self.buffer, id) {
                 self.buffer.remove(index);
             }
         }
@@ -420,13 +419,11 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
     }
 
     fn insert_at_sort_position(&mut self, doc: D) {
-        // binary search for the first row that sorts after doc
-        let index = self
-            .buffer
-            .partition_point(|row| compare_rows(&self.query_params, row, &doc) == Ordering::Less);
         self.key_document_map
             .insert(self.query_params.document_id(&doc).clone(), doc.clone());
-        self.buffer.insert(index, doc);
+        push_at_sort_position(&mut self.buffer, doc, |a, b| {
+            compare_rows(&self.query_params, a, b)
+        });
     }
 }
 

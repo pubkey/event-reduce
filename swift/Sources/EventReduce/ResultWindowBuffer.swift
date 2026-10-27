@@ -31,7 +31,10 @@ public final class ResultWindowBuffer<D> {
     /// Amount of rows to keep before the first row of the result window, out of the skipped rows.
     public let skipBufferSize: Int
     public internal(set) var buffer: [D] = []
-    public internal(set) var keyDocumentMap: [String: D] = [:]
+    /// Map from the id of each row of the buffer to the row.
+    public var keyDocumentMap: [String: D] { map ?? [:] }
+    /// Never nil, optional only to pass it to runAction() without copying it.
+    var map: [String: D]? = [:]
     /// Number of matching rows that sort before the first row of the buffer.
     public internal(set) var offset = 0
     /// True if there are no rows after the last row of the buffer.
@@ -57,7 +60,7 @@ public struct ResultWindowBufferQuery: Equatable {
 }
 
 /// What applyChangeEventToResultWindowBuffer() did.
-public enum ResultWindowBufferResult: Hashable {
+public enum ResultWindowBufferResult: String {
     /// An EventReduce action calculated the new buffer.
     case eventReduce
     /// EventReduce could not do it (or would have dropped a row), the slice rule did it.
@@ -140,15 +143,16 @@ public func getResultWindowBufferQuery<D>(_ resultWindowBuffer: ResultWindowBuff
 public func resetResultWindowBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ rows: [D]) {
     let query = getResultWindowBufferQuery(resultWindowBuffer)
     let getId = resultWindowBuffer.queryParams.getDocumentId
+    var map: [String: D] = [:]
+    map.reserveCapacity(rows.count)
+    for row in rows {
+        map[getId(row)] = row
+    }
     resultWindowBuffer.buffer = rows
-    resultWindowBuffer.keyDocumentMap = Dictionary(rows.map { (getId($0), $0) }, uniquingKeysWith: { _, last in last })
+    resultWindowBuffer.map = map
     resultWindowBuffer.offset = query.skip
     // fewer rows than requested means there are no more rows
-    if let limit = query.limit {
-        resultWindowBuffer.complete = rows.count < limit
-    } else {
-        resultWindowBuffer.complete = true
-    }
+    resultWindowBuffer.complete = query.limit.map { rows.count < $0 } ?? true
 }
 
 /// The result that is shown to the user.
@@ -195,9 +199,9 @@ public func applyChangeEventToResultWindowBuffer<D>(
     let action = calculateActionName(
         StateResolveFunctionInput(
             queryParams: bufferQueryParams, changeEvent: changeEvent,
-            previousResults: resultWindowBuffer.buffer, keyDocumentMap: resultWindowBuffer.keyDocumentMap))
-    var result: ResultWindowBufferResult
-    if action == .runFullQueryAgain || action == .unknownAction || actionsThatDropARow.contains(action) {
+            previousResults: resultWindowBuffer.buffer, keyDocumentMap: resultWindowBuffer.map))
+    let result: ResultWindowBufferResult
+    if action == .runFullQueryAgain || actionsThatDropARow.contains(action) {
         // 2. EventReduce needs a row before or after the buffer, which it does not know,
         // or it would drop a row to keep the length of the result.
         // But the buffer does not have to keep its length, only to stay an exact slice,
@@ -205,23 +209,11 @@ public func applyChangeEventToResultWindowBuffer<D>(
         applySliceRule(resultWindowBuffer, changeEvent)
         result = .buffer
     } else {
-        var map: [String: D]? = resultWindowBuffer.keyDocumentMap
-        // release the buffer's own references so the action can mutate without copying
-        resultWindowBuffer.keyDocumentMap = [:]
-        var buffer = resultWindowBuffer.buffer
-        resultWindowBuffer.buffer = []
-        do {
-            try runAction(
-                action, queryParams: bufferQueryParams, changeEvent: changeEvent,
-                previousResults: &buffer, keyDocumentMap: &map)
-            resultWindowBuffer.buffer = buffer
-            resultWindowBuffer.keyDocumentMap = map ?? [:]
-            result = .eventReduce
-        } catch {
-            // only possible on a broken BDD, make sure the buffer is filled again
-            resultWindowBuffer.complete = false
-            return .runFullQueryAgain
-        }
+        // Only runFullQueryAgain and unknownAction throw, the BDD never returns unknownAction.
+        try! runAction(
+            action, queryParams: bufferQueryParams, changeEvent: changeEvent,
+            previousResults: &resultWindowBuffer.buffer, keyDocumentMap: &resultWindowBuffer.map)
+        result = .eventReduce
     }
 
     // 3. Do not let the buffer grow without bounds on either side.
@@ -278,7 +270,7 @@ private func trimBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) {
     let removeFromStart = min(rowsBeforeWindow - resultWindowBuffer.skipBufferSize, resultWindowBuffer.buffer.count)
     if removeFromStart > 0 {
         for doc in resultWindowBuffer.buffer[0..<removeFromStart] {
-            resultWindowBuffer.keyDocumentMap.removeValue(forKey: getId(doc))
+            resultWindowBuffer.map?.removeValue(forKey: getId(doc))
         }
         resultWindowBuffer.buffer.removeFirst(removeFromStart)
         resultWindowBuffer.offset += removeFromStart
@@ -290,7 +282,7 @@ private func trimBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) {
             + resultWindowBuffer.limitBufferSize
         if resultWindowBuffer.buffer.count > maxLength {
             for doc in resultWindowBuffer.buffer[maxLength...] {
-                resultWindowBuffer.keyDocumentMap.removeValue(forKey: getId(doc))
+                resultWindowBuffer.map?.removeValue(forKey: getId(doc))
             }
             resultWindowBuffer.buffer.removeSubrange(maxLength...)
             resultWindowBuffer.complete = false
@@ -335,11 +327,10 @@ private func applySliceRule<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ ch
     let isBeforeNow = doesMatchNow && (doc.map(isBefore) ?? false)
 
     let id = changeEvent.id
-    if resultWindowBuffer.keyDocumentMap.removeValue(forKey: id) != nil {
-        let getId = queryParams.getDocumentId
-        if let index = resultWindowBuffer.buffer.firstIndex(where: { getId($0) == id }) {
-            resultWindowBuffer.buffer.remove(at: index)
-        }
+    if resultWindowBuffer.map?.removeValue(forKey: id) != nil,
+        let index = indexOfDocumentId(queryParams, resultWindowBuffer.buffer, id)
+    {
+        resultWindowBuffer.buffer.remove(at: index)
     }
     if let doc = doc, doesMatchNow, !isBeforeNow,
         resultWindowBuffer.complete || compareRows(queryParams, doc, last) <= 0
@@ -369,17 +360,6 @@ private func compareRows<D>(_ queryParams: QueryParams<D>, _ a: D, _ b: D) -> In
 
 private func insertAtSortPosition<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ doc: D) {
     let queryParams = resultWindowBuffer.queryParams
-    // binary search for the first row that sorts after doc
-    var low = 0
-    var high = resultWindowBuffer.buffer.count
-    while low < high {
-        let mid = (low + high) / 2
-        if compareRows(queryParams, resultWindowBuffer.buffer[mid], doc) < 0 {
-            low = mid + 1
-        } else {
-            high = mid
-        }
-    }
-    resultWindowBuffer.buffer.insert(doc, at: low)
-    resultWindowBuffer.keyDocumentMap[queryParams.getDocumentId(doc)] = doc
+    pushAtSortPosition(&resultWindowBuffer.buffer, doc) { compareRows(queryParams, $0, $1) < 0 }
+    resultWindowBuffer.map?[queryParams.getDocumentId(doc)] = doc
 }

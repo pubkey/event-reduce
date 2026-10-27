@@ -96,7 +96,7 @@ namespace EventReduce
         public Func<TDoc, TDoc, bool> SortFieldsChanged { get; set; } = null!;
 
         /// <summary>A copy with the given skip and limit.</summary>
-        public QueryParams<TDoc> WithSkipAndLimit(int? skip, int? limit) => new QueryParams<TDoc>
+        internal QueryParams<TDoc> WithSkipAndLimit(int? skip, int? limit) => new QueryParams<TDoc>
         {
             GetDocumentId = GetDocumentId,
             Skip = skip,
@@ -142,37 +142,22 @@ namespace EventReduce
     /// <summary>The actions, in the same order as the JavaScript implementation.</summary>
     public enum ActionName
     {
-        /// <summary>doNothing</summary>
         DoNothing,
-        /// <summary>insertFirst</summary>
         InsertFirst,
-        /// <summary>insertLast</summary>
         InsertLast,
-        /// <summary>removeFirstItem</summary>
         RemoveFirstItem,
-        /// <summary>removeLastItem</summary>
         RemoveLastItem,
-        /// <summary>removeFirstInsertLast</summary>
         RemoveFirstInsertLast,
-        /// <summary>removeLastInsertFirst</summary>
         RemoveLastInsertFirst,
-        /// <summary>removeFirstInsertFirst</summary>
         RemoveFirstInsertFirst,
-        /// <summary>removeLastInsertLast</summary>
         RemoveLastInsertLast,
-        /// <summary>removeExisting</summary>
         RemoveExisting,
-        /// <summary>replaceExisting</summary>
         ReplaceExisting,
         /// <summary>Only used by the truth-table generator, never returned by the BDD.</summary>
         AlwaysWrong,
-        /// <summary>insertAtSortPosition</summary>
         InsertAtSortPosition,
-        /// <summary>removeExistingAndInsertAtSortPosition</summary>
         RemoveExistingAndInsertAtSortPosition,
-        /// <summary>insertAtSortPositionRemoveLast</summary>
         InsertAtSortPositionRemoveLast,
-        /// <summary>insertAtSortPositionRemoveFirst</summary>
         InsertAtSortPositionRemoveFirst,
         /// <summary>The query must be run over the database again.</summary>
         RunFullQueryAgain,
@@ -183,41 +168,23 @@ namespace EventReduce
     /// <summary>The states, in the same order as the JavaScript implementation.</summary>
     public enum StateName
     {
-        /// <summary>isInsert</summary>
         IsInsert,
-        /// <summary>isUpdate</summary>
         IsUpdate,
-        /// <summary>isDelete</summary>
         IsDelete,
-        /// <summary>hasLimit</summary>
         HasLimit,
-        /// <summary>isFindOne</summary>
         IsFindOne,
-        /// <summary>hasSkip</summary>
         HasSkip,
-        /// <summary>wasResultsEmpty</summary>
         WasResultsEmpty,
-        /// <summary>wasLimitReached</summary>
         WasLimitReached,
-        /// <summary>wasFirst</summary>
         WasFirst,
-        /// <summary>wasLast</summary>
         WasLast,
-        /// <summary>sortParamsChanged</summary>
         SortParamsChanged,
-        /// <summary>wasInResult</summary>
         WasInResult,
-        /// <summary>wasSortedBeforeFirst</summary>
         WasSortedBeforeFirst,
-        /// <summary>wasSortedAfterLast</summary>
         WasSortedAfterLast,
-        /// <summary>isSortedBeforeFirst</summary>
         IsSortedBeforeFirst,
-        /// <summary>isSortedAfterLast</summary>
         IsSortedAfterLast,
-        /// <summary>wasMatching</summary>
         WasMatching,
-        /// <summary>doesMatchNow</summary>
         DoesMatchNow,
     }
 
@@ -242,6 +209,9 @@ namespace EventReduce
 
         /// <summary>The name as used by the JavaScript implementation.</summary>
         public static string ToJsName(this StateName state) => LowerFirst(state.ToString());
+
+        /// <summary>The name as used by the JavaScript implementation.</summary>
+        public static string ToJsName(this ResultWindowBufferResult result) => LowerFirst(result.ToString());
 
         private static string LowerFirst(string name) => char.ToLowerInvariant(name[0]) + name.Substring(1);
     }

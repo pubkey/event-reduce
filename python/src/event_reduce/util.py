@@ -16,7 +16,11 @@ def get_property(obj: Any, path: str, default: Any = None) -> Any:
     List entries are accessed by their index.
     Returns the given default value if the path does not exist.
     """
-    for key in path.split("."):
+    return _get_path(obj, path.split("."), default)
+
+
+def _get_path(obj: Any, keys: list[str], default: Any = None) -> Any:
+    for key in keys:
         if isinstance(obj, Mapping):
             obj = obj.get(key, _MISSING)
         elif isinstance(obj, (list, tuple)) and key.isdigit() and int(key) < len(obj):
@@ -45,10 +49,24 @@ def dict_query_params(
     QueryParams for dict documents, like the primaryKey and sortFields of the JavaScript implementation.
     The sort fields can be dot-separated paths and can start with '-'.
     """
-    fields = [normalize_sort_field(field) for field in sort_fields]
+    # Like JavaScript, fields without a dot are read directly, paths are split only once.
+    fields: list[str] = []
+    paths: list[list[str]] = []
+    for sort_field in sort_fields:
+        field = normalize_sort_field(sort_field)
+        if "." in field:
+            paths.append(field.split("."))
+        else:
+            fields.append(field)
 
     def sort_fields_changed(previous: dict[str, Any], doc: dict[str, Any]) -> bool:
-        return any(get_property(previous, field) != get_property(doc, field) for field in fields)
+        for field in fields:
+            if previous.get(field) != doc.get(field):
+                return True
+        for path in paths:
+            if _get_path(previous, path) != _get_path(doc, path):
+                return True
+        return False
 
     def get_document_id(doc: dict[str, Any]) -> str:
         return str(doc[primary_key])
@@ -72,16 +90,15 @@ def index_of_document_id(query_params: QueryParams[D], docs: list[D], id: str) -
     return -1
 
 
-def push_at_sort_position(items: list[D], item: D, compare: Callable[[D, D], int]) -> int:
+def push_at_sort_position(items: list[D], item: D, compare: Callable[[D, D], int]) -> None:
     """
     Inserts the item at its sort position, which is much faster than re-sorting the list.
     Items that are equal to the new item stay before it.
-    Returns the index at which the item was inserted.
     """
     # Shortcut: the item belongs at the end, append() is O(1).
     if not items or compare(items[-1], item) <= 0:
         items.append(item)
-        return len(items) - 1
+        return
     low = 0
     high = len(items)
     while low < high:
@@ -91,4 +108,3 @@ def push_at_sort_position(items: list[D], item: D, compare: Callable[[D, D], int
         else:
             high = mid
     items.insert(low, item)
-    return low

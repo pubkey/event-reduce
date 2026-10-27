@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EventReduce
 {
@@ -37,7 +38,7 @@ namespace EventReduce
     /// The skip and limit to run the query of the buffer with.
     /// <see cref="Limit"/> is null if all rows after the skip are needed.
     /// </summary>
-    public readonly struct ResultWindowBufferQuery : IEquatable<ResultWindowBufferQuery>
+    public readonly struct ResultWindowBufferQuery
     {
         /// <summary>The number of rows to skip.</summary>
         public int Skip { get; }
@@ -45,24 +46,11 @@ namespace EventReduce
         /// <summary>The maximum number of rows, null for all rows after the skip.</summary>
         public int? Limit { get; }
 
-        /// <summary>Creates the query.</summary>
         public ResultWindowBufferQuery(int skip, int? limit)
         {
             Skip = skip;
             Limit = limit;
         }
-
-        /// <inheritdoc/>
-        public bool Equals(ResultWindowBufferQuery other) => Skip == other.Skip && Limit == other.Limit;
-
-        /// <inheritdoc/>
-        public override bool Equals(object? obj) => obj is ResultWindowBufferQuery other && Equals(other);
-
-        /// <inheritdoc/>
-        public override int GetHashCode() => HashCode.Combine(Skip, Limit);
-
-        /// <inheritdoc/>
-        public override string ToString() => $"ResultWindowBufferQuery(Skip: {Skip}, Limit: {Limit})";
     }
 
     /// <summary>
@@ -154,6 +142,7 @@ namespace EventReduce
 
         private List<TDoc> buffer = new List<TDoc>();
         private readonly Dictionary<string, TDoc> keyDocumentMap = new Dictionary<string, TDoc>();
+        private readonly Comparison<TDoc> compareRows;
 
         /// <summary>All rows that are kept in memory, the result window and the rows around it.</summary>
         public IReadOnlyList<TDoc> Buffer => buffer;
@@ -182,6 +171,7 @@ namespace EventReduce
             // with limit 0 the result is always empty, so no rows are kept
             var isEmptyQuery = queryParams.Limit == 0;
             QueryParams = queryParams;
+            compareRows = CompareRows;
             LimitBufferSize = isEmptyQuery ? 0 : Math.Min(limitBufferSize, ResultWindowBuffer.MaxBufferSize);
             SkipBufferSize = isEmptyQuery ? 0 : Math.Min(skipBufferSize, ResultWindowBuffer.MaxBufferSize);
         }
@@ -262,9 +252,7 @@ namespace EventReduce
                 keyDocumentMap);
             var action = EventReducer.CalculateActionName(input);
             ResultWindowBufferResult result;
-            if (action == ActionName.RunFullQueryAgain ||
-                action == ActionName.UnknownAction ||
-                ActionsThatDropARow.Contains(action))
+            if (action == ActionName.RunFullQueryAgain || ActionsThatDropARow.Contains(action))
             {
                 // 2. EventReduce needs a row before or after the buffer, which it does not know,
                 // or it would drop a row to keep the length of the result.
@@ -275,7 +263,7 @@ namespace EventReduce
             }
             else
             {
-                Actions.GetActionFunction<TDoc>(action)(input);
+                Actions.Run(action, input);
                 result = ResultWindowBufferResult.EventReduce;
             }
 
@@ -300,28 +288,25 @@ namespace EventReduce
         /// </summary>
         public ResultWindowBufferChangeResult<TDoc> ApplyChangeEvents(IEnumerable<ChangeEvent<TDoc>> changeEvents)
         {
-            var runFullQueryAgain = new ResultWindowBufferChangeResult<TDoc>(true, false, Array.Empty<TDoc>());
             if (!IsResultWindowInBuffer())
             {
-                return runFullQueryAgain;
+                return RunFullQueryAgainResult();
             }
             var previousResults = GetResults();
             foreach (var changeEvent in changeEvents)
             {
                 if (ApplyChangeEvent(changeEvent) == ResultWindowBufferResult.RunFullQueryAgain)
                 {
-                    return runFullQueryAgain;
+                    return RunFullQueryAgainResult();
                 }
             }
             var results = GetResults();
-            var comparer = EqualityComparer<TDoc>.Default;
-            var changed = results.Count != previousResults.Count;
-            for (var index = 0; !changed && index < results.Count; index++)
-            {
-                changed = !comparer.Equals(results[index], previousResults[index]);
-            }
+            var changed = !results.SequenceEqual(previousResults, EqualityComparer<TDoc>.Default);
             return new ResultWindowBufferChangeResult<TDoc>(false, changed, results);
         }
+
+        private static ResultWindowBufferChangeResult<TDoc> RunFullQueryAgainResult() =>
+            new ResultWindowBufferChangeResult<TDoc>(true, false, Array.Empty<TDoc>());
 
         /// <summary>True if all rows of the result window are in the buffer.</summary>
         private bool IsResultWindowInBuffer()
@@ -417,8 +402,7 @@ namespace EventReduce
             var id = changeEvent.Id;
             if (keyDocumentMap.Remove(id))
             {
-                var getId = QueryParams.GetDocumentId;
-                buffer.RemoveAt(buffer.FindIndex(d => getId(d) == id));
+                buffer.RemoveAt(Util.IndexOfDocumentId(QueryParams, buffer, id));
             }
             if (doesMatchNow && !isBeforeNow && (Complete || CompareRows(changeEvent.Doc, last) <= 0))
             {
@@ -455,24 +439,13 @@ namespace EventReduce
             return Math.Sign(string.CompareOrdinal(idA, idB));
         }
 
+        /// <summary>
+        /// The row is never in the buffer here, it was removed before,
+        /// so CompareRows() never returns 0 and the position is unique.
+        /// </summary>
         private void InsertAtSortPosition(TDoc doc)
         {
-            // binary search for the first row that sorts after doc
-            var low = 0;
-            var high = buffer.Count;
-            while (low < high)
-            {
-                var mid = (low + high) >> 1;
-                if (CompareRows(buffer[mid], doc) < 0)
-                {
-                    low = mid + 1;
-                }
-                else
-                {
-                    high = mid;
-                }
-            }
-            buffer.Insert(low, doc);
+            Util.PushAtSortPosition(buffer, doc, compareRows);
             keyDocumentMap[QueryParams.GetDocumentId(doc)] = doc;
         }
     }

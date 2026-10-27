@@ -1,5 +1,7 @@
 package eventreduce
 
+import "slices"
+
 // ActionFunction applies an action.
 // For performance reasons, it changes the PreviousResults and the KeyDocumentMap of the input.
 type ActionFunction[D any] func(input *StateResolveFunctionInput[D]) error
@@ -45,6 +47,20 @@ func GetActionFunction[D any](action ActionName) ActionFunction[D] {
 	return ActionUnknownAction[D]
 }
 
+// setKeyDocument sets the document in the key document map, if there is one.
+func setKeyDocument[D any](input *StateResolveFunctionInput[D], id string, doc D) {
+	if input.KeyDocumentMap != nil {
+		input.KeyDocumentMap[id] = doc
+	}
+}
+
+// deleteKeyDocument removes the document from the key document map, if there is one.
+func deleteKeyDocument[D any](input *StateResolveFunctionInput[D], id string) {
+	if input.KeyDocumentMap != nil {
+		delete(input.KeyDocumentMap, id)
+	}
+}
+
 // findIndexOfChangedDoc returns the index of the changed document inside of the previous results or -1.
 func findIndexOfChangedDoc[D any](input *StateResolveFunctionInput[D]) int {
 	id := input.ChangeEvent.ID
@@ -65,10 +81,8 @@ func ActionInsertFirst[D any](input *StateResolveFunctionInput[D]) error {
 		return ErrUnknownAction
 	}
 	doc := input.ChangeEvent.Doc
-	input.PreviousResults = insertAt(input.PreviousResults, 0, doc)
-	if input.KeyDocumentMap != nil {
-		input.KeyDocumentMap[input.ChangeEvent.ID] = doc
-	}
+	input.PreviousResults = slices.Insert(input.PreviousResults, 0, doc)
+	setKeyDocument(input, input.ChangeEvent.ID, doc)
 	return nil
 }
 
@@ -79,35 +93,28 @@ func ActionInsertLast[D any](input *StateResolveFunctionInput[D]) error {
 	}
 	doc := input.ChangeEvent.Doc
 	input.PreviousResults = append(input.PreviousResults, doc)
-	if input.KeyDocumentMap != nil {
-		input.KeyDocumentMap[input.ChangeEvent.ID] = doc
-	}
+	setKeyDocument(input, input.ChangeEvent.ID, doc)
 	return nil
+}
+
+// removeItemAt removes the result at the index and its entry in the key document map.
+func removeItemAt[D any](input *StateResolveFunctionInput[D], index int) {
+	deleteKeyDocument(input, input.QueryParams.GetDocumentID(input.PreviousResults[index]))
+	input.PreviousResults = slices.Delete(input.PreviousResults, index, index+1)
 }
 
 // ActionRemoveFirstItem is the action removeFirstItem.
 func ActionRemoveFirstItem[D any](input *StateResolveFunctionInput[D]) error {
-	if len(input.PreviousResults) == 0 {
-		return nil
-	}
-	first := input.PreviousResults[0]
-	input.PreviousResults = removeAt(input.PreviousResults, 0)
-	if input.KeyDocumentMap != nil {
-		delete(input.KeyDocumentMap, input.QueryParams.GetDocumentID(first))
+	if len(input.PreviousResults) > 0 {
+		removeItemAt(input, 0)
 	}
 	return nil
 }
 
 // ActionRemoveLastItem is the action removeLastItem.
 func ActionRemoveLastItem[D any](input *StateResolveFunctionInput[D]) error {
-	results := input.PreviousResults
-	if len(results) == 0 {
-		return nil
-	}
-	last := results[len(results)-1]
-	input.PreviousResults = removeAt(results, len(results)-1)
-	if input.KeyDocumentMap != nil {
-		delete(input.KeyDocumentMap, input.QueryParams.GetDocumentID(last))
+	if len(input.PreviousResults) > 0 {
+		removeItemAt(input, len(input.PreviousResults)-1)
 	}
 	return nil
 }
@@ -139,11 +146,9 @@ func ActionRemoveLastInsertLast[D any](input *StateResolveFunctionInput[D]) erro
 // ActionRemoveExisting is the action removeExisting.
 func ActionRemoveExisting[D any](input *StateResolveFunctionInput[D]) error {
 	index := findIndexOfChangedDoc(input)
-	if input.KeyDocumentMap != nil {
-		delete(input.KeyDocumentMap, input.ChangeEvent.ID)
-	}
+	deleteKeyDocument(input, input.ChangeEvent.ID)
 	if index >= 0 {
-		input.PreviousResults = removeAt(input.PreviousResults, index)
+		input.PreviousResults = slices.Delete(input.PreviousResults, index, index+1)
 	}
 	return nil
 }
@@ -159,9 +164,7 @@ func ActionReplaceExisting[D any](input *StateResolveFunctionInput[D]) error {
 	}
 	doc := input.ChangeEvent.Doc
 	input.PreviousResults[index] = doc
-	if input.KeyDocumentMap != nil {
-		input.KeyDocumentMap[input.ChangeEvent.ID] = doc
-	}
+	setKeyDocument(input, input.ChangeEvent.ID, doc)
 	return nil
 }
 
@@ -182,7 +185,7 @@ func ActionInsertAtSortPosition[D any](input *StateResolveFunctionInput[D]) erro
 	} else if IndexOfDocumentID(input.QueryParams, input.PreviousResults, id) >= 0 {
 		return nil
 	}
-	input.PreviousResults, _ = PushAtSortPosition(input.PreviousResults, doc, input.QueryParams.SortComparator)
+	input.PreviousResults = PushAtSortPosition(input.PreviousResults, doc, input.QueryParams.SortComparator)
 	return nil
 }
 
@@ -192,21 +195,27 @@ func ActionRemoveExistingAndInsertAtSortPosition[D any](input *StateResolveFunct
 	return ActionInsertAtSortPosition(input)
 }
 
+// insertAtSortPositionAndRemove inserts the document at its sort position
+// and then applies remove, but only if the document was inserted:
+// ActionInsertAtSortPosition does nothing if the document is already in the results.
+func insertAtSortPositionAndRemove[D any](input *StateResolveFunctionInput[D], remove ActionFunction[D]) error {
+	lengthBefore := len(input.PreviousResults)
+	if err := ActionInsertAtSortPosition(input); err != nil {
+		return err
+	}
+	if len(input.PreviousResults) > lengthBefore {
+		return remove(input)
+	}
+	return nil
+}
+
 // ActionInsertAtSortPositionRemoveLast inserts the document at its sort position
 // and then removes the last document.
 // Used when the limit was reached and the new document
 // sorts in between the first and the last document,
 // so the previous last document is pushed out of the results.
 func ActionInsertAtSortPositionRemoveLast[D any](input *StateResolveFunctionInput[D]) error {
-	lengthBefore := len(input.PreviousResults)
-	if err := ActionInsertAtSortPosition(input); err != nil {
-		return err
-	}
-	// ActionInsertAtSortPosition does nothing if the document is already in the results
-	if len(input.PreviousResults) > lengthBefore {
-		return ActionRemoveLastItem(input)
-	}
-	return nil
+	return insertAtSortPositionAndRemove(input, ActionRemoveLastItem[D])
 }
 
 // ActionInsertAtSortPositionRemoveFirst inserts the document at its sort position
@@ -214,15 +223,7 @@ func ActionInsertAtSortPositionRemoveLast[D any](input *StateResolveFunctionInpu
 // Used when a document moves out of the skipped documents into the results,
 // so the previous first document is pushed into the skipped documents.
 func ActionInsertAtSortPositionRemoveFirst[D any](input *StateResolveFunctionInput[D]) error {
-	lengthBefore := len(input.PreviousResults)
-	if err := ActionInsertAtSortPosition(input); err != nil {
-		return err
-	}
-	// ActionInsertAtSortPosition does nothing if the document is already in the results
-	if len(input.PreviousResults) > lengthBefore {
-		return ActionRemoveFirstItem(input)
-	}
-	return nil
+	return insertAtSortPositionAndRemove(input, ActionRemoveFirstItem[D])
 }
 
 // ActionRunFullQueryAgain is the action runFullQueryAgain, it always returns ErrRunFullQueryAgain.

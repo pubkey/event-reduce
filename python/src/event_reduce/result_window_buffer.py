@@ -24,9 +24,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Generic, NamedTuple, TypeVar
 
-from .actions import ACTION_FUNCTIONS, ORDERED_ACTION_LIST
+from . import actions
+from .actions import ACTION_FUNCTION_LIST, ActionFunction
 from .bdd import resolve_input
-from .types import ActionName, ChangeEvent, EventReduceError, QueryParams, StateResolveFunctionInput
+from .types import ChangeEvent, EventReduceError, QueryParams, StateResolveFunctionInput
+from .util import index_of_document_id, push_at_sort_position
 
 D = TypeVar("D")
 
@@ -65,16 +67,16 @@ class ResultWindowBufferChangeResult(Generic[D]):
     results: list[D] = field(default_factory=list)
 
 
-ACTIONS_THAT_DROP_A_ROW = frozenset(
+ACTIONS_THAT_DROP_A_ROW: frozenset[ActionFunction] = frozenset(
     {
-        ActionName.REMOVE_FIRST_ITEM,
-        ActionName.REMOVE_LAST_ITEM,
-        ActionName.REMOVE_FIRST_INSERT_LAST,
-        ActionName.REMOVE_LAST_INSERT_FIRST,
-        ActionName.REMOVE_FIRST_INSERT_FIRST,
-        ActionName.REMOVE_LAST_INSERT_LAST,
-        ActionName.INSERT_AT_SORT_POSITION_REMOVE_LAST,
-        ActionName.INSERT_AT_SORT_POSITION_REMOVE_FIRST,
+        actions.remove_first_item,
+        actions.remove_last_item,
+        actions.remove_first_insert_last,
+        actions.remove_last_insert_first,
+        actions.remove_first_insert_first,
+        actions.remove_last_insert_last,
+        actions.insert_at_sort_position_remove_last,
+        actions.insert_at_sort_position_remove_first,
     }
 )
 """Actions that keep the length of the result by dropping its first or last row. The slice rule can keep that row."""
@@ -184,17 +186,22 @@ class ResultWindowBuffer(Generic[D]):
         # because the buffer is an exact slice of the full result.
         # If the buffer is complete, we use len(buffer) + 1, so EventReduce
         # knows that the limit is not reached and there are no more rows.
+        query_params = self.query_params
         input = StateResolveFunctionInput(
-            query_params=self.query_params.with_skip_and_limit(
+            QueryParams(
+                query_params.get_document_id,
+                query_params.query_matcher,
+                query_params.sort_comparator,
+                query_params.sort_fields_changed,
                 self.offset if self.offset > 0 else None,
                 len(buffer) + 1 if self.complete else len(buffer),
             ),
-            change_event=change_event,
-            previous_results=buffer,
-            key_document_map=self.key_document_map,
+            change_event,
+            buffer,
+            self.key_document_map,
         )
-        action = ORDERED_ACTION_LIST[resolve_input(input)]
-        if action in (ActionName.RUN_FULL_QUERY_AGAIN, ActionName.UNKNOWN_ACTION) or action in ACTIONS_THAT_DROP_A_ROW:
+        action = ACTION_FUNCTION_LIST[resolve_input(input)]
+        if action is actions.run_full_query_again or action in ACTIONS_THAT_DROP_A_ROW:
             # 2. EventReduce needs a row before or after the buffer, which it does not know,
             # or it would drop a row to keep the length of the result.
             # But the buffer does not have to keep its length, only to stay an exact slice,
@@ -202,7 +209,7 @@ class ResultWindowBuffer(Generic[D]):
             self._apply_slice_rule(change_event)
             result = ResultWindowBufferResult.BUFFER
         else:
-            ACTION_FUNCTIONS[action](input)
+            action(input)
             result = ResultWindowBufferResult.EVENT_REDUCE
 
         # 3. Do not let the buffer grow without bounds on either side.
@@ -308,9 +315,7 @@ class ResultWindowBuffer(Generic[D]):
 
         id = change_event.id
         if self.key_document_map.pop(id, None) is not None:
-            get_id = query_params.get_document_id
-            index = next(i for i, row in enumerate(buffer) if get_id(row) == id)
-            del buffer[index]
+            del buffer[index_of_document_id(query_params, buffer, id)]
         if (
             doc is not None
             and does_match_now
@@ -342,17 +347,8 @@ class ResultWindowBuffer(Generic[D]):
         return -1 if id_a < id_b else 1
 
     def _insert_at_sort_position(self, doc: D) -> None:
-        buffer = self.buffer
-        # binary search for the first row that sorts after doc
-        low = 0
-        high = len(buffer)
-        while low < high:
-            mid = (low + high) >> 1
-            if self._compare(buffer[mid], doc) < 0:
-                low = mid + 1
-            else:
-                high = mid
-        buffer.insert(low, doc)
+        # _compare() returns 0 only for another version of the same row, which was removed before
+        push_at_sort_position(self.buffer, doc, self._compare)
         self.key_document_map[self.query_params.get_document_id(doc)] = doc
 
 
