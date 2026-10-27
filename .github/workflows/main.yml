@@ -128,3 +128,19 @@ jobs:
       - name: swift tests
         working-directory: ./swift
         run: swift test
+
+  csharp:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: csharp format
+        working-directory: ./csharp
+        run: dotnet format --verify-no-changes
+      - name: csharp tests
+        working-directory: ./csharp
+        run: dotnet test

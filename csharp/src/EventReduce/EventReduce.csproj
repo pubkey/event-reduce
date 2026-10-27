@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- netstandard2.1 and C# 9 so the library also works in Unity -->
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>EventReduce</RootNamespace>
+    <PackageId>EventReduce</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Update live query results from database change events without re-running the query.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/pubkey/event-reduce</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>
