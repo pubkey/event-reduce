@@ -35,3 +35,10 @@ to deterministically find the order of the state functions with the lowest expec
 The measured runtime of each state function is used as its cost and state sets that occur often in the example queries are weighted higher.
 It takes a few seconds and often proves that no better order exists.
 If the found bdd is better than the current one, it is written to the generated files.
+
+### Implementations in other languages
+
+The implementations in other languages (rust, dart, kotlin, swift, csharp, python) do not create or optimize the BDD.
+They only resolve the BDD that is created here, `writeBddTemplate()` also writes their generated BDD files.
+To show that they resolve the same actions, they run the test cases of `test/fixtures/port-test-cases.json`.
+After the BDD changed, run `npm run generate-port-test-cases` to update them, a unit test fails until then.

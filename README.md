@@ -20,6 +20,7 @@
   <a href="./kotlin/">Kotlin implementation</a> ·
   <a href="./swift/">Swift implementation</a> ·
   <a href="./csharp/">C# implementation</a> ·
+  <a href="./python/">Python implementation</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#faq">FAQ</a>
 </p>
@@ -70,7 +71,7 @@ if (action === 'runFullQueryAgain') {
 ```
 
 See the [JavaScript implementation](./javascript/) for the full API and a MongoDB-style example.
-[Rust](./rust/), [Dart](./dart/), [Kotlin](./kotlin/), [Swift](./swift/) and [C#](./csharp/) implementations that use the same BDD are also available.
+[Rust](./rust/), [Dart](./dart/), [Kotlin](./kotlin/), [Swift](./swift/), [C#](./csharp/) and [Python](./python/) implementations that use the same BDD are also available.
 
 ## The problem
 

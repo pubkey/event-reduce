@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "event-reduce"
+version = "0.1.0"
+description = "Update live query results from database change events without re-running the query."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+keywords = ["live-query", "reactive", "realtime", "database", "bdd"]
+
+[project.urls]
+Homepage = "https://github.com/pubkey/event-reduce"
+Repository = "https://github.com/pubkey/event-reduce"
+
+[tool.setuptools.package-data]
+event_reduce = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# generated, the packed BDD string is one long line
+"src/event_reduce/bdd_generated.py" = ["E501"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"

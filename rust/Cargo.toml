@@ -12,3 +12,6 @@ keywords = ["live-query", "reactive", "realtime", "database", "bdd"]
 categories = ["database", "algorithms", "data-structures"]
 
 [dependencies]
+
+[dev-dependencies]
+serde_json = "1.0.154"

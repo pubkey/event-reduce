@@ -144,3 +144,25 @@ jobs:
       - name: csharp tests
         working-directory: ./csharp
         run: dotnet test
+
+  python:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: python install
+        working-directory: ./python
+        run: pip install pytest ruff mypy
+      - name: python lint
+        working-directory: ./python
+        run: |
+          ruff check .
+          ruff format --check .
+          mypy src
+      - name: python tests
+        working-directory: ./python
+        run: pytest

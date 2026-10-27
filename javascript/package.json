@@ -89,6 +89,7 @@
     "generate-truth-table": "tsx ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
     "test-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts fuzzing",
     "create-bdd": "tsx ./src/truth-table-generator/runner.node.ts create-bdd",
+    "generate-port-test-cases": "tsx ./test/write-port-test-cases.ts",
     "optimize-bdd": "tsx ./src/truth-table-generator/runner.node.ts optimize-bdd",
     "iterative-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing",
     "iterative-fuzzing-all-cores": "tsx ./src/truth-table-generator/runner.node.ts iterative-fuzzing-parallel",
