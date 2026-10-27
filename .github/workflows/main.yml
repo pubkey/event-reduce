@@ -166,3 +166,22 @@ jobs:
       - name: python tests
         working-directory: ./python
         run: pytest
+
+  go:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go/go.mod
+      - name: go format
+        working-directory: ./go
+        run: test -z "$(gofmt -l .)"
+      - name: go vet
+        working-directory: ./go
+        run: go vet ./...
+      - name: go tests
+        working-directory: ./go
+        run: go test ./...

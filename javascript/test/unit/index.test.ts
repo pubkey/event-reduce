@@ -10,7 +10,7 @@ import './fuzzing.test.js';
 import './calculate-bdd-quality.test.js';
 import './truth-table-generator.test.js';
 import './result-window-buffer.test.js';
-import './port-test-cases.test.js';
+import './test-suite.test.js';
 import './es5.test.js';
 
 // should be last
