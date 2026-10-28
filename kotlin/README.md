@@ -14,14 +14,14 @@ The library is on Maven Central, use the version of the [latest release](https:/
 
 ```kotlin
 dependencies {
-    implementation("io.github.pubkey:event-reduce:<version>")
+    implementation("dev.rxdb:event-reduce:<version>")
 }
 ```
 
 ## Usage
 
 ```kotlin
-import com.github.pubkey.eventreduce.*
+import dev.rxdb.eventreduce.*
 
 data class User(val id: String, val age: Int)
 

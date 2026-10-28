@@ -13,7 +13,7 @@ It releases all implementations with the same version:
 | JavaScript | [npm](https://www.npmjs.com/package/event-reduce-js) | `event-reduce-js` | trusted publishing |
 | Rust | [crates.io](https://crates.io/crates/event-reduce) | `event-reduce` | trusted publishing |
 | Dart | [pub.dev](https://pub.dev/packages/event_reduce) | `event_reduce` | automated publishing (OIDC) |
-| Kotlin | [Maven Central](https://central.sonatype.com/artifact/io.github.pubkey/event-reduce) | `io.github.pubkey:event-reduce` | token and GPG key secrets |
+| Kotlin | [Maven Central](https://central.sonatype.com/artifact/dev.rxdb/event-reduce) | `dev.rxdb:event-reduce` | token and GPG key secrets |
 | C# | [NuGet](https://www.nuget.org/packages/EventReduce) | `EventReduce` | trusted publishing |
 | Python | [PyPI](https://pypi.org/project/event-reduce/) | `event-reduce` | trusted publishing |
 | Swift | Swift Package Manager | the `v<version>` tag and the root `Package.swift` | none |
@@ -38,8 +38,8 @@ Register the repository `pubkey/event-reduce` with the workflow file `release.ym
   - enable automated publishing from GitHub Actions for the repository;
   - set the tag pattern to `v{{version}}`;
   - enable publishing from `workflow_dispatch` events, because the release workflow is started by hand.
-- **Maven Central**: sign in to the [Central Portal](https://central.sonatype.com) with the `pubkey` GitHub account.
-  This verifies the `io.github.pubkey` namespace. Then add these repository secrets:
+- **Maven Central**: in the [Central Portal](https://central.sonatype.com), add the namespace `dev.rxdb`
+  and verify it with the DNS TXT record the portal shows for the domain `rxdb.dev`. Then add these repository secrets:
   - `MAVEN_CENTRAL_USERNAME` and `MAVEN_CENTRAL_PASSWORD`: a user token of the Central Portal.
   - `MAVEN_SIGNING_KEY`: an ASCII armored GPG private key (`gpg --armor --export-secret-keys <key id>`).
     Its public key must be on a key server, for example with `gpg --keyserver keyserver.ubuntu.com --send-keys <key id>`.

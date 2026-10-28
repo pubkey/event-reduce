@@ -7,8 +7,8 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.37.0"
 }
 
-// Maven Central only accepts io.github.* for namespaces verified with a GitHub account
-group = "io.github.pubkey"
+// the Maven Central namespace, verified with the domain rxdb.dev
+group = "dev.rxdb"
 version = "7.4.1"
 
 repositories {

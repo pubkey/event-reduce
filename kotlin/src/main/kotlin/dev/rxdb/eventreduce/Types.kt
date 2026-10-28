@@ -1,4 +1,4 @@
-package com.github.pubkey.eventreduce
+package dev.rxdb.eventreduce
 
 /**
  * A write event on the database.

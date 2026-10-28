@@ -1,4 +1,4 @@
-package com.github.pubkey.eventreduce
+package dev.rxdb.eventreduce
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
