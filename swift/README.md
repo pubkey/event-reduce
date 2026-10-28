@@ -7,10 +7,20 @@ and calculates the new results **in memory, without running the query over the d
 It uses the same binary decision diagram as the [JavaScript implementation](../javascript/),
 so both always decide on the same action. Works on Apple platforms and Linux.
 
-## Usage
+## Installation
 
-The Swift package is in the `swift` folder of the repository,
-so add it as a local package or copy the folder into your project.
+Add the repository as a package dependency in Xcode, or in your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/pubkey/event-reduce.git", from: "7.0.0")
+],
+targets: [
+    .target(name: "MyApp", dependencies: [.product(name: "EventReduce", package: "event-reduce")])
+]
+```
+
+## Usage
 
 ```swift
 import EventReduce

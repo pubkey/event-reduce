@@ -7,10 +7,16 @@ and calculates the new results **in memory, without running the query over the d
 It uses the BDD that the [JavaScript implementation](../javascript/) created,
 so both always decide on the same action. It needs Go 1.22 or newer and has no dependencies.
 
+## Installation
+
+```sh
+go get github.com/pubkey/event-reduce/go/v7
+```
+
 ## Usage
 
 ```go
-import eventreduce "github.com/pubkey/event-reduce/go"
+import eventreduce "github.com/pubkey/event-reduce/go/v7"
 
 type User struct {
 	ID  string

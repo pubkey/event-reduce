@@ -1,6 +1,6 @@
 name: event_reduce
 description: Update live query results from database change events without re-running the query.
-version: 0.1.0
+version: 7.4.1
 homepage: https://github.com/pubkey/event-reduce
 repository: https://github.com/pubkey/event-reduce/tree/master/dart
 topics:

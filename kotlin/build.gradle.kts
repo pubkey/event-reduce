@@ -1,11 +1,15 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinJvm
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm") version "2.4.21"
+    id("com.vanniktech.maven.publish") version "0.37.0"
 }
 
-group = "com.github.pubkey"
-version = "0.1.0"
+// Maven Central only accepts io.github.* for namespaces verified with a GitHub account
+group = "io.github.pubkey"
+version = "7.4.1"
 
 repositories {
     mavenCentral()
@@ -31,4 +35,35 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// Published to Maven Central on every release, see .github/workflows/release.yml
+mavenPublishing {
+    configure(KotlinJvm(javadocJar = JavadocJar.Empty(), sourcesJar = true))
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates(group.toString(), "event-reduce", version.toString())
+    pom {
+        name.set("event-reduce")
+        description.set("Update live query results from database change events without re-running the query.")
+        url.set("https://github.com/pubkey/event-reduce")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+            }
+        }
+        developers {
+            developer {
+                id.set("pubkey")
+                name.set("Daniel Meyer")
+                url.set("https://github.com/pubkey")
+            }
+        }
+        scm {
+            url.set("https://github.com/pubkey/event-reduce")
+            connection.set("scm:git:https://github.com/pubkey/event-reduce.git")
+            developerConnection.set("scm:git:ssh://git@github.com/pubkey/event-reduce.git")
+        }
+    }
 }

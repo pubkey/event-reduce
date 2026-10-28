@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-26.04
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
     # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
       contents: write
@@ -38,6 +40,10 @@ jobs:
             fi
             echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
+      # all implementations are released with the version of the JavaScript implementation
+      - name: Set version of all implementations
+        run: node scripts/set-version.mjs
+
       - name: Build
         working-directory: ./javascript
         run: npm run build
@@ -63,10 +69,12 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add javascript/package.json
+          git add javascript/package.json rust/Cargo.toml dart/pubspec.yaml kotlin/build.gradle.kts csharp/src/EventReduce/EventReduce.csproj python/pyproject.toml swift/README.md go
           git commit -m "release: ${{ steps.bump.outputs.version }}"
           git tag ${{ steps.bump.outputs.version }}
-          git push --atomic origin HEAD ${{ steps.bump.outputs.version }}
+          # Swift packages use the tag of the release, Go modules in a subfolder need a tag with the folder as prefix
+          git tag go/${{ steps.bump.outputs.version }}
+          git push --atomic origin HEAD ${{ steps.bump.outputs.version }} go/${{ steps.bump.outputs.version }}
 
       - name: Create GitHub Release
         env:
@@ -78,3 +86,137 @@ jobs:
     permissions:
       contents: write
     uses: ./.github/workflows/deploy-example-page.yml
+
+  # The other implementations are published from the release tag, after the JavaScript implementation.
+  # The one-time setup of each package manager is described in docs/releasing.md
+  publish-rust:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: ./rust
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.build.outputs.version }}
+      - run: cargo test
+      # crates.io trusted publishing, @link https://crates.io/docs/trusted-publishing
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - run: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+  publish-dart:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: ./dart
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.build.outputs.version }}
+      # setup-dart configures the pub.dev authentication with the GitHub OIDC token
+      # @link https://dart.dev/tools/pub/automated-publishing
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart test
+      - run: dart pub publish --force
+
+  publish-kotlin:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./kotlin
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.build.outputs.version }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      # @link https://vanniktech.github.io/gradle-maven-publish-plugin/central/
+      - run: ./gradlew test publishAndReleaseToMavenCentral
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_SIGNING_KEY_PASSWORD }}
+
+  publish-csharp:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: ./csharp
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.build.outputs.version }}
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test
+      - run: dotnet pack src/EventReduce -c Release -o dist
+      # NuGet trusted publishing, @link https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing
+      - uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+      - run: dotnet nuget push "dist/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
+
+  publish-python:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: ./python
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.build.outputs.version }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install build pytest
+      - run: pytest
+      - run: python -m build
+      # PyPI trusted publishing, @link https://docs.pypi.org/trusted-publishers/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist/
+
+  # Go modules are served from the git tag, this only makes the new version show up on pkg.go.dev right away.
+  publish-go:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./go
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.build.outputs.version }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go/go.mod
+      - run: GOPROXY=https://proxy.golang.org go list -m "$(go list -m)@${{ needs.build.outputs.version }}"

@@ -8,6 +8,16 @@ It uses the same binary decision diagram as the [JavaScript implementation](../j
 so both always decide on the same action.
 The library only uses the Kotlin standard library, so it works on the JVM and on Android.
 
+## Installation
+
+The library is on Maven Central, use the version of the [latest release](https://github.com/pubkey/event-reduce/releases):
+
+```kotlin
+dependencies {
+    implementation("io.github.pubkey:event-reduce:<version>")
+}
+```
+
 ## Usage
 
 ```kotlin

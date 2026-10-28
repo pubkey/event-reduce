@@ -42,3 +42,7 @@ The implementations in other languages (rust, dart, kotlin, swift, csharp, pytho
 They only resolve the BDD that is created here, `writeBddTemplate()` also writes their generated BDD files.
 All implementations, also this one, run the same shared test suite in `../test-suite`, see its README.
 After the BDD changed, run `npm run generate-test-suite` to update `../test-suite/state-sets.json`, a unit test fails until then.
+
+## Release
+
+See [docs/releasing.md](../docs/releasing.md), a release publishes all implementations.

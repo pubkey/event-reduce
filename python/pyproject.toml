@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "event-reduce"
-version = "0.1.0"
+version = "7.4.1"
 description = "Update live query results from database change events without re-running the query."
 readme = "README.md"
 license = "MIT"

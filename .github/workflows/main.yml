@@ -120,13 +120,11 @@ jobs:
       contents: read
     container:
       image: swift:6.1
-    defaults:
-      run:
-        working-directory: ./swift
     steps:
       - uses: actions/checkout@v7
+      # the Package.swift is at the root of the repository
       - name: swift format
-        run: swift format lint -r -s Package.swift Sources Tests
+        run: swift format lint -r -s --configuration swift/.swift-format Package.swift swift/Sources swift/Tests
       - name: swift tests
         run: swift test
 

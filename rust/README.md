@@ -7,12 +7,13 @@ and calculates the new results **in memory, without running the query over the d
 It uses the same binary decision diagram as the [JavaScript implementation](../javascript/),
 so both always decide on the same action.
 
-## Usage
+## Installation
 
-```toml
-[dependencies]
-event-reduce = { git = "https://github.com/pubkey/event-reduce" }
+```sh
+cargo add event-reduce
 ```
+
+## Usage
 
 ```rust
 use event_reduce::{

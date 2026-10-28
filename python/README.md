@@ -7,6 +7,12 @@ and calculates the new results **in memory, without running the query over the d
 It uses the BDD that the [JavaScript implementation](../javascript/) created,
 so both always decide on the same action. It needs Python 3.10 or newer and has no dependencies.
 
+## Installation
+
+```sh
+pip install event-reduce
+```
+
 ## Usage
 
 ```python

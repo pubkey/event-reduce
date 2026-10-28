@@ -7,15 +7,15 @@ and calculates the new results **in memory, without running the query over the d
 It uses the same binary decision diagram as the [JavaScript implementation](../javascript/),
 so both always decide on the same action. Works with Flutter and plain Dart.
 
-## Usage
+## Installation
 
-```yaml
-dependencies:
-  event_reduce:
-    git:
-      url: https://github.com/pubkey/event-reduce
-      path: dart
+```sh
+dart pub add event_reduce
+# or in a Flutter app
+flutter pub add event_reduce
 ```
+
+## Usage
 
 ```dart
 import 'package:event_reduce/event_reduce.dart';

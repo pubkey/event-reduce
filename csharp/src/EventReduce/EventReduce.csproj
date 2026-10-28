@@ -11,10 +11,18 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <RootNamespace>EventReduce</RootNamespace>
     <PackageId>EventReduce</PackageId>
-    <Version>0.1.0</Version>
+    <Version>7.4.1</Version>
     <Description>Update live query results from database change events without re-running the query.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/pubkey/event-reduce</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/pubkey/event-reduce</PackageProjectUrl>
+    <Authors>pubkey</Authors>
+    <PackageTags>live-query;reactive;realtime;database;bdd</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
 </Project>

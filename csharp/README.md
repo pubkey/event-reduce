@@ -10,7 +10,7 @@ The library targets .NET Standard 2.1 with C# 9 and has no dependencies, so it w
 
 ## Installation
 
-- **.NET**: reference `src/EventReduce/EventReduce.csproj` from your project.
+- **.NET**: `dotnet add package EventReduce`
 - **Unity**: copy the `.cs` files of `src/EventReduce` into a folder in your `Assets`.
 
 ## Usage
