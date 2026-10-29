@@ -1,4 +1,4 @@
-import 'package:event_reduce/event_reduce.dart';
+import 'package:rxdb_event_reduce/rxdb_event_reduce.dart';
 
 class User {
   final String id;

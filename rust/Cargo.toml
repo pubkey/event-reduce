@@ -1,5 +1,5 @@
 [package]
-name = "event-reduce"
+name = "rxdb-event-reduce"
 version = "7.4.1"
 edition = "2021"
 rust-version = "1.70"

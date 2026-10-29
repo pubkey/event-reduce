@@ -43,15 +43,15 @@ const OTHER_IMPLEMENTATIONS: {
         lines: entries => ['package dev.rxdb.eventreduce', '', 'public val PACKED_BDD: IntArray = intArrayOf(' + entries + ')']
     },
     {
-        file: 'swift/Sources/EventReduce/BddGenerated.swift',
+        file: 'swift/Sources/RxDBEventReduce/BddGenerated.swift',
         comment: '//',
         lines: entries => ['// swift-format-ignore-file', 'public let packedBdd: [Int] = [' + entries + ']']
     },
     {
-        file: 'csharp/src/EventReduce/BddGenerated.cs',
+        file: 'csharp/src/RxDB.EventReduce/BddGenerated.cs',
         comment: '//',
         lines: entries => [
-            'namespace EventReduce',
+            'namespace RxDB.EventReduce',
             '{',
             '    /// <summary>The entries of the packed BDD that the JavaScript implementation created.</summary>',
             '    public static class BddGenerated',
@@ -63,7 +63,7 @@ const OTHER_IMPLEMENTATIONS: {
         ]
     },
     {
-        file: 'python/src/event_reduce/bdd_generated.py',
+        file: 'python/src/rxdb_event_reduce/bdd_generated.py',
         comment: '#',
         lines: entries => ['PACKED_BDD: tuple[int, ...] = (' + entries + ')  # fmt: skip']
     },

@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using Xunit;
 
-namespace EventReduce.Tests
+namespace RxDB.EventReduce.Tests
 {
     /// <summary>Runs the test suite that all implementations share, see ../test-suite/README.md.</summary>
     public class TestSuiteTests
@@ -86,7 +86,7 @@ namespace EventReduce.Tests
                 ActionName action;
                 if (actionName != null)
                 {
-                    action = EventReduce.Actions.OrderedActionList.First(a => a.ToJsName() == actionName);
+                    action = RxDB.EventReduce.Actions.OrderedActionList.First(a => a.ToJsName() == actionName);
                 }
                 else
                 {

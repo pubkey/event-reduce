@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace EventReduce
+namespace RxDB.EventReduce
 {
     /// <summary>The main entry points of EventReduce.</summary>
     public static class EventReducer

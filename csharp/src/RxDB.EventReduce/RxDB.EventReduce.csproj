@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- members whose name says everything have no doc comment -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <RootNamespace>EventReduce</RootNamespace>
-    <PackageId>EventReduce</PackageId>
+    <RootNamespace>RxDB.EventReduce</RootNamespace>
+    <PackageId>RxDB.EventReduce</PackageId>
     <Version>7.4.1</Version>
     <Description>Update live query results from database change events without re-running the query.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -11,12 +11,12 @@ It releases all implementations with the same version:
 | Implementation | Package manager | Package | Authentication |
 | --- | --- | --- | --- |
 | JavaScript | [npm](https://www.npmjs.com/package/event-reduce-js) | `event-reduce-js` | trusted publishing |
-| Rust | [crates.io](https://crates.io/crates/event-reduce) | `event-reduce` | trusted publishing |
-| Dart | [pub.dev](https://pub.dev/packages/event_reduce) | `event_reduce` | automated publishing (OIDC) |
+| Rust | [crates.io](https://crates.io/crates/rxdb-event-reduce) | `rxdb-event-reduce` | trusted publishing |
+| Dart | [pub.dev](https://pub.dev/packages/rxdb_event_reduce) | `rxdb_event_reduce` | automated publishing (OIDC) |
 | Kotlin | [Maven Central](https://central.sonatype.com/artifact/dev.rxdb/event-reduce) | `dev.rxdb:event-reduce` | token and GPG key secrets |
-| C# | [NuGet](https://www.nuget.org/packages/EventReduce) | `EventReduce` | trusted publishing |
-| Python | [PyPI](https://pypi.org/project/event-reduce/) | `event-reduce` | trusted publishing |
-| Swift | Swift Package Manager | the `v<version>` tag and the root `Package.swift` | none |
+| C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing |
+| Python | [PyPI](https://pypi.org/project/rxdb-event-reduce/) | `rxdb-event-reduce` | trusted publishing |
+| Swift | Swift Package Manager | product `RxDBEventReduce`, from the `v<version>` tag and the root `Package.swift` | none |
 | Go | Go modules | the `go/v<version>` tag | none |
 
 If one publish job fails, fix the cause and re-run the failed job: it checks out the release tag, so it publishes the released code.
@@ -38,6 +38,8 @@ Register the repository `pubkey/event-reduce` with the workflow file `release.ym
   - enable automated publishing from GitHub Actions for the repository;
   - set the tag pattern to `v{{version}}`;
   - enable publishing from `workflow_dispatch` events, because the release workflow is started by hand.
+
+  Optionally, create the verified publisher `rxdb.dev` on pub.dev and move the package to it.
 - **Maven Central**: in the [Central Portal](https://central.sonatype.com), add the namespace `dev.rxdb`
   and verify it with the DNS TXT record the portal shows for the domain `rxdb.dev`. Then add these repository secrets:
   - `MAVEN_CENTRAL_USERNAME` and `MAVEN_CENTRAL_PASSWORD`: a user token of the Central Portal.
@@ -46,7 +48,8 @@ Register the repository `pubkey/event-reduce` with the workflow file `release.ym
   - `MAVEN_SIGNING_KEY_PASSWORD`: the passphrase of that key.
 - **NuGet**: add a trusted publishing policy on nuget.org.
   Add the nuget.org user name (not the email address) as the repository secret `NUGET_USER`.
-- **PyPI**: add a pending trusted publisher for the project `event-reduce`.
+  Optionally, [reserve the ID prefix](https://learn.microsoft.com/en-us/nuget/nuget-org/id-prefix-reservation) `RxDB.` so the package shows as verified.
+- **PyPI**: add a pending trusted publisher for the project `rxdb-event-reduce`.
   PyPI then creates the project on the first release.
 - **Swift**: add the repository once to the [Swift Package Index](https://swiftpackageindex.com/add-a-package) to make the package easy to find.
 - **Go**: nothing to set up. The release job asks the Go proxy for the new version, so it shows up on [pkg.go.dev](https://pkg.go.dev).

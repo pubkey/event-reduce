@@ -1,4 +1,4 @@
-namespace EventReduce
+namespace RxDB.EventReduce
 {
     // The BDD is shared with the JavaScript implementation as a PackedBdd
     // of the binary-decision-diagram npm package, see BddGenerated.PackedBdd.

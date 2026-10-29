@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EventReduce
+namespace RxDB.EventReduce
 {
     /// <summary>The state functions, each one returns a boolean for the input.</summary>
     public static class States

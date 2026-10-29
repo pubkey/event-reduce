@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EventReduce
+namespace RxDB.EventReduce
 {
     /// <summary>Helpers that are used by the states and actions.</summary>
     public static class Util

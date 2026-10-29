@@ -1,5 +1,5 @@
-import EventReduce
 import Foundation
+import RxDBEventReduce
 import XCTest
 
 // Runs the test suite that all implementations share, see ../test-suite/README.md.

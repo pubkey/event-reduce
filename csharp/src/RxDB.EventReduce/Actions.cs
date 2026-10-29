@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EventReduce
+namespace RxDB.EventReduce
 {
     /// <summary>
     /// The action functions.

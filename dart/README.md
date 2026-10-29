@@ -1,4 +1,4 @@
-# event_reduce (Dart)
+# rxdb_event_reduce (Dart)
 
 Dart implementation of the [EventReduce algorithm](https://github.com/pubkey/event-reduce).
 It takes the previous results of a query and a change event of the database
@@ -10,15 +10,15 @@ so both always decide on the same action. Works with Flutter and plain Dart.
 ## Installation
 
 ```sh
-dart pub add event_reduce
+dart pub add rxdb_event_reduce
 # or in a Flutter app
-flutter pub add event_reduce
+flutter pub add rxdb_event_reduce
 ```
 
 ## Usage
 
 ```dart
-import 'package:event_reduce/event_reduce.dart';
+import 'package:rxdb_event_reduce/rxdb_event_reduce.dart';
 
 class User {
   final String id;

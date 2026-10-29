@@ -20,7 +20,7 @@ function replace(file, regex, replacement) {
 replace('rust/Cargo.toml', /^version = ".*"$/m, `version = "${version}"`);
 replace('dart/pubspec.yaml', /^version: .*$/m, `version: ${version}`);
 replace('kotlin/build.gradle.kts', /^version = ".*"$/m, `version = "${version}"`);
-replace('csharp/src/EventReduce/EventReduce.csproj', /<Version>.*<\/Version>/, `<Version>${version}</Version>`);
+replace('csharp/src/RxDB.EventReduce/RxDB.EventReduce.csproj', /<Version>.*<\/Version>/, `<Version>${version}</Version>`);
 replace('python/pyproject.toml', /^version = ".*"$/m, `version = "${version}"`);
 replace('swift/README.md', /from: "\d+\.0\.0"/, `from: "${major}.0.0"`);
 

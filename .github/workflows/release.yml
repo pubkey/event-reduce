@@ -69,7 +69,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add javascript/package.json rust/Cargo.toml dart/pubspec.yaml kotlin/build.gradle.kts csharp/src/EventReduce/EventReduce.csproj python/pyproject.toml swift/README.md go
+          git add javascript/package.json rust/Cargo.toml dart/pubspec.yaml kotlin/build.gradle.kts csharp/src/RxDB.EventReduce/RxDB.EventReduce.csproj python/pyproject.toml swift/README.md go
           git commit -m "release: ${{ steps.bump.outputs.version }}"
           git tag ${{ steps.bump.outputs.version }}
           # Swift packages use the tag of the release, Go modules in a subfolder need a tag with the folder as prefix
@@ -171,7 +171,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet test
-      - run: dotnet pack src/EventReduce -c Release -o dist
+      - run: dotnet pack src/RxDB.EventReduce -c Release -o dist
       # NuGet trusted publishing, @link https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing
       - uses: NuGet/login@v1
         id: login

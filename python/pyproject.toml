@@ -3,7 +3,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "event-reduce"
+name = "rxdb-event-reduce"
 version = "7.4.1"
 description = "Update live query results from database change events without re-running the query."
 readme = "README.md"
@@ -16,7 +16,7 @@ Homepage = "https://github.com/pubkey/event-reduce"
 Repository = "https://github.com/pubkey/event-reduce"
 
 [tool.setuptools.package-data]
-event_reduce = ["py.typed"]
+rxdb_event_reduce = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -31,7 +31,7 @@ select = ["E", "F", "W", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
 # generated, the packed BDD string is one long line
-"src/event_reduce/bdd_generated.py" = ["E501"]
+"src/rxdb_event_reduce/bdd_generated.py" = ["E501"]
 
 [tool.mypy]
 strict = true

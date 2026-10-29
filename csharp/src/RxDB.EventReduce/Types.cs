@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EventReduce
+namespace RxDB.EventReduce
 {
     /// <summary>The kind of a write on the database.</summary>
     public enum WriteOperation

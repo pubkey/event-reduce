@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/EventReduce/EventReduce.csproj" />
+    <ProjectReference Include="../../src/RxDB.EventReduce/RxDB.EventReduce.csproj" />
   </ItemGroup>
 
 </Project>
