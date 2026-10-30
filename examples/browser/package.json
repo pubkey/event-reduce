@@ -50,7 +50,7 @@
         "local-web-server": "5.4.2",
         "path": "0.12.7",
         "style-loader": "4.0.0",
-        "testcafe": "3.7.6",
+        "testcafe": "3.7.7",
         "ts-loader": "9.6.2",
         "tsx": "4.23.15",
         "typescript": "6.0.3",
