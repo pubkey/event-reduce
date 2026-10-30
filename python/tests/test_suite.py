@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from rxdb_event_reduce import (
+from event_reduce import (
     PACKED_BDD,
     ActionName,
     ChangeEvent,

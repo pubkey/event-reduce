@@ -1,4 +1,4 @@
-name: rxdb_event_reduce
+name: event_reduce
 description: Update live query results from database change events without re-running the query.
 version: 7.4.1
 homepage: https://github.com/pubkey/event-reduce

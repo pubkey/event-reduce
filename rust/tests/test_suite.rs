@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use rxdb_event_reduce::*;
+use event_reduce::*;
 use serde_json::{json, Value};
 
 #[derive(Clone, Debug, PartialEq)]

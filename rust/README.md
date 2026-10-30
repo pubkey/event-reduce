@@ -1,4 +1,4 @@
-# rxdb-event-reduce (Rust)
+# event-reduce (Rust)
 
 Rust implementation of the [EventReduce algorithm](https://github.com/pubkey/event-reduce).
 It takes the previous results of a query and a change event of the database
@@ -10,13 +10,13 @@ so both always decide on the same action.
 ## Installation
 
 ```sh
-cargo add rxdb-event-reduce
+cargo add event-reduce
 ```
 
 ## Usage
 
 ```rust
-use rxdb_event_reduce::{
+use event_reduce::{
     calculate_action_name, run_action, ActionName, ChangeEvent, QueryParams,
     StateResolveFunctionInput,
 };
@@ -94,7 +94,7 @@ It works like the [result window buffer of the JavaScript implementation](../doc
 which explains how it works, how to choose the buffer sizes and has measurements.
 
 ```rust
-use rxdb_event_reduce::{
+use event_reduce::{
     get_recommended_result_window_buffer_size, ChangeEvent, QueryParams, ResultWindowBuffer,
     ResultWindowBufferChangeResult, ResultWindowBufferQuery, ResultWindowBufferSizes,
 };

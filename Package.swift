@@ -4,16 +4,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "RxDBEventReduce",
+    name: "EventReduce",
     products: [
-        .library(name: "RxDBEventReduce", targets: ["RxDBEventReduce"])
+        .library(name: "EventReduce", targets: ["EventReduce"])
     ],
     targets: [
-        .target(name: "RxDBEventReduce", path: "swift/Sources/RxDBEventReduce"),
+        .target(name: "EventReduce", path: "swift/Sources/EventReduce"),
         .testTarget(
-            name: "RxDBEventReduceTests",
-            dependencies: ["RxDBEventReduce"],
-            path: "swift/Tests/RxDBEventReduceTests"
+            name: "EventReduceTests",
+            dependencies: ["EventReduce"],
+            path: "swift/Tests/EventReduceTests"
         ),
     ]
 )

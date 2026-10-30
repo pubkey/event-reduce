@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:rxdb_event_reduce/rxdb_event_reduce.dart';
+import 'package:event_reduce/event_reduce.dart';
 import 'package:test/test.dart';
 
 typedef Doc = Map<String, dynamic>;
