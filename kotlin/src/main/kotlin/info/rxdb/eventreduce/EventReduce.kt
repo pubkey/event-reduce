@@ -1,4 +1,4 @@
-package dev.rxdb.eventreduce
+package info.rxdb.eventreduce
 
 /**
  * Returns the action that transforms the previous results into the new results.

@@ -1,4 +1,4 @@
-package dev.rxdb.eventreduce
+package info.rxdb.eventreduce
 
 public typealias ActionFunction<D> = (ActionFunctionInput<D>) -> Unit
 

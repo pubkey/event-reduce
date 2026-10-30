@@ -1,4 +1,4 @@
-package dev.rxdb.eventreduce
+package info.rxdb.eventreduce
 
 /**
  * Returns the index of the document with the given id

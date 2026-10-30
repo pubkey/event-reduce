@@ -1,4 +1,4 @@
-package dev.rxdb.eventreduce
+package info.rxdb.eventreduce
 
 import kotlin.math.floor
 import kotlin.math.log2

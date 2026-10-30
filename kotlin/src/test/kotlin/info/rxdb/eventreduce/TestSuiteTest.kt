@@ -1,4 +1,4 @@
-package dev.rxdb.eventreduce
+package info.rxdb.eventreduce
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray

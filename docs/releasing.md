@@ -13,7 +13,7 @@ It releases all implementations with the same version:
 | JavaScript | [npm](https://www.npmjs.com/package/event-reduce-js) | `event-reduce-js` | trusted publishing |
 | Rust | [crates.io](https://crates.io/crates/rxdb-event-reduce) | `rxdb-event-reduce` | trusted publishing |
 | Dart | [pub.dev](https://pub.dev/packages/rxdb_event_reduce) | `rxdb_event_reduce` | automated publishing (OIDC) |
-| Kotlin | [Maven Central](https://central.sonatype.com/artifact/dev.rxdb/event-reduce) | `dev.rxdb:event-reduce` | token and GPG key secrets |
+| Kotlin | [Maven Central](https://central.sonatype.com/artifact/info.rxdb/event-reduce) | `info.rxdb:event-reduce` | token and GPG key secrets |
 | C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing |
 | Python | [PyPI](https://pypi.org/project/rxdb-event-reduce/) | `rxdb-event-reduce` | trusted publishing |
 | Swift | Swift Package Manager | product `RxDBEventReduce`, from the `v<version>` tag and the root `Package.swift` | none |
@@ -39,9 +39,9 @@ Register the repository `pubkey/event-reduce` with the workflow file `release.ym
   - set the tag pattern to `v{{version}}`;
   - enable publishing from `workflow_dispatch` events, because the release workflow is started by hand.
 
-  Optionally, create the verified publisher `rxdb.dev` on pub.dev and move the package to it.
-- **Maven Central**: in the [Central Portal](https://central.sonatype.com), add the namespace `dev.rxdb`
-  and verify it with the DNS TXT record the portal shows for the domain `rxdb.dev`. Then add these repository secrets:
+  Optionally, create the verified publisher `rxdb.info` on pub.dev and move the package to it.
+- **Maven Central**: in the [Central Portal](https://central.sonatype.com), add the namespace `info.rxdb`
+  and verify it with the DNS TXT record the portal shows for the domain `rxdb.info`. Then add these repository secrets:
   - `MAVEN_CENTRAL_USERNAME` and `MAVEN_CENTRAL_PASSWORD`: a user token of the Central Portal.
   - `MAVEN_SIGNING_KEY`: an ASCII armored GPG private key (`gpg --armor --export-secret-keys <key id>`).
     Its public key must be on a key server, for example with `gpg --keyserver keyserver.ubuntu.com --send-keys <key id>`.

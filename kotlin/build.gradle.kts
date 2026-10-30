@@ -7,8 +7,8 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.37.0"
 }
 
-// the Maven Central namespace, verified with the domain rxdb.dev
-group = "dev.rxdb"
+// the Maven Central namespace, verified with the domain rxdb.info
+group = "info.rxdb"
 version = "7.4.1"
 
 repositories {

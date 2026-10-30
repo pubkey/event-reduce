@@ -38,9 +38,9 @@ const OTHER_IMPLEMENTATIONS: {
         lines: entries => ['// dart format off', 'const List<int> packedBdd = [' + entries + '];']
     },
     {
-        file: 'kotlin/src/main/kotlin/dev/rxdb/eventreduce/BddGenerated.kt',
+        file: 'kotlin/src/main/kotlin/info/rxdb/eventreduce/BddGenerated.kt',
         comment: '//',
-        lines: entries => ['package dev.rxdb.eventreduce', '', 'public val PACKED_BDD: IntArray = intArrayOf(' + entries + ')']
+        lines: entries => ['package info.rxdb.eventreduce', '', 'public val PACKED_BDD: IntArray = intArrayOf(' + entries + ')']
     },
     {
         file: 'swift/Sources/RxDBEventReduce/BddGenerated.swift',

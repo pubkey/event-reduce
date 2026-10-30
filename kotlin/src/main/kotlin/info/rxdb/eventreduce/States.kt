@@ -1,4 +1,4 @@
-package dev.rxdb.eventreduce
+package info.rxdb.eventreduce
 
 /**
  * All states, in the same order as the JavaScript implementation.
