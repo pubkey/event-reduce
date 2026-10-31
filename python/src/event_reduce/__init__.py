@@ -1,0 +1,89 @@
+"""
+EventReduce: update live query results from change events without re-running the query.
+
+Only the BDD that the JavaScript implementation generated is used, it is not created or optimized here.
+"""
+
+from __future__ import annotations
+
+from typing import Any, TypeVar
+
+from .actions import ACTION_FUNCTION_LIST, ORDERED_ACTION_LIST, ActionFunction
+from .bdd import resolve_input
+from .bdd_generated import PACKED_BDD
+from .result_window_buffer import (
+    ResultWindowBuffer,
+    ResultWindowBufferChangeResult,
+    ResultWindowBufferQuery,
+    ResultWindowBufferResult,
+    get_recommended_result_window_buffer_size,
+)
+from .states import ORDERED_STATE_LIST, get_state_set, resolve_state
+from .types import (
+    ActionName,
+    ChangeEvent,
+    EventReduceError,
+    QueryParams,
+    ResultKeyDocumentMap,
+    StateName,
+    StateResolveFunctionInput,
+    WriteOperation,
+)
+from .util import dict_query_params, get_property
+
+D = TypeVar("D")
+
+
+def calculate_action_name(input: StateResolveFunctionInput[Any]) -> ActionName:
+    """
+    Returns the action that transforms the previous results into the new results.
+    If it is RUN_FULL_QUERY_AGAIN, the query must be run over the database again.
+    """
+    return ORDERED_ACTION_LIST[resolve_input(input)]
+
+
+def run_action(
+    action: ActionName,
+    query_params: QueryParams[D],
+    change_event: ChangeEvent[D],
+    previous_results: list[D],
+    key_document_map: dict[str, D] | None = None,
+) -> list[D]:
+    """
+    Applies the action to the results.
+    For performance reasons, it mutates previous_results and the key_document_map
+    and returns the mutated results.
+    Raises an EventReduceError for RUN_FULL_QUERY_AGAIN and UNKNOWN_ACTION.
+    """
+    ACTION_FUNCTION_LIST[ORDERED_ACTION_LIST.index(action)](
+        StateResolveFunctionInput(query_params, change_event, previous_results, key_document_map)
+    )
+    return previous_results
+
+
+__all__ = [
+    "ORDERED_ACTION_LIST",
+    "ORDERED_STATE_LIST",
+    "PACKED_BDD",
+    "ActionFunction",
+    "ActionName",
+    "ChangeEvent",
+    "EventReduceError",
+    "QueryParams",
+    "ResultKeyDocumentMap",
+    "ResultWindowBuffer",
+    "ResultWindowBufferChangeResult",
+    "ResultWindowBufferQuery",
+    "ResultWindowBufferResult",
+    "StateName",
+    "StateResolveFunctionInput",
+    "WriteOperation",
+    "calculate_action_name",
+    "dict_query_params",
+    "get_property",
+    "get_recommended_result_window_buffer_size",
+    "get_state_set",
+    "resolve_input",
+    "resolve_state",
+    "run_action",
+]

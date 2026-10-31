@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RxDB.EventReduce/RxDB.EventReduce.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RxDB.EventReduce.Tests/RxDB.EventReduce.Tests.csproj" />
+  </Folder>
+</Solution>
