@@ -119,7 +119,7 @@ jobs:
     permissions:
       contents: read
     container:
-      image: swift:6.1
+      image: swift:6.4
     steps:
       - uses: actions/checkout@v7
       # the Package.swift is at the root of the repository
