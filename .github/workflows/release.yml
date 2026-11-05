@@ -107,25 +107,17 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_API }}
 
+  # pub.dev only accepts automated publishing from a workflow that runs on a tag,
+  # so this starts .github/workflows/publish-dart.yml with the release tag as ref.
   publish-dart:
     needs: build
     runs-on: ubuntu-26.04
     permissions:
-      contents: read
-      id-token: write
-    defaults:
-      run:
-        working-directory: ./dart
+      actions: write
     steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.build.outputs.version }}
-      # setup-dart configures the pub.dev authentication with the GitHub OIDC token
-      # @link https://dart.dev/tools/pub/automated-publishing
-      - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
-      - run: dart test
-      - run: dart pub publish --force
+      - run: gh workflow run publish-dart.yml --repo "${{ github.repository }}" --ref "${{ needs.build.outputs.version }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   publish-kotlin:
     needs: build
