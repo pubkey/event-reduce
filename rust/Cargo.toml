@@ -1,6 +1,6 @@
 [package]
 name = "event-reduce"
-version = "7.4.1"
+version = "7.4.2"
 edition = "2021"
 rust-version = "1.70"
 description = "Update live query results from database change events without re-running the query."
