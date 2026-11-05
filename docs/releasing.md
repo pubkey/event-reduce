@@ -14,7 +14,7 @@ It releases all implementations with the same version:
 | Rust | [crates.io](https://crates.io/crates/event-reduce) | `event-reduce` | API token secret |
 | Dart | [pub.dev](https://pub.dev/packages/event_reduce) | `event_reduce` | automated publishing (OIDC) |
 | Kotlin | [Maven Central](https://central.sonatype.com/artifact/info.rxdb/event-reduce) | `info.rxdb:event-reduce` | token and GPG key secrets |
-| C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing |
+| C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing, not published yet (the job is turned off with `if: false`) |
 | Python | [PyPI](https://pypi.org/project/event-reduce/) | `event-reduce` | trusted publishing |
 | Swift | Swift Package Manager | product `EventReduce`, from the `v<version>` tag and the root `Package.swift` | none |
 | Go | Go modules | the `go/v<version>` tag | none |

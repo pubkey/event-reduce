@@ -152,6 +152,8 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_SIGNING_KEY_PASSWORD }}
 
   publish-csharp:
+    # NuGet is not set up yet, remove this line once it is, see docs/releasing.md
+    if: false
     needs: build
     runs-on: ubuntu-26.04
     permissions:

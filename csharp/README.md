@@ -10,7 +10,7 @@ The library targets .NET Standard 2.1 with C# 9 and has no dependencies, so it w
 
 ## Installation
 
-- **.NET**: `dotnet add package RxDB.EventReduce`
+- **.NET**: the NuGet package `RxDB.EventReduce` is not published yet. Until then, reference `src/RxDB.EventReduce/RxDB.EventReduce.csproj` from your project.
 - **Unity**: copy the `.cs` files of `src/RxDB.EventReduce` into a folder in your `Assets`.
 
 ## Usage
