@@ -41,7 +41,7 @@ Register the repository `pubkey/event-reduce` with the workflow file `release.ym
   Optionally, create the verified publisher `rxdb.info` on pub.dev and move the package to it.
 - **Maven Central**: in the [Central Portal](https://central.sonatype.com), add the namespace `info.rxdb`
   and verify it with the DNS TXT record the portal shows for the domain `rxdb.info`. Then add these repository secrets:
-  - `MAVEN_CENTRAL_USERNAME` and `MAVEN_CENTRAL_PASSWORD`: a user token of the Central Portal.
+  - `MAVEN_USER` and `MAVEN_PASSWORD`: a user token of the Central Portal.
   - `MAVEN_SIGNING_KEY`: an ASCII armored GPG private key (`gpg --armor --export-secret-keys <key id>`).
     Its public key must be on a key server, for example with `gpg --keyserver keyserver.ubuntu.com --send-keys <key id>`.
   - `MAVEN_SIGNING_KEY_PASSWORD`: the passphrase of that key.
