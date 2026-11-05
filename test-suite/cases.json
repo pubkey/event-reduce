@@ -1,0 +1,2320 @@
+{
+  "actions": [
+    {
+      "name": "calculates insertFirst for an insert into empty results",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 20
+        },
+        "previous": null
+      },
+      "expectedAction": "insertFirst",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 20
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 20
+        }
+      ]
+    },
+    {
+      "name": "calculates doNothing for an insert of a non matching document",
+      "query": {
+        "minAge": 10,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "b",
+          "age": 20
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 5
+        },
+        "previous": null
+      },
+      "expectedAction": "doNothing",
+      "expectedResults": [
+        {
+          "id": "b",
+          "age": 20
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "b",
+          "age": 20
+        }
+      ]
+    },
+    {
+      "name": "calculates insertAtSortPosition for the readme example",
+      "query": {
+        "minAge": 18,
+        "skip": null,
+        "limit": 10
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 20
+        },
+        {
+          "id": "b",
+          "age": 30
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "c",
+        "doc": {
+          "id": "c",
+          "age": 25
+        },
+        "previous": null
+      },
+      "expectedAction": "insertAtSortPosition",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 20
+        },
+        {
+          "id": "c",
+          "age": 25
+        },
+        {
+          "id": "b",
+          "age": 30
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 20
+        },
+        {
+          "id": "b",
+          "age": 30
+        },
+        {
+          "id": "c",
+          "age": 25
+        }
+      ]
+    },
+    {
+      "name": "doNothing does not change the results",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "z",
+        "doc": {
+          "id": "z",
+          "age": 9
+        },
+        "previous": null
+      },
+      "action": "doNothing",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ]
+    },
+    {
+      "name": "insertFirst",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 1
+        },
+        "previous": null
+      },
+      "action": "insertFirst",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ]
+    },
+    {
+      "name": "insertLast",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 2
+        },
+        "previous": null
+      },
+      "action": "insertLast",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ]
+    },
+    {
+      "name": "removeFirstItem",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "DELETE",
+        "id": "a",
+        "doc": null,
+        "previous": {
+          "id": "a",
+          "age": 1
+        }
+      },
+      "action": "removeFirstItem",
+      "expectedResults": [
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "b",
+          "age": 2
+        }
+      ]
+    },
+    {
+      "name": "removeLastItem",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "DELETE",
+        "id": "b",
+        "doc": null,
+        "previous": {
+          "id": "b",
+          "age": 2
+        }
+      },
+      "action": "removeLastItem",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ]
+    },
+    {
+      "name": "removeFirstInsertLast",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 2
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "c",
+        "doc": {
+          "id": "c",
+          "age": 3
+        },
+        "previous": null
+      },
+      "action": "removeFirstInsertLast",
+      "expectedResults": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "removeLastInsertFirst",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 2
+      },
+      "previousResults": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 1
+        },
+        "previous": null
+      },
+      "action": "removeLastInsertFirst",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ]
+    },
+    {
+      "name": "removeFirstInsertFirst",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "UPDATE",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 0
+        },
+        "previous": {
+          "id": "a",
+          "age": 1
+        }
+      },
+      "action": "removeFirstInsertFirst",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 0
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 0
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ]
+    },
+    {
+      "name": "removeLastInsertLast",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "UPDATE",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 3
+        },
+        "previous": {
+          "id": "b",
+          "age": 2
+        }
+      },
+      "action": "removeLastInsertLast",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 3
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "removeExisting removes from the middle",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "DELETE",
+        "id": "b",
+        "doc": null,
+        "previous": {
+          "id": "b",
+          "age": 2
+        }
+      },
+      "action": "removeExisting",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "removeExisting without key document map",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "useKeyDocumentMap": false,
+      "changeEvent": {
+        "operation": "DELETE",
+        "id": "b",
+        "doc": null,
+        "previous": {
+          "id": "b",
+          "age": 2
+        }
+      },
+      "action": "removeExisting",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "replaceExisting replaces at the same position",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "UPDATE",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 2,
+          "name": "new"
+        },
+        "previous": {
+          "id": "b",
+          "age": 2
+        }
+      },
+      "action": "replaceExisting",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2,
+          "name": "new"
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2,
+          "name": "new"
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPosition sorts by age, then by id",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 5
+        },
+        {
+          "id": "d",
+          "age": 9
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "c",
+        "doc": {
+          "id": "c",
+          "age": 7
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPosition",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 5
+        },
+        {
+          "id": "c",
+          "age": 7
+        },
+        {
+          "id": "d",
+          "age": 9
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 5
+        },
+        {
+          "id": "c",
+          "age": 7
+        },
+        {
+          "id": "d",
+          "age": 9
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPosition uses the id when the age is equal",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "b",
+          "age": 5
+        },
+        {
+          "id": "d",
+          "age": 9
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 5
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPosition",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 5
+        },
+        {
+          "id": "d",
+          "age": 9
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 5
+        },
+        {
+          "id": "d",
+          "age": 9
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPosition does nothing if the document is already in the results",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "c",
+          "age": 7
+        }
+      ],
+      "useKeyDocumentMap": false,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "c",
+        "doc": {
+          "id": "c",
+          "age": 7
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPosition",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "c",
+          "age": 7
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPosition with a descending sort",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null,
+        "desc": true
+      },
+      "previousResults": [
+        {
+          "id": "c",
+          "age": 9
+        },
+        {
+          "id": "a",
+          "age": 5
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 7
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPosition",
+      "expectedResults": [
+        {
+          "id": "c",
+          "age": 9
+        },
+        {
+          "id": "b",
+          "age": 7
+        },
+        {
+          "id": "a",
+          "age": 5
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 7
+        },
+        {
+          "id": "c",
+          "age": 9
+        }
+      ]
+    },
+    {
+      "name": "removeExistingAndInsertAtSortPosition",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "UPDATE",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 5
+        },
+        "previous": {
+          "id": "a",
+          "age": 1
+        }
+      },
+      "action": "removeExistingAndInsertAtSortPosition",
+      "expectedResults": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        },
+        {
+          "id": "a",
+          "age": 5
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 5
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPositionRemoveLast",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 3
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "c",
+          "age": 3
+        },
+        {
+          "id": "e",
+          "age": 5
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 2
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPositionRemoveLast",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPositionRemoveFirst",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 3
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        },
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "d",
+        "doc": {
+          "id": "d",
+          "age": 4
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPositionRemoveFirst",
+      "expectedResults": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        },
+        {
+          "id": "d",
+          "age": 4
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        },
+        {
+          "id": "d",
+          "age": 4
+        }
+      ]
+    },
+    {
+      "name": "insertAtSortPositionRemoveLast removes nothing if the document is already in the results",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 3
+      },
+      "previousResults": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        },
+        {
+          "id": "d",
+          "age": 4
+        }
+      ],
+      "useKeyDocumentMap": false,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "c",
+        "doc": {
+          "id": "c",
+          "age": 3
+        },
+        "previous": null
+      },
+      "action": "insertAtSortPositionRemoveLast",
+      "expectedResults": [
+        {
+          "id": "b",
+          "age": 2
+        },
+        {
+          "id": "c",
+          "age": 3
+        },
+        {
+          "id": "d",
+          "age": 4
+        }
+      ]
+    },
+    {
+      "name": "runFullQueryAgain returns an error and does not change the results",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 1
+        },
+        "previous": null
+      },
+      "action": "runFullQueryAgain",
+      "expectedError": "RUN_FULL",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ]
+    },
+    {
+      "name": "unknownAction returns an error",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 1
+        },
+        "previous": null
+      },
+      "action": "unknownAction",
+      "expectedError": "UNK_ACT",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ]
+    },
+    {
+      "name": "alwaysWrong is handled like unknownAction",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": null
+      },
+      "previousResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "b",
+        "doc": {
+          "id": "b",
+          "age": 1
+        },
+        "previous": null
+      },
+      "action": "alwaysWrong",
+      "expectedError": "UNK_ACT",
+      "expectedResults": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ],
+      "expectedKeyDocumentMap": [
+        {
+          "id": "a",
+          "age": 1
+        }
+      ]
+    }
+  ],
+  "resultWindowBuffer": [
+    {
+      "name": "query adds the buffer sizes to the skip and limit",
+      "query": {
+        "minAge": -1,
+        "skip": 10,
+        "limit": 20
+      },
+      "limitBufferSize": 5,
+      "skipBufferSize": 3,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 7,
+            "limit": 28
+          }
+        }
+      ]
+    },
+    {
+      "name": "query does not go below skip 0",
+      "query": {
+        "minAge": -1,
+        "skip": 2,
+        "limit": 20
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 5,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 0,
+            "limit": 22
+          }
+        }
+      ]
+    },
+    {
+      "name": "query with buffer sizes 0 is the query",
+      "query": {
+        "minAge": -1,
+        "skip": 10,
+        "limit": 20
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 10,
+            "limit": 20
+          }
+        }
+      ]
+    },
+    {
+      "name": "query keeps all rows with the buffer size all",
+      "query": {
+        "minAge": -1,
+        "skip": 10,
+        "limit": 20
+      },
+      "limitBufferSize": "all",
+      "skipBufferSize": "all",
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 0,
+            "limit": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "query has no limit for a query without a limit",
+      "query": {
+        "minAge": -1,
+        "skip": 10,
+        "limit": null
+      },
+      "limitBufferSize": 5,
+      "skipBufferSize": 3,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 7,
+            "limit": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "asks for a full query and has no results before it got rows",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "results",
+          "expectedError": "RWB_OUTDATED"
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "INSERT",
+            "id": "a",
+            "doc": {
+              "id": "a",
+              "age": 1
+            },
+            "previous": null
+          },
+          "expected": "runFullQueryAgain"
+        }
+      ]
+    },
+    {
+      "name": "is complete when the query returned fewer rows than requested",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 2,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "a",
+              "b",
+              "c"
+            ],
+            "offset": 0,
+            "complete": true
+          }
+        },
+        {
+          "op": "results",
+          "expected": [
+            "a",
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "is not complete when the query returned as many rows as requested",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 1
+      },
+      "limitBufferSize": 1,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            }
+          ]
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "a",
+              "b"
+            ],
+            "offset": 0,
+            "complete": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "shows the rows after the skipped rows of the buffer",
+      "query": {
+        "minAge": -1,
+        "skip": 1,
+        "limit": 2
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 1,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "a",
+              "b",
+              "c"
+            ],
+            "offset": 0,
+            "complete": false
+          }
+        },
+        {
+          "op": "results",
+          "expected": [
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "refills the window from the buffer when a visible row is deleted",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 2,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            },
+            {
+              "id": "d",
+              "age": 4
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "DELETE",
+            "id": "a",
+            "doc": null,
+            "previous": {
+              "id": "a",
+              "age": 1
+            }
+          },
+          "expected": "buffer"
+        },
+        {
+          "op": "results",
+          "expected": [
+            "b",
+            "c"
+          ]
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "b",
+              "c",
+              "d"
+            ],
+            "offset": 0,
+            "complete": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "does not append a row that moves behind the last row of the buffer",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 1,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "UPDATE",
+            "id": "a",
+            "doc": {
+              "id": "a",
+              "age": 99
+            },
+            "previous": {
+              "id": "a",
+              "age": 1
+            }
+          },
+          "expected": "buffer"
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "b",
+              "c"
+            ],
+            "offset": 0,
+            "complete": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "asks for a full query when a row is added in front of the window without a skip buffer",
+      "query": {
+        "minAge": -1,
+        "skip": 1,
+        "limit": 1
+      },
+      "limitBufferSize": 1,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "INSERT",
+            "id": "x",
+            "doc": {
+              "id": "x",
+              "age": 0
+            },
+            "previous": null
+          },
+          "expected": "runFullQueryAgain"
+        },
+        {
+          "op": "results",
+          "expectedError": "RWB_OUTDATED"
+        }
+      ]
+    },
+    {
+      "name": "takes the row from the skip buffer when a row is added in front of the window",
+      "query": {
+        "minAge": -1,
+        "skip": 2,
+        "limit": 1
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 1,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 1,
+            "limit": 2
+          }
+        },
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "results",
+          "expected": [
+            "c"
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "INSERT",
+            "id": "x",
+            "doc": {
+              "id": "x",
+              "age": 0
+            },
+            "previous": null
+          },
+          "expected": "buffer"
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "b"
+            ],
+            "offset": 2,
+            "complete": false
+          }
+        },
+        {
+          "op": "results",
+          "expected": [
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "returns no rows for a query with limit 0",
+      "query": {
+        "minAge": -1,
+        "skip": 2,
+        "limit": 0
+      },
+      "limitBufferSize": 2,
+      "skipBufferSize": 2,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 2,
+            "limit": 0
+          }
+        },
+        {
+          "op": "reset",
+          "rows": []
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "INSERT",
+            "id": "a",
+            "doc": {
+              "id": "a",
+              "age": 1
+            },
+            "previous": null
+          },
+          "expected": "eventReduce"
+        },
+        {
+          "op": "results",
+          "expected": []
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "UPDATE",
+            "id": "a",
+            "doc": {
+              "id": "a",
+              "age": 2
+            },
+            "previous": {
+              "id": "a",
+              "age": 1
+            }
+          },
+          "expected": "eventReduce"
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "DELETE",
+            "id": "a",
+            "doc": null,
+            "previous": {
+              "id": "a",
+              "age": 2
+            }
+          },
+          "expected": "eventReduce"
+        },
+        {
+          "op": "results",
+          "expected": []
+        }
+      ]
+    },
+    {
+      "name": "handles a query with a skip but without a limit",
+      "query": {
+        "minAge": -1,
+        "skip": 1,
+        "limit": null
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 1,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "results",
+          "expected": [
+            "b",
+            "c"
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "INSERT",
+            "id": "x",
+            "doc": {
+              "id": "x",
+              "age": 0
+            },
+            "previous": null
+          },
+          "expected": "eventReduce"
+        },
+        {
+          "op": "results",
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "works with a descending sort",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2,
+        "desc": true
+      },
+      "limitBufferSize": 1,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "c",
+              "age": 3
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "a",
+              "age": 1
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "DELETE",
+            "id": "c",
+            "doc": null,
+            "previous": {
+              "id": "c",
+              "age": 3
+            }
+          },
+          "expected": "buffer"
+        },
+        {
+          "op": "results",
+          "expected": [
+            "b",
+            "a"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "applyChangeEvents returns the new results and if they changed",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 3,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            },
+            {
+              "id": "c",
+              "age": 3
+            },
+            {
+              "id": "d",
+              "age": 4
+            },
+            {
+              "id": "e",
+              "age": 5
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvents",
+          "changeEvents": [
+            {
+              "operation": "UPDATE",
+              "id": "e",
+              "doc": {
+                "id": "e",
+                "age": 6
+              },
+              "previous": {
+                "id": "e",
+                "age": 5
+              }
+            }
+          ],
+          "expected": {
+            "runFullQueryAgain": false,
+            "changed": false,
+            "results": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "op": "applyChangeEvents",
+          "changeEvents": [
+            {
+              "operation": "DELETE",
+              "id": "a",
+              "doc": null,
+              "previous": {
+                "id": "a",
+                "age": 1
+              }
+            },
+            {
+              "operation": "DELETE",
+              "id": "b",
+              "doc": null,
+              "previous": {
+                "id": "b",
+                "age": 2
+              }
+            }
+          ],
+          "expected": {
+            "runFullQueryAgain": false,
+            "changed": true,
+            "results": [
+              "c",
+              "d"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "applyChangeEvents reports a changed row at the same position as changed",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 3
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvents",
+          "changeEvents": [
+            {
+              "operation": "UPDATE",
+              "id": "a",
+              "doc": {
+                "id": "a",
+                "age": 2
+              },
+              "previous": {
+                "id": "a",
+                "age": 1
+              }
+            }
+          ],
+          "expected": {
+            "runFullQueryAgain": false,
+            "changed": true,
+            "results": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "applyChangeEvents asks for a full query when the result window does not fit into the buffer",
+      "query": {
+        "minAge": -1,
+        "skip": null,
+        "limit": 2
+      },
+      "limitBufferSize": 0,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "applyChangeEvents",
+          "changeEvents": [],
+          "expected": {
+            "runFullQueryAgain": true
+          }
+        },
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "a",
+              "age": 1
+            },
+            {
+              "id": "b",
+              "age": 2
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvents",
+          "changeEvents": [
+            {
+              "operation": "DELETE",
+              "id": "a",
+              "doc": null,
+              "previous": {
+                "id": "a",
+                "age": 1
+              }
+            }
+          ],
+          "expected": {
+            "runFullQueryAgain": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "decreases the offset when a row before the buffer is deleted",
+      "query": {
+        "minAge": -1,
+        "skip": 2,
+        "limit": 1
+      },
+      "limitBufferSize": 1,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "query",
+          "expected": {
+            "skip": 2,
+            "limit": 2
+          }
+        },
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "c",
+              "age": 3
+            },
+            {
+              "id": "d",
+              "age": 4
+            }
+          ]
+        },
+        {
+          "op": "results",
+          "expected": [
+            "c"
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "DELETE",
+            "id": "a",
+            "doc": null,
+            "previous": {
+              "id": "a",
+              "age": 1
+            }
+          },
+          "expected": "buffer"
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "d"
+            ],
+            "offset": 2,
+            "complete": false
+          }
+        },
+        {
+          "op": "results",
+          "expected": [
+            "d"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "decreases the offset when a row before the buffer moves behind it",
+      "query": {
+        "minAge": -1,
+        "skip": 2,
+        "limit": 1
+      },
+      "limitBufferSize": 1,
+      "skipBufferSize": 0,
+      "steps": [
+        {
+          "op": "reset",
+          "rows": [
+            {
+              "id": "c",
+              "age": 3
+            },
+            {
+              "id": "d",
+              "age": 4
+            }
+          ]
+        },
+        {
+          "op": "applyChangeEvent",
+          "changeEvent": {
+            "operation": "UPDATE",
+            "id": "a",
+            "doc": {
+              "id": "a",
+              "age": 10
+            },
+            "previous": {
+              "id": "a",
+              "age": 1
+            }
+          },
+          "expected": "buffer"
+        },
+        {
+          "op": "inspect",
+          "expected": {
+            "buffer": [
+              "d"
+            ],
+            "offset": 2,
+            "complete": false
+          }
+        },
+        {
+          "op": "results",
+          "expected": [
+            "d"
+          ]
+        }
+      ]
+    }
+  ],
+  "recommendedResultWindowBufferSize": [
+    [
+      null,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      10,
+      3
+    ],
+    [
+      20,
+      4
+    ],
+    [
+      100,
+      7
+    ],
+    [
+      200,
+      11
+    ],
+    [
+      500,
+      20
+    ],
+    [
+      1000,
+      26
+    ],
+    [
+      2711,
+      29
+    ],
+    [
+      2712,
+      30
+    ],
+    [
+      100000,
+      30
+    ]
+  ]
+}

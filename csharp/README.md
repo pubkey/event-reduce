@@ -1,0 +1,121 @@
+# RxDB.EventReduce (C#)
+
+C# implementation of the [EventReduce algorithm](https://github.com/pubkey/event-reduce).
+It takes the previous results of a query and a change event of the database
+and calculates the new results **in memory, without running the query over the database again**.
+
+It uses the same binary decision diagram as the [JavaScript implementation](../javascript/),
+so both always decide on the same action.
+The library targets .NET Standard 2.1 with C# 9 and has no dependencies, so it works in .NET and in **Unity**.
+
+## Installation
+
+- **.NET**: `dotnet add package RxDB.EventReduce`
+- **Unity**: copy the `.cs` files of `src/RxDB.EventReduce` into a folder in your `Assets`.
+
+## Usage
+
+```csharp
+using System.Collections.Generic;
+using RxDB.EventReduce;
+
+public sealed class User
+{
+    public string Id = "";
+    public int Age;
+}
+
+// SELECT * FROM users WHERE age > 18 ORDER BY age, id LIMIT 10
+var queryParams = new QueryParams<User>
+{
+    GetDocumentId = doc => doc.Id,
+    Limit = 10,
+    QueryMatcher = doc => doc.Age > 18,
+    // must never return 0 for two different documents,
+    // so sort by the primary key last
+    SortComparator = (a, b) => a.Age != b.Age ? a.Age.CompareTo(b.Age) : string.CompareOrdinal(a.Id, b.Id),
+    // true if one of the sort fields differs between the two versions of a document
+    SortFieldsChanged = (previous, doc) => previous.Age != doc.Age,
+};
+
+var results = new List<User> { new User { Id = "a", Age = 20 }, new User { Id = "b", Age = 30 } };
+
+// a change event from the change stream of your database
+var changeEvent = ChangeEvent<User>.Insert("c", new User { Id = "c", Age = 25 });
+
+var action = EventReducer.CalculateActionName(new StateResolveFunctionInput<User>(queryParams, changeEvent, results));
+if (action == ActionName.RunFullQueryAgain)
+{
+    results = RunQueryOnDatabase(); // EventReduce could not optimize this event
+}
+else
+{
+    EventReducer.RunAction(action, queryParams, changeEvent, results);
+    // -> [a, c, b]
+}
+```
+
+Documents can be classes or structs. `ChangeEvent.HasDoc` and `ChangeEvent.HasPrevious`
+tell if `Doc` and `Previous` are set, they are not set on deletes and inserts.
+
+### Key document map
+
+For big result sets, pass a `Dictionary` from the id to the document as `keyDocumentMap`
+to both `CalculateActionName()` and `RunAction()`.
+It is used to check whether a document is in the results without scanning them,
+and `RunAction()` keeps it in sync with the results.
+
+### Differences to the JavaScript implementation
+
+- Change events are created with `ChangeEvent<TDoc>.Insert()`, `.Update()` and `.Delete()`.
+- Instead of `primaryKey` and `sortFields`, the `QueryParams` take `GetDocumentId`
+  and `SortFieldsChanged`, so documents can be any C# type.
+- `SortComparator` is a `Comparison<TDoc>`.
+- `ActionName` and `StateName` are enums, `ToJsName()` returns the name used by JavaScript.
+- `RunAction()` throws an `EventReduceException` for `RunFullQueryAgain` and `UnknownAction`.
+  `AlwaysWrong` is only used by the truth-table generator and throws like `UnknownAction`.
+
+## Result window buffer
+
+For a query with a limit or a skip, EventReduce returns `RunFullQueryAgain` when a row has to move into the result window that is not in the previous results:
+the row after the window (when a row leaves a full window) or the last skipped row (when a row is added in front of the window).
+The result window buffer avoids most of these full queries: it keeps `limitBufferSize` rows after the window and `skipBufferSize` skipped rows before it in memory.
+It works like the [result window buffer of the JavaScript implementation](../docs/result-window-buffer.md),
+which explains how it works, how to choose the buffer sizes and has measurements.
+
+```csharp
+// recommended size: about log2(limit), at most 30
+var size = ResultWindowBuffer.GetRecommendedSize(queryParams.Limit);
+var resultWindowBuffer = new ResultWindowBuffer<User>(queryParams, limitBufferSize: size, skipBufferSize: size);
+// run the query with the skip and limit of the buffer
+resultWindowBuffer.Reset(RunQuery(resultWindowBuffer.GetQuery()));
+// the rows of the original skip and limit
+IReadOnlyList<User> results = resultWindowBuffer.GetResults();
+
+// on new change events
+var result = resultWindowBuffer.ApplyChangeEvents(changeEvents);
+if (result.RunFullQueryAgain)
+{
+    resultWindowBuffer.Reset(RunQuery(resultWindowBuffer.GetQuery()));
+    results = resultWindowBuffer.GetResults();
+}
+else if (result.Changed)
+{
+    results = result.Results;
+}
+```
+
+`GetQuery()` returns the `Skip` and `Limit` to run the query with, `Limit` is null if all rows after the skip are needed.
+`ResultWindowBuffer.AllRows` as a buffer size keeps all rows on that side.
+`ApplyChangeEvents()` compares the rows with `EqualityComparer<TDoc>.Default`:
+by reference for classes, like the JavaScript implementation, and by value for structs and records.
+
+## Development
+
+```sh
+dotnet test
+dotnet format --verify-no-changes
+```
+
+The BDD is generated by the truth-table generator of the JavaScript implementation,
+which also writes `src/RxDB.EventReduce/BddGenerated.cs`. The tests run the [shared test suite](../test-suite/), the same tests as all other implementations.

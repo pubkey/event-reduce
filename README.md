@@ -15,6 +15,13 @@
 <p align="center">
   <a href="https://pubkey.github.io/event-reduce/">Live demo</a> ·
   <a href="./javascript/">JavaScript implementation</a> ·
+  <a href="./rust/">Rust implementation</a> ·
+  <a href="./dart/">Dart implementation</a> ·
+  <a href="./kotlin/">Kotlin implementation</a> ·
+  <a href="./swift/">Swift implementation</a> ·
+  <a href="./csharp/">C# implementation</a> ·
+  <a href="./python/">Python implementation</a> ·
+  <a href="./go/">Go implementation</a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#faq">FAQ</a>
 </p>
@@ -65,6 +72,7 @@ if (action === 'runFullQueryAgain') {
 ```
 
 See the [JavaScript implementation](./javascript/) for the full API and a MongoDB-style example.
+[Rust](./rust/), [Dart](./dart/), [Kotlin](./kotlin/), [Swift](./swift/), [C#](./csharp/), [Python](./python/) and [Go](./go/) implementations that use the same BDD are also available. All implementations run the same [shared test suite](./test-suite/).
 
 ## The problem
 
