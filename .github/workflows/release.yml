@@ -94,7 +94,6 @@ jobs:
     runs-on: ubuntu-26.04
     permissions:
       contents: read
-      id-token: write
     defaults:
       run:
         working-directory: ./rust
@@ -103,12 +102,10 @@ jobs:
         with:
           ref: ${{ needs.build.outputs.version }}
       - run: cargo test
-      # crates.io trusted publishing, @link https://crates.io/docs/trusted-publishing
-      - uses: rust-lang/crates-io-auth-action@v1
-        id: auth
+      # a crates.io API token with the publish-new and publish-update scopes
       - run: cargo publish
         env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_API }}
 
   publish-dart:
     needs: build

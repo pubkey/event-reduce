@@ -11,7 +11,7 @@ It releases all implementations with the same version:
 | Implementation | Package manager | Package | Authentication |
 | --- | --- | --- | --- |
 | JavaScript | [npm](https://www.npmjs.com/package/event-reduce-js) | `event-reduce-js` | trusted publishing |
-| Rust | [crates.io](https://crates.io/crates/event-reduce) | `event-reduce` | trusted publishing |
+| Rust | [crates.io](https://crates.io/crates/event-reduce) | `event-reduce` | API token secret |
 | Dart | [pub.dev](https://pub.dev/packages/event_reduce) | `event_reduce` | automated publishing (OIDC) |
 | Kotlin | [Maven Central](https://central.sonatype.com/artifact/info.rxdb/event-reduce) | `info.rxdb:event-reduce` | token and GPG key secrets |
 | C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing |
@@ -29,9 +29,8 @@ Go needs the major version in the module path from v2 on (`github.com/pubkey/eve
 Trusted publishing uses the GitHub OIDC token of the workflow, so it needs no secrets.
 Register the repository `pubkey/event-reduce` with the workflow file `release.yml` on each site.
 
-- **crates.io**: crates.io only allows trusted publishing for existing crates.
-  Publish the first version by hand with `cargo publish` in `./rust`.
-  Then add a trusted publisher in the settings of the crate.
+- **crates.io**: create an [API token](https://crates.io/settings/tokens) with the scopes `publish-new` and `publish-update`
+  and add it as the repository secret `CRATES_IO_API`. The first release creates the crate.
 - **pub.dev**: pub.dev only allows automated publishing for existing packages.
   Publish the first version by hand with `dart pub publish` in `./dart`.
   Then, in the admin tab of the package:
