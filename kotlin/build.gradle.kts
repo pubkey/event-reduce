@@ -9,7 +9,7 @@ plugins {
 
 // the Maven Central namespace, verified with the domain rxdb.info
 group = "info.rxdb"
-version = "7.4.1"
+version = "7.4.2"
 
 repositories {
     mavenCentral()
