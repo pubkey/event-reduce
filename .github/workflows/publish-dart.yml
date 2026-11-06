@@ -18,13 +18,14 @@ jobs:
       run:
         working-directory: ./dart
     steps:
+      # before the check, because the default working directory ./dart only exists after the checkout
+      - uses: actions/checkout@v7
       - name: Check that the ref is a tag
         run: |
           if [ "${{ github.ref_type }}" != "tag" ]; then
             echo "Run this workflow on a release tag, pub.dev only accepts tags."
             exit 1
           fi
-      - uses: actions/checkout@v7
       # setup-dart configures the pub.dev authentication with the GitHub OIDC token
       - uses: dart-lang/setup-dart@v1
       - run: dart pub get
