@@ -134,7 +134,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
       # @link https://vanniktech.github.io/gradle-maven-publish-plugin/central/
       - run: ./gradlew test publishAndReleaseToMavenCentral
         env:
