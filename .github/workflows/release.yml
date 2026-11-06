@@ -207,7 +207,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.build.outputs.version }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go/go.mod
       - run: GOPROXY=https://proxy.golang.org go list -m "$(go list -m)@${{ needs.build.outputs.version }}"
