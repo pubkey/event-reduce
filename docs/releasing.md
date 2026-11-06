@@ -12,9 +12,9 @@ It releases all implementations with the same version:
 | --- | --- | --- | --- |
 | JavaScript | [npm](https://www.npmjs.com/package/event-reduce-js) | `event-reduce-js` | trusted publishing |
 | Rust | [crates.io](https://crates.io/crates/event-reduce) | `event-reduce` | API token secret |
-| Dart | [pub.dev](https://pub.dev/packages/event_reduce) | `event_reduce` | automated publishing (OIDC) |
+| Dart | [pub.dev](https://pub.dev/packages/event_reduce) | `event_reduce` | automated publishing (OIDC), from `publish-dart.yml` on the release tag |
 | Kotlin | [Maven Central](https://central.sonatype.com/artifact/info.rxdb/event-reduce) | `info.rxdb:event-reduce` | token and GPG key secrets |
-| C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing |
+| C# | [NuGet](https://www.nuget.org/packages/RxDB.EventReduce) | `RxDB.EventReduce` | trusted publishing, not published yet (the job is turned off with `if: false`) |
 | Python | [PyPI](https://pypi.org/project/event-reduce/) | `event-reduce` | trusted publishing |
 | Swift | Swift Package Manager | product `EventReduce`, from the `v<version>` tag and the root `Package.swift` | none |
 | Go | Go modules | the `go/v<version>` tag | none |
@@ -36,7 +36,11 @@ Register the repository `pubkey/event-reduce` with the workflow file `release.ym
   Then, in the admin tab of the package:
   - enable automated publishing from GitHub Actions for the repository;
   - set the tag pattern to `v{{version}}`;
-  - enable publishing from `workflow_dispatch` events, because the release workflow is started by hand.
+  - enable publishing from `workflow_dispatch` events, because the release workflow starts `publish-dart.yml` that way.
+
+  pub.dev only accepts uploads from a workflow that runs on a tag, so the release workflow does not publish to pub.dev itself.
+  It starts `.github/workflows/publish-dart.yml` with the release tag as ref.
+  To publish a release to pub.dev again, run that workflow by hand on the release tag.
 
   Optionally, create the verified publisher `rxdb.info` on pub.dev and move the package to it.
 - **Maven Central**: in the [Central Portal](https://central.sonatype.com), add the namespace `info.rxdb`

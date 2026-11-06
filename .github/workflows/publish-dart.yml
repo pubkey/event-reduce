@@ -1,0 +1,32 @@
+# Publishes the Dart package to pub.dev.
+# pub.dev only accepts automated publishing from a workflow that runs on a tag,
+# so the release workflow starts this one with the release tag as ref.
+# Run it by hand on a tag (Use workflow from: Tags → v<version>) to publish that release again.
+# @link https://dart.dev/tools/pub/automated-publishing
+name: Publish Dart
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: ./dart
+    steps:
+      - name: Check that the ref is a tag
+        run: |
+          if [ "${{ github.ref_type }}" != "tag" ]; then
+            echo "Run this workflow on a release tag, pub.dev only accepts tags."
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+      # setup-dart configures the pub.dev authentication with the GitHub OIDC token
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart test
+      - run: dart pub publish --force
