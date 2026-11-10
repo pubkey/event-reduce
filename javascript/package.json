@@ -128,7 +128,7 @@
     "rimraf": "6.1.4",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.72.1"
+    "typescript-eslint": "8.72.2"
   },
   "dependencies": {
     "array-push-at-sort-position": "5.0.0",
