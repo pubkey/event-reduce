@@ -3,11 +3,10 @@
     "version": "1.0.0",
     "scripts": {
         "lint": "eslint .",
-        "start": "webpack-dev-server --config webpack.dev.js",
+        "start": "webpack-dev-server --config webpack.js --static .",
         "benchmark:result-window-buffer": "tsx test/result-window-buffer.benchmark.ts",
         "test:e2e": "testcafe chrome -e test/e2e.test.ts --hostname localhost --compiler-options \"typescript.customCompilerModulePath=../typescript;typescript.configPath=test/tsconfig.json\"",
         "test": "concurrently \"npm run serve\" \"sleep 4 && npm run test:e2e\" --kill-others --success first",
-        "mongo": "bash mongodb.bash",
         "serve": "ws -p 8888 -d dist/",
         "build": "webpack --config webpack.js && cp ./index.html ./dist/index.html"
     },
