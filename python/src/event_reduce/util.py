@@ -32,6 +32,16 @@ def _get_path(obj: Any, keys: list[str], default: Any = None) -> Any:
     return obj
 
 
+def _differs(a: Any, b: Any) -> bool:
+    """
+    Like !== of JavaScript for the values of sort fields:
+    True and 1 are different values (in Python, True == 1), and so are None and a missing field.
+    """
+    if a is b:
+        return False
+    return isinstance(a, bool) != isinstance(b, bool) or bool(a != b)
+
+
 def normalize_sort_field(field: str) -> str:
     """normalizes sort-field, in: '-age', out: 'age'"""
     return field[1:] if field.startswith("-") else field
@@ -61,10 +71,10 @@ def dict_query_params(
 
     def sort_fields_changed(previous: dict[str, Any], doc: dict[str, Any]) -> bool:
         for field in fields:
-            if previous.get(field) != doc.get(field):
+            if _differs(previous.get(field, _MISSING), doc.get(field, _MISSING)):
                 return True
         for path in paths:
-            if _get_path(previous, path) != _get_path(doc, path):
+            if _differs(_get_path(previous, path, _MISSING), _get_path(doc, path, _MISSING)):
                 return True
         return False
 
