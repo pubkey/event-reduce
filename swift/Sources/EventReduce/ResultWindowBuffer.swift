@@ -127,13 +127,22 @@ private func getSkip<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) -> Int {
     resultWindowBuffer.queryParams.skip ?? 0
 }
 
+/// Adds two numbers that are not negative and returns Int.max instead of overflowing.
+/// A limit can be as large as Int.max, for example when it is used for "no limit".
+private func addSaturating(_ a: Int, _ b: Int) -> Int {
+    let (sum, overflow) = a.addingReportingOverflow(b)
+    return overflow ? Int.max : sum
+}
+
 /// The skip and limit to run the query of the buffer with.
 public func getResultWindowBufferQuery<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) -> ResultWindowBufferQuery {
     let skip = getSkip(resultWindowBuffer)
     let bufferSkip = max(0, skip - resultWindowBuffer.skipBufferSize)
     var bufferLimit: Int? = nil
     if let limit = resultWindowBuffer.queryParams.limit, resultWindowBuffer.limitBufferSize < maxBufferSize {
-        bufferLimit = (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize
+        // a limit that does not fit into an Int means that all rows are needed
+        let sum = addSaturating(addSaturating(skip - bufferSkip, limit), resultWindowBuffer.limitBufferSize)
+        bufferLimit = sum < Int.max ? sum : nil
     }
     return ResultWindowBufferQuery(skip: bufferSkip, limit: bufferLimit)
 }
@@ -168,7 +177,7 @@ public func getResultWindowBufferResults<D>(_ resultWindowBuffer: ResultWindowBu
     let start = min(getSkip(resultWindowBuffer) - resultWindowBuffer.offset, buffer.count)
     var end = buffer.count
     if let limit = resultWindowBuffer.queryParams.limit {
-        end = min(start + limit, buffer.count)
+        end = min(addSaturating(start, limit), buffer.count)
     }
     return Array(buffer[start..<end])
 }
@@ -258,7 +267,7 @@ private func isResultWindowInBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<
         return true
     }
     guard let limit = resultWindowBuffer.queryParams.limit else { return false }
-    return resultWindowBuffer.buffer.count >= start + limit
+    return resultWindowBuffer.buffer.count >= addSaturating(start, limit)
 }
 
 /// Removes rows before the window that are more than skipBufferSize
@@ -277,9 +286,9 @@ private func trimBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) {
     }
 
     if let limit = resultWindowBuffer.queryParams.limit {
-        let maxLength =
-            max(0, getSkip(resultWindowBuffer) - resultWindowBuffer.offset) + limit
-            + resultWindowBuffer.limitBufferSize
+        let maxLength = addSaturating(
+            addSaturating(max(0, getSkip(resultWindowBuffer) - resultWindowBuffer.offset), limit),
+            resultWindowBuffer.limitBufferSize)
         if resultWindowBuffer.buffer.count > maxLength {
             for doc in resultWindowBuffer.buffer[maxLength...] {
                 resultWindowBuffer.map?.removeValue(forKey: getId(doc))

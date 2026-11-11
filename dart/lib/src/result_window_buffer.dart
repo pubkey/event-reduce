@@ -135,6 +135,12 @@ ResultWindowBuffer<D> createResultWindowBuffer<D>(
 int _getSkip<D>(ResultWindowBuffer<D> resultWindowBuffer) =>
     resultWindowBuffer.queryParams.skip ?? 0;
 
+/// Adds two numbers that are not negative and returns [resultWindowBufferAllRows]
+/// instead of a larger number, so that the sum can not overflow.
+/// A limit can be as large as the largest integer, for example when it is used for "no limit".
+int _addSaturating(int a, int b) =>
+    a >= resultWindowBufferAllRows - b ? resultWindowBufferAllRows : a + b;
+
 /// The skip and limit to run the query of the buffer with.
 /// limit is null if all rows after the skip are needed.
 ResultWindowBufferQuery getResultWindowBufferQuery<D>(
@@ -143,10 +149,15 @@ ResultWindowBufferQuery getResultWindowBufferQuery<D>(
   final skip = _getSkip(resultWindowBuffer);
   final bufferSkip = math.max(0, skip - resultWindowBuffer.skipBufferSize);
   final limit = resultWindowBuffer.queryParams.limit;
-  final bufferLimit =
-      limit != null && resultWindowBuffer.limitBufferSize < _maxBufferSize
-          ? (skip - bufferSkip) + limit + resultWindowBuffer.limitBufferSize
-          : null;
+  int? bufferLimit;
+  if (limit != null && resultWindowBuffer.limitBufferSize < _maxBufferSize) {
+    final sum = _addSaturating(
+      _addSaturating(skip - bufferSkip, limit),
+      resultWindowBuffer.limitBufferSize,
+    );
+    // a limit that is too large to count with means that all rows are needed
+    bufferLimit = sum < resultWindowBufferAllRows ? sum : null;
+  }
   return (skip: bufferSkip, limit: bufferLimit);
 }
 
@@ -187,7 +198,9 @@ List<D> getResultWindowBufferResults<D>(
   );
   final limit = resultWindowBuffer.queryParams.limit;
   final end =
-      limit == null ? buffer.length : math.min(start + limit, buffer.length);
+      limit == null
+          ? buffer.length
+          : math.min(_addSaturating(start, limit), buffer.length);
   return buffer.sublist(start, end);
 }
 
@@ -290,7 +303,8 @@ bool _isResultWindowInBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
     return true;
   }
   final limit = resultWindowBuffer.queryParams.limit;
-  return limit != null && resultWindowBuffer.buffer.length >= start + limit;
+  return limit != null &&
+      resultWindowBuffer.buffer.length >= _addSaturating(start, limit);
 }
 
 /// Removes rows before the window that are more than skipBufferSize
@@ -316,10 +330,13 @@ void _trimBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
 
   final limit = resultWindowBuffer.queryParams.limit;
   if (limit != null) {
-    final maxLength =
-        math.max(0, _getSkip(resultWindowBuffer) - resultWindowBuffer.offset) +
-        limit +
-        resultWindowBuffer.limitBufferSize;
+    final maxLength = _addSaturating(
+      _addSaturating(
+        math.max(0, _getSkip(resultWindowBuffer) - resultWindowBuffer.offset),
+        limit,
+      ),
+      resultWindowBuffer.limitBufferSize,
+    );
     if (buffer.length > maxLength) {
       for (var index = maxLength; index < buffer.length; index++) {
         keyDocumentMap.remove(getId(buffer[index]));
