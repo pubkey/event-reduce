@@ -19,15 +19,21 @@ def get_property(obj: Any, path: str, default: Any = None) -> Any:
     return _get_path(obj, path.split("."), default)
 
 
+def _is_list_index(key: str) -> bool:
+    """True for '0', '1', '12', like the index of a JavaScript array. Not for '01', '-1' or '²'."""
+    return key.isascii() and key.isdigit() and (key == "0" or not key.startswith("0"))
+
+
 def _get_path(obj: Any, keys: list[str], default: Any = None) -> Any:
     for key in keys:
         if isinstance(obj, Mapping):
             obj = obj.get(key, _MISSING)
-        elif isinstance(obj, (list, tuple)) and key.isdigit() and int(key) < len(obj):
+        elif isinstance(obj, (list, tuple)) and _is_list_index(key) and int(key) < len(obj):
             obj = obj[int(key)]
         else:
+            # also when obj is None: the path goes on below a value that has no fields
             return default
-        if obj is _MISSING or obj is None:
+        if obj is _MISSING:
             return default
     return obj
 
