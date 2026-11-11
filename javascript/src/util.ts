@@ -85,10 +85,10 @@ export function objectToMap<K, V>(object: {
 }
 
 export function cloneMap<K, V>(map: Map<K, V>): Map<K, V> {
-    const ret: any = new Map();
+    const ret: Map<K, V> = new Map();
     map.forEach(
         (value: V, key: K) => {
-            ret[key as any] = value;
+            ret.set(key, value);
         }
     );
     return ret;
