@@ -82,7 +82,7 @@ void removeFirstItem<D>(StateResolveFunctionInput<D> input) {
     return;
   }
   final first = input.previousResults.removeAt(0);
-  input.keyDocumentMap?.remove(input.queryParams.getDocumentId(first));
+  input.keyDocumentMap?.remove(input.queryParams.documentId(first));
 }
 
 void removeLastItem<D>(StateResolveFunctionInput<D> input) {
@@ -90,7 +90,7 @@ void removeLastItem<D>(StateResolveFunctionInput<D> input) {
     return;
   }
   final last = input.previousResults.removeLast();
-  input.keyDocumentMap?.remove(input.queryParams.getDocumentId(last));
+  input.keyDocumentMap?.remove(input.queryParams.documentId(last));
 }
 
 void removeFirstInsertLast<D>(StateResolveFunctionInput<D> input) {
@@ -147,11 +147,7 @@ void insertAtSortPosition<D>(StateResolveFunctionInput<D> input) {
     return;
   }
   map?[id] = doc;
-  pushAtSortPosition(
-    input.previousResults,
-    doc,
-    input.queryParams.sortComparator,
-  );
+  pushAtSortPosition(input.previousResults, doc, input.queryParams.compare);
 }
 
 void removeExistingAndInsertAtSortPosition<D>(
