@@ -16,8 +16,21 @@ export function randomOfArray<T>(items: T[]): T {
     return items[Math.floor(Math.random() * items.length)];
 }
 
+/**
+ * Returns a shuffled copy of the array.
+ * Uses the Fisher-Yates shuffle so that each order is equally likely,
+ * which sorting with a random comparator does not guarantee.
+ * @link https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+ */
 export function shuffleArray<T>(arr: T[]): T[] {
-    return arr.slice().sort(() => (Math.random() - 0.5));
+    const ret = arr.slice();
+    for (let i = ret.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = ret[i];
+        ret[i] = ret[j];
+        ret[j] = tmp;
+    }
+    return ret;
 }
 
 /**
