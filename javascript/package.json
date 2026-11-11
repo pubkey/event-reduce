@@ -65,7 +65,7 @@
       "default": {
         "types": "./dist/esm/src/truth-table-generator/index.d.ts",
         "import": "./dist/esm/src/truth-table-generator/index.js",
-        "default": "./dist/cjs/src/truth-table-generator/index.es5.js"
+        "default": "./dist/cjs/src/truth-table-generator/index.js"
       }
     },
     "./package.json": "./package.json"
@@ -133,5 +133,21 @@
   "dependencies": {
     "array-push-at-sort-position": "5.0.0",
     "binary-decision-diagram": "6.0.1"
+  },
+  "peerDependencies": {
+    "async-test-util": "^2.5.0",
+    "deep-equal": "^2.2.3",
+    "mingo": "^7.2.7"
+  },
+  "peerDependenciesMeta": {
+    "async-test-util": {
+      "optional": true
+    },
+    "deep-equal": {
+      "optional": true
+    },
+    "mingo": {
+      "optional": true
+    }
   }
 }
