@@ -151,7 +151,9 @@ See [docs/result-window-buffer.md](./docs/result-window-buffer.md) for how it wo
 
 ## Implementations
 
-At the moment there is only the [JavaScript implementation](./javascript/) that you can use over npm. Pull requests for other languages are welcomed.
+The [JavaScript implementation](./javascript/) is the reference: it creates the BDD and you can use it over npm.
+There are also implementations in [Rust](./rust/), [Dart](./dart/), [Kotlin](./kotlin/), [Swift](./swift/), [C#](./csharp/), [Python](./python/) and [Go](./go/).
+They resolve the same BDD and run the same [shared test suite](./test-suite/). Pull requests for other languages are welcomed.
 
 ## Previous Work
 
