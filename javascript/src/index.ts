@@ -98,7 +98,10 @@ export function runAction<DocType>(
     previousResults: DocType[],
     keyDocumentMap?: ResultKeyDocumentMap<DocType>
 ): DocType[] {
-    const fn: ActionFunction<DocType> = actionFunctionList[orderedActionList.indexOf(action)];
+    const fn: ActionFunction<DocType> | undefined = actionFunctionList[orderedActionList.indexOf(action)];
+    if (!fn) {
+        throw new Error('EventReduce:UNK_ACT ' + action);
+    }
     fn({
         queryParams,
         changeEvent,
