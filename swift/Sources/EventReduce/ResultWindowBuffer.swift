@@ -95,8 +95,10 @@ private let actionsThatDropARow: Set<ActionName> = [
 /// The recommended buffer size for each side of the result window.
 /// About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
 /// Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+/// Also returns 0 for a negative limit, which is not a valid limit.
 public func getRecommendedResultWindowBufferSize(_ limit: Int?) -> Int {
-    guard let limit = limit, limit != 0 else { return 0 }
+    // the logarithm of a negative number is NaN, and Int(NaN) is a runtime failure
+    guard let limit = limit, limit > 0 else { return 0 }
     let ratio = 400.0 / Double(limit)
     let size = log2(Double(limit)) + 19.0 / (1.0 + ratio * ratio)
     return min(30, Int(size.rounded(.down)))
