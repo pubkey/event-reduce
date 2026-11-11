@@ -1,6 +1,6 @@
 import type { Collection } from '.';
 import type { DeterministicSortComparator, MongoQuery } from '../../types';
-import { getSortFieldsOfQuery } from '../../util.js';
+import { getSortFieldsOfQuery, normalizeSortField } from '../../util.js';
 import type { Human } from '../types';
 import { Query } from 'mingo';
 import {
@@ -70,10 +70,11 @@ export function getMingoSortComparator<DocType>(
     }[] = [];
     query.sort.forEach((key: string) => {
         const direction = key.startsWith('-') ? 'desc' : 'asc';
+        const field = normalizeSortField(key);
         sortParts.push({
-            key,
+            key: field,
             direction: direction,
-            getValueFn: (obj: DocType) => getProperty(obj, key)
+            getValueFn: (obj: DocType) => getProperty(obj, field)
         });
     });
     const fun: DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => {
