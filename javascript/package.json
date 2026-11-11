@@ -85,7 +85,7 @@
     "build": "rimraf ./dist && npm run transpile && npm run transpile:es",
     "dry": "npm pack --dry-run",
     "test": "npm run build && mocha ./dist/cjs/test/unit/index.test.js --timeout 40000 --bail",
-    "dev": "mocha -r tsx/register test/unit/index.test.ts  --watch --watch-extensions ts",
+    "dev": "mocha -r tsx/cjs test/unit/index.test.ts  --watch --watch-extensions ts",
     "generate-truth-table": "tsx ./src/truth-table-generator/runner.node.ts generate-truth-table && npm run create-bdd",
     "test-fuzzing": "tsx ./src/truth-table-generator/runner.node.ts fuzzing",
     "create-bdd": "tsx ./src/truth-table-generator/runner.node.ts create-bdd",
