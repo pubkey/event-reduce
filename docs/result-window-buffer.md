@@ -167,7 +167,7 @@ With `limit: 0`, the result is always empty, so the buffer keeps no rows and nev
 [`result-window-buffer.test.ts`](../javascript/test/unit/result-window-buffer.test.ts) runs seeded random inserts, updates
 (including changes of the sort field and of the matching field) and deletes.
 The queries use a limit, skip + limit, skip without limit and neither, with ascending and descending sort.
-The buffer sizes are 0/0, 5/0, 0/5, 20/3 and 50/20 (`limitBufferSize`/`skipBufferSize`),
+The buffer sizes are 0/0, 5/0, 0/5, 20/3, 50/20 and `Infinity`/`Infinity` (`limitBufferSize`/`skipBufferSize`),
 and the runs start with 0, 30 or 300 rows, so the result grows, moves and shrinks to nothing.
 After **every** event the test checks that:
 
@@ -176,7 +176,7 @@ After **every** event the test checks that:
 - a complete buffer holds all rows after `offset`;
 - the buffer holds no more rows than requested on both sides.
 
-It runs 135 combinations with 600 events each, as part of `npm run test` in `javascript`.
+It runs 162 combinations with 600 events each, as part of `npm run test` in `javascript`.
 If you break the slice rule, the offset bookkeeping or the trimming, the test fails.
 
 ## Choosing the buffer sizes
