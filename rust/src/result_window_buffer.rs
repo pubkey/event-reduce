@@ -177,7 +177,10 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
         let buffer_skip = (skip - self.skip_buffer_size as i64).max(0);
         let limit = match self.query_params.limit {
             Some(limit) if self.limit_buffer_size < MAX_BUFFER_SIZE => {
-                Some((skip - buffer_skip) as usize + limit + self.limit_buffer_size)
+                // a limit that does not fit into an usize means that all rows are needed
+                ((skip - buffer_skip) as usize)
+                    .checked_add(limit)
+                    .and_then(|limit| limit.checked_add(self.limit_buffer_size))
             }
             _ => None,
         };
@@ -216,7 +219,7 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
         let len = self.buffer.len();
         let start = ((self.skip() - self.offset as i64) as usize).min(len);
         let end = match self.query_params.limit {
-            Some(limit) => (start + limit).min(len),
+            Some(limit) => start.saturating_add(limit).min(len),
             None => len,
         };
         Ok(&self.buffer[start..end])
@@ -326,7 +329,7 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
             return true;
         }
         match self.query_params.limit {
-            Some(limit) => self.buffer.len() >= start as usize + limit,
+            Some(limit) => self.buffer.len() >= (start as usize).saturating_add(limit),
             None => false,
         }
     }
@@ -343,8 +346,10 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
         }
 
         if let Some(limit) = self.query_params.limit {
-            let max_length =
-                (self.skip() - self.offset as i64).max(0) as usize + limit + self.limit_buffer_size;
+            // saturating: a limit can be as large as usize::MAX, for example when it is used for "no limit"
+            let max_length = ((self.skip() - self.offset as i64).max(0) as usize)
+                .saturating_add(limit)
+                .saturating_add(self.limit_buffer_size);
             if self.buffer.len() > max_length {
                 self.remove_rows(max_length..);
                 self.complete = false;

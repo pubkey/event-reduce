@@ -129,7 +129,10 @@ func (b *ResultWindowBuffer[D]) Query() ResultWindowBufferQuery {
 	bufferSkip := max(0, skip-b.SkipBufferSize)
 	var bufferLimit *int
 	if b.QueryParams.Limit != nil && b.LimitBufferSize < maxBufferSize {
-		bufferLimit = Int((skip - bufferSkip) + *b.QueryParams.Limit + b.LimitBufferSize)
+		// a limit that does not fit into an int means that all rows are needed
+		if limit := addSaturating(addSaturating(skip-bufferSkip, *b.QueryParams.Limit), b.LimitBufferSize); limit < math.MaxInt {
+			bufferLimit = Int(limit)
+		}
 	}
 	return ResultWindowBufferQuery{Skip: bufferSkip, Limit: bufferLimit}
 }
@@ -158,7 +161,7 @@ func (b *ResultWindowBuffer[D]) Results() ([]D, error) {
 	start := min(b.skip()-b.Offset, len(b.Buffer))
 	end := len(b.Buffer)
 	if b.QueryParams.Limit != nil {
-		end = min(start+*b.QueryParams.Limit, len(b.Buffer))
+		end = min(addSaturating(start, *b.QueryParams.Limit), len(b.Buffer))
 	}
 	return append([]D(nil), b.Buffer[start:end]...), nil
 }
@@ -264,7 +267,7 @@ func (b *ResultWindowBuffer[D]) isResultWindowInBuffer() bool {
 	if b.Complete {
 		return true
 	}
-	return b.QueryParams.Limit != nil && len(b.Buffer) >= start+*b.QueryParams.Limit
+	return b.QueryParams.Limit != nil && len(b.Buffer) >= addSaturating(start, *b.QueryParams.Limit)
 }
 
 // trim removes rows before the window that are more than SkipBufferSize
@@ -278,12 +281,21 @@ func (b *ResultWindowBuffer[D]) trim() {
 	}
 
 	if b.QueryParams.Limit != nil {
-		maxLength := max(0, b.skip()-b.Offset) + *b.QueryParams.Limit + b.LimitBufferSize
+		maxLength := addSaturating(addSaturating(max(0, b.skip()-b.Offset), *b.QueryParams.Limit), b.LimitBufferSize)
 		if len(b.Buffer) > maxLength {
 			b.removeRows(maxLength, len(b.Buffer))
 			b.Complete = false
 		}
 	}
+}
+
+// addSaturating adds two numbers that are not negative and returns math.MaxInt instead of overflowing.
+// A limit can be as large as math.MaxInt, for example when it is used for "no limit".
+func addSaturating(a, b int) int {
+	if a > math.MaxInt-b {
+		return math.MaxInt
+	}
+	return a + b
 }
 
 // removeRows removes the rows Buffer[start:end] and their entries in the KeyDocumentMap.
