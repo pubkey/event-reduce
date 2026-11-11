@@ -51,6 +51,15 @@ export async function getMinimongoCollection(storage: 'indexeddb' | 'memory'): P
     }
 }
 
+/**
+ * The queries of this example sort descending with a minus before the field, like '-age'.
+ * minimongo does not know that format: it sorts ascending by a field that is named '-age',
+ * which no document has. So change it to the [field, direction] format of minimongo.
+ */
+export function toMinimongoSort(sort: string[]): (string | [string, 'desc'])[] {
+    return sort.map(field => field.startsWith('-') ? [field.slice(1), 'desc'] : field);
+}
+
 export async function minimongoUpsert<DocType>(
     collection: MinimongoCollection<DocType>,
     doc: DocType
@@ -79,7 +88,7 @@ export async function minimongoFind<DocType>(
             {
                 skip: query.skip ? query.skip : undefined,
                 limit: query.limit ? query.limit : undefined,
-                sort: query.sort ? query.sort : ['_id'] // by default it sorts by primary
+                sort: toMinimongoSort(query.sort ? query.sort : ['_id']) // by default it sorts by primary
             }
         ).fetch(resolve, reject)
     );
@@ -120,7 +129,7 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
         skip: query.skip ? query.skip : undefined,
         limit: query.limit ? query.limit : undefined,
         queryMatcher: compileDocumentSelector(query.selector),
-        sortComparator: compileSort(sort)
+        sortComparator: compileSort(toMinimongoSort(sort))
     };
 }
 
