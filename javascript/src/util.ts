@@ -46,13 +46,8 @@ export function getSortFieldsOfQuery(query: MongoQuery): string[] {
         // if no sort-order is set, use the primary key
         return ['_id'];
     }
-    return query.sort.map(maybeArray => {
-        if (Array.isArray(maybeArray)) {
-            return maybeArray[0].map((field: any) => normalizeSortField(field));
-        } else {
-            return normalizeSortField(maybeArray);
-        }
-    });
+    // normalizeSortField() handles all formats: 'age', '-age', ['age', 'desc'] and { age: 'desc' }
+    return query.sort.map(field => normalizeSortField(field));
 }
 
 /**
