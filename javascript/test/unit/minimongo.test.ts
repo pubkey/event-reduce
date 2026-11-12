@@ -46,4 +46,27 @@ describe('minimongo.test.ts', () => {
         );
         assert.strictEqual(results2[0].age, 0);
     });
+    it('should sort descending when the sort field starts with a minus', () => {
+        const collection = mingoCollectionCreator();
+        // ids are in the opposite order of the ages
+        collection.upsert(randomHuman({ _id: 'a', age: 1 }));
+        collection.upsert(randomHuman({ _id: 'b', age: 5 }));
+        collection.upsert(randomHuman({ _id: 'c', age: 3 }));
+        collection.upsert(randomHuman({ _id: 'd', age: 3 }));
+
+        const descending = collection.query({ selector: {}, sort: ['-age', '_id'] });
+        assert.deepStrictEqual(descending.map(d => d._id), ['b', 'c', 'd', 'a']);
+
+        const ascending = collection.query({ selector: {}, sort: ['age', '_id'] });
+        assert.deepStrictEqual(ascending.map(d => d._id), ['a', 'c', 'd', 'b']);
+    });
+    it('the sort fields of the query params should not contain the minus', () => {
+        const collection = mingoCollectionCreator();
+        const queryParams = collection.getQueryParams({ selector: {}, sort: ['-age', '_id'] });
+        assert.deepStrictEqual(queryParams.sortFields, ['age', '_id']);
+        const young = randomHuman({ _id: 'a', age: 1 });
+        const old = randomHuman({ _id: 'b', age: 5 });
+        assert.strictEqual(queryParams.sortComparator(old, young), -1);
+        assert.strictEqual(queryParams.sortComparator(young, old), 1);
+    });
 });
