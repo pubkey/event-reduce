@@ -295,8 +295,9 @@ class ResultWindowBuffer(Generic[D]):
         buffer = self.buffer
         previous = change_event.previous
         doc = change_event.doc
-        was_matching = previous is not None and query_params.query_matcher(previous)
-        does_match_now = doc is not None and query_params.query_matcher(doc)
+        # bool(): a matcher can return any truthy or falsy value, the offset below needs real booleans
+        was_matching = previous is not None and bool(query_params.query_matcher(previous))
+        does_match_now = doc is not None and bool(query_params.query_matcher(doc))
 
         if not buffer:
             if self.offset == 0:
