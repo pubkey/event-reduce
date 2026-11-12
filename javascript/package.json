@@ -135,9 +135,9 @@
     "binary-decision-diagram": "6.0.1"
   },
   "peerDependencies": {
-    "async-test-util": "^2.5.0",
-    "deep-equal": "^2.2.3",
-    "mingo": "^7.2.7"
+    "async-test-util": "2.5.0",
+    "deep-equal": "2.2.3",
+    "mingo": "7.2.7"
   },
   "peerDependenciesMeta": {
     "async-test-util": {
