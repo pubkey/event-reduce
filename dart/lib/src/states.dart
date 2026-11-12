@@ -41,7 +41,7 @@ bool sortParamsChanged<D>(StateResolveFunctionInput<D> input) {
   if (prev == null) {
     return true;
   }
-  return input.queryParams.sortFieldsChanged(prev, doc);
+  return input.queryParams.haveSortFieldsChanged(prev, doc);
 }
 
 bool wasInResult<D>(StateResolveFunctionInput<D> input) {
@@ -56,13 +56,13 @@ bool wasInResult<D>(StateResolveFunctionInput<D> input) {
 bool wasFirst<D>(StateResolveFunctionInput<D> input) {
   final results = input.previousResults;
   return results.isNotEmpty &&
-      input.queryParams.getDocumentId(results.first) == input.changeEvent.id;
+      input.queryParams.documentId(results.first) == input.changeEvent.id;
 }
 
 bool wasLast<D>(StateResolveFunctionInput<D> input) {
   final results = input.previousResults;
   return results.isNotEmpty &&
-      input.queryParams.getDocumentId(results.last) == input.changeEvent.id;
+      input.queryParams.documentId(results.last) == input.changeEvent.id;
 }
 
 /// Compares the given document with the given result item.
@@ -81,10 +81,10 @@ bool _compareWithResult<D>(
     return false;
   }
   final resultItem = first ? results.first : results.last;
-  if (input.queryParams.getDocumentId(resultItem) == input.changeEvent.id) {
+  if (input.queryParams.documentId(resultItem) == input.changeEvent.id) {
     return true;
   }
-  return expected(input.queryParams.sortComparator(doc, resultItem));
+  return expected(input.queryParams.compare(doc, resultItem));
 }
 
 bool wasSortedBeforeFirst<D>(StateResolveFunctionInput<D> input) =>
@@ -108,13 +108,13 @@ bool _compareNewDocWithResult<D>(
     return false;
   }
   var resultItem = first ? results.first : results.last;
-  if (input.queryParams.getDocumentId(resultItem) == input.changeEvent.id) {
+  if (input.queryParams.documentId(resultItem) == input.changeEvent.id) {
     if (results.length < 2) {
       return true;
     }
     resultItem = first ? results[1] : results[results.length - 2];
   }
-  return expected(input.queryParams.sortComparator(doc, resultItem));
+  return expected(input.queryParams.compare(doc, resultItem));
 }
 
 bool isSortedBeforeFirst<D>(StateResolveFunctionInput<D> input) =>
@@ -125,12 +125,12 @@ bool isSortedAfterLast<D>(StateResolveFunctionInput<D> input) =>
 
 bool wasMatching<D>(StateResolveFunctionInput<D> input) {
   final prev = input.changeEvent.previous;
-  return prev != null && input.queryParams.queryMatcher(prev);
+  return prev != null && input.queryParams.matches(prev);
 }
 
 bool doesMatchNow<D>(StateResolveFunctionInput<D> input) {
   final doc = input.changeEvent.doc;
-  return doc != null && input.queryParams.queryMatcher(doc);
+  return doc != null && input.queryParams.matches(doc);
 }
 
 bool wasResultsEmpty<D>(StateResolveFunctionInput<D> input) =>

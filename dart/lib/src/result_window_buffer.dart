@@ -54,6 +54,13 @@ class ResultWindowBuffer<D> {
     this.limitBufferSize,
     this.skipBufferSize,
   );
+
+  /// Replaces the rows of the buffer.
+  /// A method of the class, so that the new list has the row type of the buffer
+  /// also when the rows are passed as a list of another type, like an untyped [].
+  void _setRows(Iterable<Object?> rows) {
+    buffer = List<D>.from(rows);
+  }
 }
 
 /// The skip and limit to run the query of the buffer with.
@@ -158,8 +165,8 @@ void resetResultWindowBuffer<D>(
   List<D> rows,
 ) {
   final query = getResultWindowBufferQuery(resultWindowBuffer);
-  final getId = resultWindowBuffer.queryParams.getDocumentId;
-  resultWindowBuffer.buffer = List.of(rows);
+  final getId = resultWindowBuffer.queryParams.documentId;
+  resultWindowBuffer._setRows(rows);
   final keyDocumentMap = resultWindowBuffer.keyDocumentMap..clear();
   for (final doc in rows) {
     keyDocumentMap[getId(doc)] = doc;
@@ -299,7 +306,7 @@ bool _isResultWindowInBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
 void _trimBuffer<D>(ResultWindowBuffer<D> resultWindowBuffer) {
   final buffer = resultWindowBuffer.buffer;
   final keyDocumentMap = resultWindowBuffer.keyDocumentMap;
-  final getId = resultWindowBuffer.queryParams.getDocumentId;
+  final getId = resultWindowBuffer.queryParams.documentId;
 
   final rowsBeforeWindow =
       _getSkip(resultWindowBuffer) - resultWindowBuffer.offset;
@@ -352,8 +359,8 @@ void _applySliceRule<D>(
   final keyDocumentMap = resultWindowBuffer.keyDocumentMap;
   final previous = changeEvent.previous;
   final doc = changeEvent.doc;
-  final wasMatching = previous != null && queryParams.queryMatcher(previous);
-  final doesMatchNow = doc != null && queryParams.queryMatcher(doc);
+  final wasMatching = previous != null && queryParams.matches(previous);
+  final doesMatchNow = doc != null && queryParams.matches(doc);
 
   if (buffer.isEmpty) {
     if (resultWindowBuffer.offset == 0) {
@@ -396,13 +403,13 @@ void _applySliceRule<D>(
 /// For different rows that the comparator sees as equal,
 /// the primary key decides, so that the order is always deterministic.
 int _compareRows<D>(QueryParams<D> queryParams, D a, D b) {
-  final idA = queryParams.getDocumentId(a);
-  final idB = queryParams.getDocumentId(b);
-  final result = queryParams.sortComparator(a, b).sign;
+  final idA = queryParams.documentId(a);
+  final idB = queryParams.documentId(b);
+  final result = queryParams.compare(a, b).sign;
   if (idA == idB) {
     // A deterministic comparator breaks ties by the primary key,
     // which gives the same answer for both directions when the sort values are equal.
-    if (result == 0 || result == queryParams.sortComparator(b, a).sign) {
+    if (result == 0 || result == queryParams.compare(b, a).sign) {
       return 0;
     }
     return result;
@@ -421,5 +428,5 @@ void _insertAtSortPosition<D>(ResultWindowBuffer<D> resultWindowBuffer, D doc) {
     doc,
     (D a, D b) => _compareRows(queryParams, a, b),
   );
-  resultWindowBuffer.keyDocumentMap[queryParams.getDocumentId(doc)] = doc;
+  resultWindowBuffer.keyDocumentMap[queryParams.documentId(doc)] = doc;
 }

@@ -3,7 +3,7 @@ import 'types.dart';
 /// Returns the index of the document with the given id
 /// or -1 if it is not in the given documents.
 int indexOfDocumentId<D>(QueryParams<D> queryParams, List<D> docs, String id) {
-  final getId = queryParams.getDocumentId;
+  final getId = queryParams.documentId;
   return docs.indexWhere((doc) => getId(doc) == id);
 }
 

@@ -64,6 +64,26 @@ class QueryParams<D> {
     required this.sortFieldsChanged,
   });
 
+  /// The methods below call the functions of this query.
+  /// The library calls them instead of reading the fields:
+  /// Dart infers the type argument dynamic when an untyped list literal like []
+  /// is passed as results, and reading a field like `bool Function(Doc)`
+  /// of a `QueryParams<Doc>` as a `QueryParams<dynamic>` throws a TypeError.
+  /// A method call only checks the arguments.
+
+  /// Returns the id of the document, calls [getDocumentId].
+  String documentId(D doc) => getDocumentId(doc);
+
+  /// Returns true if the document matches the query, calls [queryMatcher].
+  bool matches(D doc) => queryMatcher(doc);
+
+  /// Compares two documents, calls [sortComparator].
+  int compare(D a, D b) => sortComparator(a, b);
+
+  /// Calls [sortFieldsChanged].
+  bool haveSortFieldsChanged(D previous, D doc) =>
+      sortFieldsChanged(previous, doc);
+
   /// A copy with the given skip and limit.
   QueryParams<D> withSkipAndLimit(int? skip, int? limit) => QueryParams(
     getDocumentId: getDocumentId,
