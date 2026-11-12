@@ -49,6 +49,7 @@ export type StateName =
 export interface QueryParams<DocType> {
     /**
      * Field of the document that contains its id.
+     * The id must be a string, numbers are not allowed.
      * Not used when getDocumentId is set.
      */
     primaryKey: string;
@@ -56,7 +57,7 @@ export interface QueryParams<DocType> {
      * Returns the id of a document.
      * Use this when the id is not stored in a single top-level field,
      * for example for compound or nested primary keys.
-     * Must return the same value as the id of the change events.
+     * Must return the same value as the id of the change events, which is always a string.
      * If not set, document[primaryKey] is used.
      */
     getDocumentId?: (doc: DocType) => string;

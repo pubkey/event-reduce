@@ -11,6 +11,7 @@ import type {
 import { getStateSet } from './states/index.js';
 import { actionFunctionList, orderedActionList } from './actions/index.js';
 import { resolveInput } from './bdd/bdd.generated.js';
+import { ensureStringIds } from './util.js';
 
 /**
  * Export as type to ensure we do not
@@ -69,6 +70,7 @@ function isLimitZero(queryParams: QueryParams<any>): boolean {
 const DO_NOTHING_ACTION_ID = 0;
 
 function resolveActionId<DocType>(input: StateResolveFunctionInput<DocType>): number {
+    ensureStringIds(input.queryParams, input.changeEvent.id, input.previousResults);
     return isLimitZero(input.queryParams) ? DO_NOTHING_ACTION_ID : resolveInput(input);
 }
 
@@ -79,6 +81,7 @@ export function calculateActionFromMap<DocType>(
     action: ActionName,
     stateSet: StateSet
 } {
+    ensureStringIds(input.queryParams, input.changeEvent.id, input.previousResults);
     const stateSet: StateSet = getStateSet(input);
     if (isLimitZero(input.queryParams)) {
         return {

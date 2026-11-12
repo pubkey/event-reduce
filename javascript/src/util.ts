@@ -163,6 +163,26 @@ export function getDocumentId<DocType>(queryParams: QueryParams<DocType>, doc: D
 }
 
 /**
+ * Document ids must be strings, numbers are not allowed:
+ * the id of a change event is compared with === to the ids of the documents
+ * and is the key of the key document map, where 1 and '1' are different keys.
+ * Throws if the id of the change event or the id of the first of the given documents is not a string.
+ * Only the first document is checked, so that this stays cheap enough to run on every change event.
+ */
+export function ensureStringIds<DocType>(
+    queryParams: QueryParams<DocType>,
+    changeEventId: unknown,
+    docs: DocType[]
+): void {
+    if (
+        typeof changeEventId !== 'string' ||
+        (docs.length > 0 && typeof getDocumentId(queryParams, docs[0]) !== 'string')
+    ) {
+        throw new Error('EventReduce:ID_NOT_STRING');
+    }
+}
+
+/**
  * Returns the index of the document with the given id
  * or -1 if it is not in the given documents.
  * Uses separate loops so that the common case without getDocumentId

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any, TypeVar
 
-from .types import QueryParams
+from .types import EventReduceError, QueryParams
 
 D = TypeVar("D")
 
@@ -85,7 +85,11 @@ def dict_query_params(
         return False
 
     def get_document_id(doc: dict[str, Any]) -> str:
-        return str(doc[primary_key])
+        id = doc[primary_key]
+        # document ids must be strings in all implementations, numbers are not allowed
+        if not isinstance(id, str):
+            raise EventReduceError("ID_NOT_STRING")
+        return id
 
     return QueryParams(
         get_document_id=get_document_id,

@@ -19,6 +19,7 @@ class ChangeEvent(Generic[D]):
     """
     A write event on the database.
     `id` is the value of the primary key of the changed document.
+    It must be a str, other types raise an EventReduceError with the code ID_NOT_STRING.
     `doc` is the document after the write (None on deletes),
     `previous` the document before the write (None on inserts).
     """
@@ -27,6 +28,11 @@ class ChangeEvent(Generic[D]):
     id: str
     doc: D | None
     previous: D | None
+
+    def __post_init__(self) -> None:
+        # document ids must be strings in all implementations, numbers are not allowed
+        if not isinstance(self.id, str):
+            raise EventReduceError("ID_NOT_STRING")
 
     @staticmethod
     def insert(id: str, doc: D) -> ChangeEvent[D]:
