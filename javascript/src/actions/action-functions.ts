@@ -3,7 +3,7 @@ import {
 } from 'array-push-at-sort-position';
 
 import type { ActionFunction, ActionFunctionInput } from '../types/index.js';
-import { getDocumentId, indexOfDocumentId } from '../util.js';
+import { compareDocuments, getDocumentId, indexOfDocumentId } from '../util.js';
 
 /**
  * Returns the index of the changed document inside of the previous results
@@ -166,7 +166,8 @@ export const insertAtSortPosition: ActionFunction<any> = (input) => {
     pushAtSortPosition(
         input.previousResults,
         doc,
-        input.queryParams.sortComparator,
+        // throws if the comparator returns 0, the document is never one of the results here
+        (a, b) => compareDocuments(input.queryParams, a, b),
         0
     );
 };

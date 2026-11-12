@@ -1,5 +1,5 @@
 import type { StateResolveFunction } from '../types/index.js';
-import { getDocumentId, getProperty, indexOfDocumentId } from '../util.js';
+import { compareDocuments, getDocumentId, getProperty, indexOfDocumentId } from '../util.js';
 
 export const hasLimit: StateResolveFunction<any> = (input) => !!input.queryParams.limit;
 
@@ -86,7 +86,7 @@ export const wasSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         return true;
     }
 
-    return input.queryParams.sortComparator(prev, first) < 0;
+    return compareDocuments(input.queryParams, prev, first) < 0;
 };
 
 export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
@@ -105,7 +105,7 @@ export const wasSortedAfterLast: StateResolveFunction<any> = (input) => {
         return true;
     }
 
-    return input.queryParams.sortComparator(prev, last) > 0;
+    return compareDocuments(input.queryParams, prev, last) > 0;
 };
 
 export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
@@ -133,7 +133,7 @@ export const isSortedBeforeFirst: StateResolveFunction<any> = (input) => {
         }
     }
 
-    return input.queryParams.sortComparator(doc, first) < 0;
+    return compareDocuments(input.queryParams, doc, first) < 0;
 };
 
 export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
@@ -161,7 +161,7 @@ export const isSortedAfterLast: StateResolveFunction<any> = (input) => {
         }
     }
 
-    return input.queryParams.sortComparator(doc, last) > 0;
+    return compareDocuments(input.queryParams, doc, last) > 0;
 };
 
 

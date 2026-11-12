@@ -209,6 +209,7 @@ To keep the bundle small, errors only contain a short code:
 | `EventReduce:RUN_FULL` | The `runFullQueryAgain` action was called. You have to re-run the query yourself. |
 | `EventReduce:UNK_ACT` | The `unknownAction` action was called, or `runAction()` was called with `alwaysWrong` or with a name that is not an action. This should never happen. |
 | `EventReduce:NEG_LIMIT` | The `limit` of the `QueryParams` is negative. A limit of `0` is allowed, the query then returns no documents and the action is always `doNothing`. |
+| `EventReduce:CMP_ZERO` | The `sortComparator` returned `0` for two different documents. It must break ties itself, in the same way as the database, for example with the primary key as the last sort field. |
 | `EventReduce:RWB_SIZE` | `createResultWindowBuffer()` got a buffer size that is negative or not a number, like `NaN`. |
 | `EventReduce:RWB_OUTDATED` | `getResultWindowBufferResults()` was called while the result window is not in the buffer: before `resetResultWindowBuffer()`, or after `applyChangeEventToResultWindowBuffer()` returned `'runFullQueryAgain'` and the query did not run again. |
 | `EventReduce:UNK_STATE` | `resolveState()` was called with an unknown state name. |
