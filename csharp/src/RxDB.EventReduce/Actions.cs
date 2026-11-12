@@ -60,16 +60,13 @@ namespace RxDB.EventReduce
         internal static void Run<TDoc>(ActionName action, StateResolveFunctionInput<TDoc> input) =>
             GetActionFunction<TDoc>(action)(input);
 
-        /// <summary>Returns the index of the changed document inside of the previous results or -1.</summary>
-        private static int FindIndexOfChangedDoc<TDoc>(StateResolveFunctionInput<TDoc> input)
-        {
-            var id = input.ChangeEvent.Id;
-            if (input.KeyDocumentMap != null && !input.KeyDocumentMap.ContainsKey(id))
-            {
-                return -1;
-            }
-            return Util.IndexOfDocumentId(input.QueryParams, input.PreviousResults, id);
-        }
+        /// <summary>
+        /// Returns the index of the changed document inside of the previous results or -1.
+        /// The results are always searched, also when the key document map does not have the id:
+        /// like in the JavaScript implementation, the results are what counts when the map is out of sync.
+        /// </summary>
+        private static int FindIndexOfChangedDoc<TDoc>(StateResolveFunctionInput<TDoc> input) =>
+            Util.IndexOfDocumentId(input.QueryParams, input.PreviousResults, input.ChangeEvent.Id);
 
         /// <summary>
         /// The new document of the change event.

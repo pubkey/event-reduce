@@ -35,15 +35,13 @@ public fun <D> actionFunction(action: ActionName): ActionFunction<D> =
         ActionName.UnknownAction -> ::unknownAction
     }
 
-/** Returns the index of the changed document inside of the previous results or -1. */
-private fun <D> findIndexOfChangedDoc(input: ActionFunctionInput<D>): Int {
-    val id = input.changeEvent.id
-    val map = input.keyDocumentMap
-    if (map != null && !map.containsKey(id)) {
-        return -1
-    }
-    return indexOfDocumentId(input.queryParams, input.previousResults, id)
-}
+/**
+ * Returns the index of the changed document inside of the previous results or -1.
+ * The results are always searched, also when the key document map does not have the id:
+ * like in the JavaScript implementation, the results are what counts when the map is out of sync.
+ */
+private fun <D> findIndexOfChangedDoc(input: ActionFunctionInput<D>): Int =
+    indexOfDocumentId(input.queryParams, input.previousResults, input.changeEvent.id)
 
 /**
  * The new document of the change event.

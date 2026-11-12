@@ -37,17 +37,14 @@ public func actionFunction<D>(_ action: ActionName) -> ActionFunction<D> {
 }
 
 /// Returns the index of the changed document inside of the previous results.
+/// The results are always searched, also when the key document map does not have the id:
+/// like in the JavaScript implementation, the results are what counts when the map is out of sync.
 private func findIndexOfChangedDoc<D>(
     _ queryParams: QueryParams<D>,
     _ changeEvent: ChangeEvent<D>,
-    _ results: [D],
-    _ map: ResultKeyDocumentMap<D>?
+    _ results: [D]
 ) -> Int? {
-    let id = changeEvent.id
-    if let map = map, map[id] == nil {
-        return nil
-    }
-    return indexOfDocumentId(queryParams, results, id)
+    indexOfDocumentId(queryParams, results, changeEvent.id)
 }
 
 /// The new document of the change event.
@@ -133,7 +130,7 @@ public func removeExisting<D>(
     _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
     _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
 ) throws {
-    let index = findIndexOfChangedDoc(queryParams, changeEvent, results, map)
+    let index = findIndexOfChangedDoc(queryParams, changeEvent, results)
     map?.removeValue(forKey: changeEvent.id)
     if let index = index {
         results.remove(at: index)
@@ -144,7 +141,7 @@ public func replaceExisting<D>(
     _ queryParams: QueryParams<D>, _ changeEvent: ChangeEvent<D>,
     _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
 ) throws {
-    guard let index = findIndexOfChangedDoc(queryParams, changeEvent, results, map) else { return }
+    guard let index = findIndexOfChangedDoc(queryParams, changeEvent, results) else { return }
     let doc = try changedDoc(changeEvent)
     results[index] = doc
     map?[changeEvent.id] = doc

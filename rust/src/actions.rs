@@ -57,14 +57,14 @@ pub fn action_function<D: Clone, K: Eq + Hash + Clone>(action: ActionName) -> Ac
 }
 
 /// Returns the index of the changed document inside of the previous results.
+/// The results are always searched, also when the key document map does not have the id:
+/// like in the JavaScript implementation, the results are what counts when the map is out of sync.
 fn find_index_of_changed_doc<D, K: Eq + Hash>(input: &ActionFunctionInput<D, K>) -> Option<usize> {
-    let id = input.change_event.id();
-    if let Some(map) = input.key_document_map.as_deref() {
-        if !map.contains_key(id) {
-            return None;
-        }
-    }
-    index_of_document_id(input.query_params, input.previous_results, id)
+    index_of_document_id(
+        input.query_params,
+        input.previous_results,
+        input.change_event.id(),
+    )
 }
 
 /// The new document of the change event.
