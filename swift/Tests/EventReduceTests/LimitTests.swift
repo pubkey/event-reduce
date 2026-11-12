@@ -6,7 +6,7 @@ private struct Row: Equatable {
     let age: Int
 }
 
-/// Like in SQL, a query with limit 0 returns no documents. A negative limit is an error.
+/// Like in SQL, a query with limit 0 returns no documents. A negative limit throws.
 final class LimitTests: XCTestCase {
     private func queryParams(limit: Int?, skip: Int? = nil) -> QueryParams<Row> {
         QueryParams<Row>(
@@ -25,25 +25,33 @@ final class LimitTests: XCTestCase {
         .delete(id: "a", previous: Row(id: "a", age: 1)),
     ]
 
-    private func calculate(_ queryParams: QueryParams<Row>, _ event: ChangeEvent<Row>) -> ActionName {
-        calculateActionName(
+    private func calculate(_ queryParams: QueryParams<Row>, _ event: ChangeEvent<Row>) throws -> ActionName {
+        try calculateActionName(
             StateResolveFunctionInput(queryParams: queryParams, changeEvent: event, previousResults: []))
     }
 
-    func testLimitZeroIsAlwaysDoNothing() {
+    func testLimitZeroIsAlwaysDoNothing() throws {
         for skip in [nil, 0, 3] as [Int?] {
             for event in events {
-                XCTAssertEqual(calculate(queryParams(limit: 0, skip: skip), event), .doNothing)
+                XCTAssertEqual(try calculate(queryParams(limit: 0, skip: skip), event), .doNothing)
             }
         }
     }
 
-    func testOtherLimitsAreNotChanged() {
-        XCTAssertEqual(calculate(queryParams(limit: 1), events[0]), .insertFirst)
-        XCTAssertEqual(calculate(queryParams(limit: nil), events[0]), .insertFirst)
+    func testOtherLimitsAreNotChanged() throws {
+        XCTAssertEqual(try calculate(queryParams(limit: 1), events[0]), .insertFirst)
+        XCTAssertEqual(try calculate(queryParams(limit: nil), events[0]), .insertFirst)
     }
 
-    func testNegativeLimitThrowsForAResultWindowBuffer() throws {
+    func testNegativeLimitThrows() throws {
+        let input = StateResolveFunctionInput(
+            queryParams: queryParams(limit: -1), changeEvent: events[0], previousResults: [])
+        XCTAssertThrowsError(try calculateActionName(input)) { error in
+            XCTAssertEqual(error as? EventReduceError, .negativeLimit)
+        }
+        XCTAssertThrowsError(try resolveInput(input)) { error in
+            XCTAssertEqual(error as? EventReduceError, .negativeLimit)
+        }
         XCTAssertThrowsError(try createResultWindowBuffer(queryParams(limit: -1))) { error in
             XCTAssertEqual(error as? EventReduceError, .negativeLimit)
             XCTAssertEqual((error as? EventReduceError)?.code, "NEG_LIMIT")

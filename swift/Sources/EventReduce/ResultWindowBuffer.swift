@@ -210,10 +210,12 @@ public func applyChangeEventToResultWindowBuffer<D>(
     var bufferQueryParams = queryParams
     bufferQueryParams.skip = resultWindowBuffer.offset > 0 ? resultWindowBuffer.offset : nil
     bufferQueryParams.limit = resultWindowBuffer.buffer.count + (resultWindowBuffer.complete ? 1 : 0)
-    let action = calculateActionName(
-        StateResolveFunctionInput(
-            queryParams: bufferQueryParams, changeEvent: changeEvent,
-            previousResults: resultWindowBuffer.buffer, keyDocumentMap: resultWindowBuffer.map))
+    // the limit of this input is at least 1, so the BDD can be walked directly
+    let action = orderedActionList[
+        resolveBdd(
+            StateResolveFunctionInput(
+                queryParams: bufferQueryParams, changeEvent: changeEvent,
+                previousResults: resultWindowBuffer.buffer, keyDocumentMap: resultWindowBuffer.map))]
     let result: ResultWindowBufferResult
     if action == .runFullQueryAgain || actionsThatDropARow.contains(action) {
         // 2. EventReduce needs a row before or after the buffer, which it does not know,

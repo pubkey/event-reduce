@@ -31,11 +31,11 @@ func TestLimitZeroIsAlwaysDoNothing(t *testing.T) {
 		eventreduce.DeleteEvent("a", a),
 	}
 	for _, event := range events {
-		action := eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[doc]{
+		action, err := eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[doc]{
 			QueryParams: limitQueryParams(0), ChangeEvent: event, PreviousResults: []doc{},
 		})
-		if action != eventreduce.DoNothing {
-			t.Errorf("%v: got %v, want doNothing", event.Operation, action)
+		if err != nil || action != eventreduce.DoNothing {
+			t.Errorf("%v: got %v %v, want doNothing", event.Operation, action, err)
 		}
 	}
 }
@@ -48,13 +48,14 @@ func TestNegativeLimit(t *testing.T) {
 		t.Errorf("NewResultWindowBuffer with limit 0: got %v", err)
 	}
 
-	defer func() {
-		if recovered := recover(); recovered != eventreduce.ErrNegativeLimit {
-			t.Errorf("CalculateActionName: recovered %v, want ErrNegativeLimit", recovered)
-		}
-	}()
-	eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[doc]{
+	input := &eventreduce.StateResolveFunctionInput[doc]{
 		QueryParams: limitQueryParams(-1), ChangeEvent: eventreduce.InsertEvent("a", doc{ID: "a"}), PreviousResults: []doc{},
-	})
-	t.Error("CalculateActionName did not panic")
+	}
+	// never an action that could be applied by mistake
+	if action, err := eventreduce.CalculateActionName(input); !errors.Is(err, eventreduce.ErrNegativeLimit) || action != eventreduce.UnknownAction {
+		t.Errorf("CalculateActionName: got %v %v, want unknownAction and ErrNegativeLimit", action, err)
+	}
+	if _, err := eventreduce.ResolveInput(input); !errors.Is(err, eventreduce.ErrNegativeLimit) {
+		t.Errorf("ResolveInput: got %v, want ErrNegativeLimit", err)
+	}
 }

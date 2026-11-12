@@ -48,7 +48,8 @@ var results = [User(id: "a", age: 20), User(id: "b", age: 30)]
 // a change event from the change stream of your database
 let changeEvent = ChangeEvent<User>.insert(id: "c", doc: User(id: "c", age: 25))
 
-let action = calculateActionName(
+// throws EventReduceError.negativeLimit if the limit of the query is negative
+let action = try calculateActionName(
     StateResolveFunctionInput(queryParams: queryParams, changeEvent: changeEvent, previousResults: results))
 if action == .runFullQueryAgain {
     results = try await runQueryOnDatabase()  // EventReduce could not optimize this event

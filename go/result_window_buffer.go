@@ -198,7 +198,8 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvent(changeEvent ChangeEvent[D]) Res
 		PreviousResults: b.Buffer,
 		KeyDocumentMap:  b.KeyDocumentMap,
 	}
-	action := CalculateActionName(input)
+	// the limit of the input is at least 1, so the BDD can be walked directly
+	action := OrderedActionList[resolveBdd(input)]
 	var result ResultWindowBufferResult
 	if action == RunFullQueryAgain || dropsARow(action) {
 		// 2. EventReduce needs a row before or after the buffer, which it does not know,

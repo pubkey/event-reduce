@@ -45,11 +45,14 @@ results := []User{{ID: "a", Age: 20}, {ID: "b", Age: 30}}
 // a change event from the change stream of your database
 changeEvent := eventreduce.InsertEvent("c", User{ID: "c", Age: 25})
 
-action := eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[User]{
+action, err := eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[User]{
 	QueryParams:     queryParams,
 	ChangeEvent:     changeEvent,
 	PreviousResults: results,
 })
+if err != nil {
+	panic(err) // ErrNegativeLimit: the limit of the query is negative
+}
 if action == eventreduce.RunFullQueryAgain {
 	results = runQueryOnDatabase() // EventReduce could not optimize this event
 } else {

@@ -14,16 +14,23 @@ package eventreduce
 // doNothingActionIndex is the index of DoNothing in OrderedActionList.
 const doNothingActionIndex = 0
 
-// ResolveInput walks the BDD and returns the index of the action in OrderedActionList.
+// ResolveInput returns the index of the action in OrderedActionList.
 // Like in SQL, a query with limit 0 returns no documents: no change event can change
-// its empty results, so the action is always DoNothing. Panics with ErrNegativeLimit for a negative limit.
-func ResolveInput[D any](input *StateResolveFunctionInput[D]) int {
+// its empty results, so the action is always DoNothing.
+// Returns ErrNegativeLimit for a negative limit.
+func ResolveInput[D any](input *StateResolveFunctionInput[D]) (int, error) {
 	if limit := input.QueryParams.Limit; limit != nil && *limit <= 0 {
 		if *limit < 0 {
-			panic(ErrNegativeLimit)
+			return 0, ErrNegativeLimit
 		}
-		return doNothingActionIndex
+		return doNothingActionIndex, nil
 	}
+	return resolveBdd(input), nil
+}
+
+// resolveBdd walks the BDD and returns the index of the action in OrderedActionList.
+// The limit of the query must be positive or not set.
+func resolveBdd[D any](input *StateResolveFunctionInput[D]) int {
 	bdd := PackedBdd
 	n := len(bdd) / 3
 	i := 0
