@@ -15,7 +15,7 @@
 //! Only if the buffer is empty, `offset` can be larger than the real number of rows.
 
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::ops::RangeBounds;
 
@@ -310,12 +310,26 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
                 return ResultWindowBufferChangeResult::RunFullQueryAgain;
             }
         }
-        match self.results() {
-            Ok(results) => ResultWindowBufferChangeResult::Results {
-                changed: results != previous_results.as_slice(),
-                results: results.to_vec(),
-            },
-            Err(_) => ResultWindowBufferChangeResult::RunFullQueryAgain,
+        let results = match self.results() {
+            Ok(results) => results,
+            Err(_) => return ResultWindowBufferChangeResult::RunFullQueryAgain,
+        };
+        // The ids of the rows are compared, and the rows that a change event was about are
+        // compared with ==. A row that no change event was about is not compared: it cannot
+        // have changed, also when it is not equal to itself, like a row with a NaN value.
+        let changed_ids: HashSet<&K> = change_events.iter().map(|event| event.id()).collect();
+        let get_id = self.query_params.get_document_id;
+        let changed = results.len() != previous_results.len()
+            || results
+                .iter()
+                .zip(&previous_results)
+                .any(|(row, previous)| {
+                    let id = get_id(row);
+                    id != get_id(previous) || (changed_ids.contains(id) && row != previous)
+                });
+        ResultWindowBufferChangeResult::Results {
+            changed,
+            results: results.to_vec(),
         }
     }
 
