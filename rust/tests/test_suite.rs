@@ -258,3 +258,61 @@ fn recommended_result_window_buffer_size() {
         );
     }
 }
+
+/// A limit of usize::MAX, like when it is used for "no limit", must not overflow.
+fn huge_limit_buffer(
+    skip: Option<usize>,
+    sizes: ResultWindowBufferSizes,
+) -> ResultWindowBuffer<Doc, String> {
+    let mut query = json!({ "minAge": 0, "limit": null });
+    query["skip"] = json!(skip);
+    let mut params = query_params(&query);
+    params.limit = Some(usize::MAX);
+    ResultWindowBuffer::new(params, sizes)
+}
+
+fn row(id: &str) -> Doc {
+    Doc {
+        id: id.to_string(),
+        age: 1,
+        name: String::new(),
+    }
+}
+
+#[test]
+fn huge_limit_with_limit_buffer() {
+    let mut buffer = huge_limit_buffer(
+        None,
+        ResultWindowBufferSizes {
+            limit_buffer_size: 1,
+            skip_buffer_size: 0,
+        },
+    );
+    // more rows than an usize can count means that all rows are needed
+    let query = buffer.query();
+    assert_eq!((query.skip, query.limit), (0, None));
+    buffer.reset(vec![row("a")]);
+    assert!(buffer.is_complete());
+    assert_eq!(ids(buffer.results().unwrap()), json!(["a"]));
+}
+
+#[test]
+fn huge_limit_with_skip_buffer() {
+    let mut buffer = huge_limit_buffer(
+        Some(1),
+        ResultWindowBufferSizes {
+            limit_buffer_size: 0,
+            skip_buffer_size: 1,
+        },
+    );
+    let query = buffer.query();
+    assert_eq!((query.skip, query.limit), (0, None));
+    buffer.reset(vec![row("a"), row("b")]);
+    let result = buffer.apply_change_event(&ChangeEvent::Insert {
+        id: "c".to_string(),
+        doc: row("c"),
+    });
+    assert_eq!(result, ResultWindowBufferResult::EventReduce);
+    assert_eq!(ids(buffer.buffer()), json!(["a", "b", "c"]));
+    assert_eq!(ids(buffer.results().unwrap()), json!(["b", "c"]));
+}
