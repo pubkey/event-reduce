@@ -451,26 +451,19 @@ function applySliceRule<DocType>(
 /**
  * Compares two rows with the sort comparator of the query.
  * Returns 0 only for two versions of the same row that sort at the same position.
- * For different rows that the comparator sees as equal,
- * the primary key decides, so that the order is always deterministic.
+ * For two different rows it returns what the comparator returns: the comparator
+ * is not allowed to return 0 for them, it must break ties itself, for example by the primary key.
  */
 function compareRows<DocType>(queryParams: QueryParams<DocType>, a: DocType, b: DocType): number {
-    const idA = getDocumentId(queryParams, a);
-    const idB = getDocumentId(queryParams, b);
-    // typed as 1 | -1, but comparators like the one of minimongo also return 0 for ties
     const result: number = queryParams.sortComparator(a, b);
-    if (idA === idB) {
+    if (getDocumentId(queryParams, a) === getDocumentId(queryParams, b)) {
         // A deterministic comparator breaks ties by the primary key,
         // which gives the same answer for both directions when the sort values are equal.
         if (result === 0 || result === queryParams.sortComparator(b, a)) {
             return 0;
         }
-        return result;
     }
-    if (result !== 0) {
-        return result;
-    }
-    return idA < idB ? -1 : 1;
+    return result;
 }
 
 function insertAtSortPosition<DocType>(resultWindowBuffer: ResultWindowBuffer<DocType>, doc: DocType): void {

@@ -79,7 +79,9 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
         limit: query.limit ? query.limit : undefined,
         // a function that returns true if the given document matches the query's selector
         queryMatcher: compileDocumentSelector(query.selector),
-        // a function that can be used as comparator in Array.sort() (returns 1 or -1)
+        // a function that can be used as comparator in Array.sort().
+        // It is not allowed to return 0 for two different documents,
+        // so the sort must end with the primary key, like in the query below.
         sortComparator: compileSort(sort)
     };
 }

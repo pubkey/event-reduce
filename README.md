@@ -138,6 +138,7 @@ Before, RxDB used its own `QueryChangeDetection`, which was made of many handwri
 ## Limitations
 
 - EventReduce only works with queries that have a [predictable](https://stackoverflow.com/a/11599283) sort-order for any given documents. (you can make any query predicable by adding the primary key as last sort parameter)
+- The sort comparator is not allowed to return `0` for two different documents. It must break ties itself, in the same way as the database does, for example with the primary key as the last sort field.
 
 - EventReduce can be used with relational databases but not on relational queries that run over multiple tables/collections. (you can use views as workarround so that you can query over only one table). In theory Event-Reduce could also be used for relational queries but I did not need this for now. Also the fuzzing that ensures the correctness of the truth table runs for a long time, and having more state functions looks like an NP problem.
 
