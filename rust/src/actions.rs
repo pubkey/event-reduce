@@ -67,6 +67,17 @@ fn find_index_of_changed_doc<D, K: Eq + Hash>(input: &ActionFunctionInput<D, K>)
     )
 }
 
+/// Fails if the change event has no new document.
+/// The actions that remove a document and then insert the new one call this first,
+/// so that the results are not changed when the action does not fit the change event.
+fn ensure_changed_doc<D, K>(input: &ActionFunctionInput<D, K>) -> Result<(), EventReduceError> {
+    input
+        .change_event
+        .doc()
+        .map(|_| ())
+        .ok_or(EventReduceError::UnknownAction)
+}
+
 /// The new document of the change event.
 /// Only the BDD knows that it exists for the given action,
 /// so a missing document is reported as an unknown action.
@@ -131,6 +142,7 @@ pub fn remove_last_item<D, K: Eq + Hash>(
 pub fn remove_first_insert_last<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
+    ensure_changed_doc(input)?;
     remove_first_item(input)?;
     insert_last(input)
 }
@@ -138,6 +150,7 @@ pub fn remove_first_insert_last<D: Clone, K: Eq + Hash + Clone>(
 pub fn remove_last_insert_first<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
+    ensure_changed_doc(input)?;
     remove_last_item(input)?;
     insert_first(input)
 }
@@ -145,6 +158,7 @@ pub fn remove_last_insert_first<D: Clone, K: Eq + Hash + Clone>(
 pub fn remove_first_insert_first<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
+    ensure_changed_doc(input)?;
     remove_first_item(input)?;
     insert_first(input)
 }
@@ -152,6 +166,7 @@ pub fn remove_first_insert_first<D: Clone, K: Eq + Hash + Clone>(
 pub fn remove_last_insert_last<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
+    ensure_changed_doc(input)?;
     remove_last_item(input)?;
     insert_last(input)
 }
@@ -208,6 +223,7 @@ pub fn insert_at_sort_position<D: Clone, K: Eq + Hash + Clone>(
 pub fn remove_existing_and_insert_at_sort_position<D: Clone, K: Eq + Hash + Clone>(
     input: &mut ActionFunctionInput<D, K>,
 ) -> Result<(), EventReduceError> {
+    ensure_changed_doc(input)?;
     remove_existing(input)?;
     insert_at_sort_position(input)
 }

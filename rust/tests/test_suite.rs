@@ -372,3 +372,43 @@ fn key_document_map_without_the_changed_document() {
     assert_eq!(map.len(), 2);
     assert_eq!(map.get("a"), Some(&moved));
 }
+
+/// An action that does not fit the change event returns an error
+/// and must not change the results or the key document map, as run_action() documents.
+#[test]
+fn failed_action_does_not_change_the_results() {
+    let params = query_params(&json!({ "minAge": 0, "skip": null, "limit": null }));
+    let row = |id: &str, age: i64| Doc {
+        id: id.to_string(),
+        age,
+        name: String::new(),
+    };
+    let before = vec![row("a", 1), row("b", 2)];
+    // a delete event has no new document, so nothing can be inserted
+    let event = ChangeEvent::Delete {
+        id: "z".to_string(),
+        previous: row("z", 9),
+    };
+    for action in [
+        ActionName::InsertFirst,
+        ActionName::InsertLast,
+        ActionName::RemoveFirstInsertLast,
+        ActionName::RemoveLastInsertFirst,
+        ActionName::RemoveFirstInsertFirst,
+        ActionName::RemoveLastInsertLast,
+        ActionName::InsertAtSortPosition,
+        ActionName::RemoveExistingAndInsertAtSortPosition,
+        ActionName::InsertAtSortPositionRemoveLast,
+        ActionName::InsertAtSortPositionRemoveFirst,
+        ActionName::RunFullQueryAgain,
+        ActionName::UnknownAction,
+    ] {
+        let mut results = before.clone();
+        let mut map: ResultKeyDocumentMap<Doc, String> =
+            before.iter().map(|d| (d.id.clone(), d.clone())).collect();
+        let result = run_action(action, &params, &event, &mut results, Some(&mut map));
+        assert!(result.is_err(), "{}", action.as_str());
+        assert_eq!(results, before, "results after {}", action.as_str());
+        assert_eq!(map.len(), 2, "map after {}", action.as_str());
+    }
+}
