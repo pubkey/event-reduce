@@ -18,7 +18,7 @@ import {
     removeLastItem,
     runFullQueryAgain
 } from './actions/action-functions.js';
-import { ensureStringIds, getDocumentId } from './util.js';
+import { getDocumentId } from './util.js';
 
 /**
  * Result window buffer
@@ -210,7 +210,6 @@ export function resetResultWindowBuffer<DocType>(
     resultWindowBuffer: ResultWindowBuffer<DocType>,
     rows: DocType[]
 ): void {
-    ensureStringIds(resultWindowBuffer.queryParams, '', rows);
     const query = getBufferSkipAndLimit(resultWindowBuffer);
     resultWindowBuffer.buffer = rows.slice(0);
     resultWindowBuffer.keyDocumentMap.clear();
@@ -245,7 +244,6 @@ export function applyChangeEventToResultWindowBuffer<DocType>(
     changeEvent: ChangeEvent<DocType>
 ): ResultWindowBufferResult {
     const buffer = resultWindowBuffer.buffer;
-    ensureStringIds(resultWindowBuffer.queryParams, changeEvent.id, buffer);
     if (resultWindowBuffer.queryParams.limit === 0) {
         // the result of a query with limit 0 is always empty, nothing can change it
         return 'eventReduce';

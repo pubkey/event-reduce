@@ -5,7 +5,7 @@ import type {
 export interface ChangeEventBase {
     operation: WriteOperation;
     /**
-     * document id, must be a string, numbers are not allowed,
+     * document id,
      * value of the primary key.
      */
     id: string;
