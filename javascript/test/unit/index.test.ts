@@ -8,6 +8,7 @@ import './array-index-sort.test.js';
 import './get-document-id.test.js';
 import './is-object.test.js';
 import './binary-state.test.js';
+import './shuffle-array.test.js';
 import './queries.test.js';
 import './sort-fields.test.js';
 import './fuzzing.test.js';
