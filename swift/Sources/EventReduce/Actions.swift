@@ -44,7 +44,7 @@ private func findIndexOfChangedDoc<D>(
     _ map: ResultKeyDocumentMap<D>?
 ) -> Int? {
     let id = changeEvent.id
-    if let map = map, map[id] == nil {
+    if let map = map, map[DocumentId(id)] == nil {
         return nil
     }
     return indexOfDocumentId(queryParams, results, id)
@@ -68,7 +68,7 @@ public func insertFirst<D>(
 ) throws {
     let doc = try changedDoc(changeEvent)
     results.insert(doc, at: 0)
-    map?[changeEvent.id] = doc
+    map?[DocumentId(changeEvent.id)] = doc
 }
 
 public func insertLast<D>(
@@ -77,7 +77,7 @@ public func insertLast<D>(
 ) throws {
     let doc = try changedDoc(changeEvent)
     results.append(doc)
-    map?[changeEvent.id] = doc
+    map?[DocumentId(changeEvent.id)] = doc
 }
 
 public func removeFirstItem<D>(
@@ -86,7 +86,7 @@ public func removeFirstItem<D>(
 ) throws {
     guard !results.isEmpty else { return }
     let first = results.removeFirst()
-    map?.removeValue(forKey: queryParams.getDocumentId(first))
+    map?.removeValue(forKey: DocumentId(queryParams.getDocumentId(first)))
 }
 
 public func removeLastItem<D>(
@@ -94,7 +94,7 @@ public func removeLastItem<D>(
     _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
 ) throws {
     guard let last = results.popLast() else { return }
-    map?.removeValue(forKey: queryParams.getDocumentId(last))
+    map?.removeValue(forKey: DocumentId(queryParams.getDocumentId(last)))
 }
 
 public func removeFirstInsertLast<D>(
@@ -134,7 +134,7 @@ public func removeExisting<D>(
     _ results: inout [D], _ map: inout ResultKeyDocumentMap<D>?
 ) throws {
     let index = findIndexOfChangedDoc(queryParams, changeEvent, results, map)
-    map?.removeValue(forKey: changeEvent.id)
+    map?.removeValue(forKey: DocumentId(changeEvent.id))
     if let index = index {
         results.remove(at: index)
     }
@@ -147,7 +147,7 @@ public func replaceExisting<D>(
     guard let index = findIndexOfChangedDoc(queryParams, changeEvent, results, map) else { return }
     let doc = try changedDoc(changeEvent)
     results[index] = doc
-    map?[changeEvent.id] = doc
+    map?[DocumentId(changeEvent.id)] = doc
 }
 
 public func insertAtSortPosition<D>(
@@ -160,14 +160,14 @@ public func insertAtSortPosition<D>(
     // we cannot add it again because it would throw on non-deterministic ordering.
     let isDocInResults: Bool
     if let map = map {
-        isDocInResults = map[id] != nil
+        isDocInResults = map[DocumentId(id)] != nil
     } else {
         isDocInResults = indexOfDocumentId(queryParams, results, id) != nil
     }
     if isDocInResults {
         return
     }
-    map?[id] = doc
+    map?[DocumentId(id)] = doc
     pushAtSortPosition(&results, doc, by: queryParams.areInIncreasingOrder)
 }
 

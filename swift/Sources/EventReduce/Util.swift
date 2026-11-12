@@ -2,7 +2,7 @@
 /// or nil if it is not in the given documents.
 public func indexOfDocumentId<D>(_ queryParams: QueryParams<D>, _ docs: [D], _ id: String) -> Int? {
     let getId = queryParams.getDocumentId
-    return docs.firstIndex { getId($0) == id }
+    return docs.firstIndex { isSameDocumentId(getId($0), id) }
 }
 
 /// Inserts the item at its sort position, which is much faster than re-sorting the array.
