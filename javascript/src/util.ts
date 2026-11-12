@@ -119,7 +119,7 @@ export function roundToTwoDecimals(num: number): number {
 }
 
 
-export function isObject(value: null) {
+export function isObject(value: unknown): value is object {
     const type = typeof value;
     return value !== null && (type === 'object' || type === 'function');
 }
