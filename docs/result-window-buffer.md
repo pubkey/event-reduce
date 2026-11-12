@@ -108,8 +108,9 @@ So you can use the result window buffer for every query instead of plain EventRe
 
 ### Requirements
 
-- The sort order must be deterministic. Rows with the same sort values must be ordered by the primary key.
-  The result window buffer breaks ties with the primary key when the comparator returns `0`, and the database must sort the same way.
+- The sort order must be deterministic. Rows with the same sort values must be ordered by the primary key,
+  by the comparator and by the database in the same way.
+  The comparator is not allowed to return `0` for two different rows, the result window buffer does not break ties for it.
 - Every write must reach the buffer as a change event, in order, with `previous` set for updates and deletes.
   These are the same requirements as for EventReduce itself.
 

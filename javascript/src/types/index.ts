@@ -75,10 +75,12 @@ export interface QueryParams<DocType> {
 export type QueryMatcher<DocType> = (doc: DocType) => boolean;
 
 /**
- * To have a deterministic sorting, we cannot return 0,
- * we only return 1 or -1.
- * This ensures that we always end with the same output array, no mather of the
- * pre-sorting of the input array.
+ * The comparator is not allowed to return 0 for two different documents,
+ * it must return a negative or a positive number, also when the sort values are equal.
+ * Break ties yourself, for example with the primary key as the last sort field.
+ * This ensures that we always end with the same output array, no matter of the
+ * pre-sorting of the input array, and that EventReduce sorts like the database.
+ * A comparator that returns 0 for a tie gives wrong results.
  */
 export type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;
 
