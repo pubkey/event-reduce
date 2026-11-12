@@ -115,11 +115,11 @@ public func createResultWindowBuffer<D>(
     limitBufferSize: Int = 0,
     skipBufferSize: Int = 0
 ) throws -> ResultWindowBuffer<D> {
-    guard limitBufferSize >= 0, skipBufferSize >= 0 else {
-        throw EventReduceError.invalidResultWindowBufferSize
-    }
     if let limit = queryParams.limit, limit < 0 {
         throw EventReduceError.negativeLimit
+    }
+    guard limitBufferSize >= 0, skipBufferSize >= 0 else {
+        throw EventReduceError.invalidResultWindowBufferSize
     }
     // with limit 0 the result is always empty, so no rows are kept
     let isEmptyQuery = queryParams.limit == 0

@@ -58,4 +58,13 @@ final class LimitTests: XCTestCase {
         }
         _ = try createResultWindowBuffer(queryParams(limit: 0))
     }
+
+    func testNegativeLimitIsCheckedBeforeTheSizes() throws {
+        XCTAssertEqual(getRecommendedResultWindowBufferSize(-1), 0)
+        XCTAssertThrowsError(
+            try createResultWindowBuffer(queryParams(limit: -1), limitBufferSize: -1, skipBufferSize: -1)
+        ) { error in
+            XCTAssertEqual(error as? EventReduceError, .negativeLimit)
+        }
+    }
 }

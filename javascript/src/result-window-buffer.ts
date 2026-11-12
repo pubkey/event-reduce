@@ -115,10 +115,11 @@ const ACTIONS_THAT_DROP_A_ROW: Set<ActionFunction<any>> = new Set([
  * The recommended buffer size for each side of the result window.
  * About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
  * Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+ * Also returns 0 for a limit that is not valid, like a negative one: creating the buffer throws for it.
  * @param limit the limit of the query that is shown to the user
  */
 export function getRecommendedResultWindowBufferSize(limit?: number): number {
-    if (!limit) {
+    if (!limit || !(limit > 0)) {
         return 0;
     }
     return Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2)));

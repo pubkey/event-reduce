@@ -108,9 +108,10 @@ private val ACTIONS_THAT_DROP_A_ROW: Set<ActionName> = setOf(
  * The recommended buffer size for each side of the result window.
  * About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
  * Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+ * Also returns 0 for a negative limit: [createResultWindowBuffer] throws for it.
  */
 public fun getRecommendedResultWindowBufferSize(limit: Int?): Int {
-    if (limit == null || limit == 0) {
+    if (limit == null || limit <= 0) {
         return 0
     }
     val ratio = 400.0 / limit
@@ -124,19 +125,19 @@ public fun getRecommendedResultWindowBufferSize(limit: Int?): Int {
  * and pass the rows to resetResultWindowBuffer() before using it.
  * [queryParams] has the skip and limit that are shown to the user.
  * [RESULT_WINDOW_BUFFER_ALL_ROWS] keeps all rows on that side.
- * Throws on negative sizes.
+ * Throws on negative sizes and on a negative limit.
  */
 public fun <D> createResultWindowBuffer(
     queryParams: QueryParams<D>,
     limitBufferSize: Int = 0,
     skipBufferSize: Int = 0,
 ): ResultWindowBuffer<D> {
-    if (limitBufferSize < 0 || skipBufferSize < 0) {
-        throw EventReduceException("RWB_SIZE")
-    }
     val limit = queryParams.limit
     if (limit != null && limit < 0) {
         throw EventReduceException("NEG_LIMIT")
+    }
+    if (limitBufferSize < 0 || skipBufferSize < 0) {
+        throw EventReduceException("RWB_SIZE")
     }
     // with limit 0 the result is always empty, so no rows are kept
     val isEmptyQuery = queryParams.limit == 0

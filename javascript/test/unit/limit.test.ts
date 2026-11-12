@@ -5,6 +5,7 @@ import {
     calculateActionName,
     createResultWindowBuffer,
     doNothing,
+    getRecommendedResultWindowBufferSize,
     runAction
 } from '../../src/index.js';
 import type { ChangeEvent, QueryParams, StateResolveFunctionInput } from '../../src/types/index.js';
@@ -84,6 +85,16 @@ describe('limit.test.ts', () => {
                 assert.throws(() => calculateActionFromMap(new Map(), input), expected);
                 assert.throws(() => createResultWindowBuffer(input.queryParams, {}), expected);
             });
+        });
+        it('should have a recommended buffer size of 0, so that creating the buffer throws NEG_LIMIT', () => {
+            [-1, -0.5, -Infinity, NaN].forEach(limit => {
+                assert.strictEqual(getRecommendedResultWindowBufferSize(limit), 0);
+            });
+            const size = getRecommendedResultWindowBufferSize(-1);
+            assert.throws(
+                () => createResultWindowBuffer(getQueryParams(-1), { limitBufferSize: size, skipBufferSize: size }),
+                { message: 'EventReduce:NEG_LIMIT' }
+            );
         });
         it('should not throw when there is no limit', () => {
             [undefined, null].forEach(limit => {

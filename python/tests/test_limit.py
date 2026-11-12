@@ -15,6 +15,7 @@ from event_reduce import (
     StateResolveFunctionInput,
     calculate_action_name,
     dict_query_params,
+    get_recommended_result_window_buffer_size,
 )
 
 Doc = dict[str, Any]
@@ -58,3 +59,9 @@ def test_negative_limit_raises() -> None:
         ResultWindowBuffer(query_params(-1))
     assert error.value.code == "NEG_LIMIT"
     ResultWindowBuffer(query_params(0))
+
+
+def test_negative_limit_has_a_recommended_buffer_size_of_zero() -> None:
+    # so that creating the buffer with the recommended size raises NEG_LIMIT
+    assert get_recommended_result_window_buffer_size(-1) == 0
+    assert get_recommended_result_window_buffer_size(-400) == 0

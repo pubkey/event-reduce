@@ -60,5 +60,16 @@ namespace RxDB.EventReduce.Tests
                 Assert.Throws<EventReduceException>(() => new ResultWindowBuffer<Row>(Params(-1))).Code);
             _ = new ResultWindowBuffer<Row>(Params(0));
         }
+
+        [Fact]
+        public void NegativeLimitHasRecommendedBufferSizeZero()
+        {
+            Assert.Equal(0, ResultWindowBuffer.GetRecommendedSize(-1));
+            Assert.Equal(0, ResultWindowBuffer.GetRecommendedSize(-400));
+            // the limit is checked before the sizes
+            Assert.Equal(
+                "NEG_LIMIT",
+                Assert.Throws<EventReduceException>(() => new ResultWindowBuffer<Row>(Params(-1), -1, -1)).Code);
+        }
     }
 }

@@ -63,8 +63,9 @@ type ResultWindowBufferChangeResult[D any] struct {
 // GetRecommendedResultWindowBufferSize returns the recommended buffer size for each side of the result window.
 // About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
 // Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+// Also returns 0 for a negative limit: NewResultWindowBuffer returns ErrNegativeLimit for it.
 func GetRecommendedResultWindowBufferSize(limit *int) int {
-	if limit == nil || *limit == 0 {
+	if limit == nil || *limit <= 0 {
 		return 0
 	}
 	ratio := 400 / float64(*limit)
@@ -97,11 +98,11 @@ type ResultWindowBuffer[D any] struct {
 // ResultWindowBufferAllRows as a size keeps all rows on that side.
 // Returns ErrInvalidResultWindowBufferSize for negative sizes and ErrNegativeLimit for a negative limit.
 func NewResultWindowBuffer[D any](queryParams QueryParams[D], limitBufferSize, skipBufferSize int) (*ResultWindowBuffer[D], error) {
-	if limitBufferSize < 0 || skipBufferSize < 0 {
-		return nil, ErrInvalidResultWindowBufferSize
-	}
 	if queryParams.Limit != nil && *queryParams.Limit < 0 {
 		return nil, ErrNegativeLimit
+	}
+	if limitBufferSize < 0 || skipBufferSize < 0 {
+		return nil, ErrInvalidResultWindowBufferSize
 	}
 	// with limit 0 the result is always empty, so no rows are kept
 	isEmptyQuery := queryParams.Limit != nil && *queryParams.Limit == 0
