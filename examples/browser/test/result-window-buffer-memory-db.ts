@@ -1,4 +1,4 @@
-import type { ChangeEvent, QueryParams } from 'event-reduce-js';
+import type { ChangeEvent, DocumentId, QueryParams } from 'event-reduce-js';
 import type { Human } from '../src/types';
 
 /**
@@ -51,10 +51,10 @@ export function getTestQueryParams(query: TestQuery): QueryParams<Human> {
 }
 
 export class MemoryTable {
-    readonly docs = new Map<string, Human>();
+    readonly docs = new Map<DocumentId, Human>();
     // to pick a random row in O(1)
-    private readonly ids: string[] = [];
-    private readonly indexOfId = new Map<string, number>();
+    private readonly ids: DocumentId[] = [];
+    private readonly indexOfId = new Map<DocumentId, number>();
 
     applyChangeEvent(changeEvent: ChangeEvent<Human>) {
         const id = changeEvent.id;
