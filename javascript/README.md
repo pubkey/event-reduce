@@ -50,6 +50,8 @@ In the following we will use EventReduce together with minimongo as an example. 
 import {
     getSortFieldsOfQuery,
     ChangeEvent,
+    MongoQuery,
+    QueryParams,
     calculateActionName,
     StateResolveFunctionInput,
     runAction
