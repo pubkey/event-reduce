@@ -2,6 +2,7 @@ console.log('### starting unit-tests ###');
 import './minimongo.test.js';
 import './clone-map.test.js';
 import './actions.test.js';
+import './run-action.test.js';
 import './states.test.js';
 import './array-index-sort.test.js';
 import './get-document-id.test.js';
