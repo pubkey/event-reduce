@@ -26,7 +26,8 @@ const int resultWindowBufferAllRows = 0x1FFFFFFFFFFFFF;
 
 /// Buffer sizes from this value on keep all rows.
 /// Keeps the arithmetic far away from an overflow.
-const int _maxBufferSize = 1 << 40;
+/// Must be below 2^32: on the web, bit shifts work on 32 bits, so 1 << 40 is 0 there.
+const int _maxBufferSize = 1 << 29;
 
 class ResultWindowBuffer<D> {
   /// QueryParams of the original query,

@@ -20,8 +20,8 @@ import Foundation
 public let resultWindowBufferAllRows = Int.max
 
 /// Buffer sizes from this value on keep all rows.
-/// Keeps the arithmetic far away from an overflow.
-private let maxBufferSize = 1 << 40
+/// Keeps the arithmetic far away from an overflow, also where Int has 32 bits.
+private let maxBufferSize = 1 << 29
 
 public final class ResultWindowBuffer<D> {
     /// QueryParams of the original query, with the skip and limit that are shown to the user.

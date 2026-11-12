@@ -28,8 +28,8 @@ use crate::{
 pub const RESULT_WINDOW_BUFFER_ALL_ROWS: usize = usize::MAX;
 
 /// Buffer sizes from this value on keep all rows.
-/// Keeps the arithmetic far away from an overflow.
-const MAX_BUFFER_SIZE: usize = 1 << 40;
+/// Keeps the arithmetic far away from an overflow, also where usize has 32 bits.
+const MAX_BUFFER_SIZE: usize = 1 << 29;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct ResultWindowBufferSizes {
