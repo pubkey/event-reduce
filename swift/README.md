@@ -79,6 +79,9 @@ and `runAction()` keeps it in sync with the results.
 - `runAction()` mutates the results `inout` and throws `EventReduceError.runFullQueryAgain`
   and `EventReduceError.unknownAction`.
   `alwaysWrong` is only used by the truth-table generator and throws like `unknownAction`.
+- `calculateActionName()`, `resolveInput()` and `createResultWindowBuffer()` throw
+  `EventReduceError.negativeLimit` for a negative `limit`.
+  Like in JavaScript, a `limit` of 0 returns no documents and the action is then always `doNothing`.
 
 ## Result window buffer
 

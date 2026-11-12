@@ -76,6 +76,9 @@ and `runAction()` keeps it in sync with the results.
   and `sortFieldsChanged`, so documents can be any Dart class.
 - `ActionName` and `StateName` are enums.
 - `alwaysWrong` is only used by the truth-table generator and throws like `unknownAction`.
+- `calculateActionName()`, `resolveInput()` and `createResultWindowBuffer()` throw an
+  `EventReduceError` with the code `NEG_LIMIT` for a negative `limit`.
+  Like in JavaScript, a `limit` of 0 returns no documents and the action is then always `doNothing`.
 
 ## Result window buffer
 
