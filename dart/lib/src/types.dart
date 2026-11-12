@@ -157,7 +157,8 @@ enum StateName {
   doesMatchNow,
 }
 
-/// Thrown by runAction() for the actions that cannot be applied to the results.
+/// Thrown by runAction() for the actions that cannot be applied to the results,
+/// and for invalid input like a negative limit or a negative buffer size.
 class EventReduceError extends Error {
   final String code;
   EventReduceError(this.code);

@@ -165,6 +165,16 @@ if (action === runFullQueryAgain) {
 }
 ```
 
+## Truth table generator
+
+The code that generates the truth table and the BDD is exported as `event-reduce-js/truth-table-generator`.
+You only need it to generate your own BDD or to fuzz-test your own query implementation, see [DEVELOPER.md](./DEVELOPER.md).
+It needs the optional peer dependencies `async-test-util`, `deep-equal` and `mingo`, which you have to install yourself.
+
+```ts
+import { generateTruthTable } from 'event-reduce-js/truth-table-generator';
+```
+
 ## Additional Optimization: Result Window Buffer
 
 For a query with a limit or a skip, EventReduce returns `runFullQueryAgain` when a row has to move into the result window that is not in the previous results:

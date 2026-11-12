@@ -73,6 +73,9 @@ and `run_action()` keeps it in sync with the results.
 - The names are snake_case, `ActionName` and `StateName` are enums whose values are the JavaScript names.
 - `run_action()` raises an `EventReduceError` for `RUN_FULL_QUERY_AGAIN` and `UNKNOWN_ACTION`.
   `ALWAYS_WRONG` is only used by the truth-table generator and raises like `UNKNOWN_ACTION`.
+- `calculate_action_name()`, `resolve_input()` and `ResultWindowBuffer()` raise an
+  `EventReduceError` with the code `NEG_LIMIT` for a negative `limit`.
+  Like in JavaScript, a `limit` of 0 returns no documents and the action is then always `DO_NOTHING`.
 
 ## Result window buffer
 

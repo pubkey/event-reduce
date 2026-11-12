@@ -84,6 +84,8 @@ and `run_action()` keeps it in sync with the results.
 - `sort_comparator` returns a `std::cmp::Ordering`.
 - `run_action()` returns `Err(EventReduceError::RunFullQueryAgain)` instead of throwing.
   `AlwaysWrong` is only used by the truth-table generator and returns `Err(EventReduceError::UnknownAction)`.
+- `skip` and `limit` are `Option<usize>`, so a negative limit is not possible and there is no `NEG_LIMIT` error.
+  Like in JavaScript, a `limit` of 0 returns no documents and the action is then always `DoNothing`.
 
 ## Result window buffer
 

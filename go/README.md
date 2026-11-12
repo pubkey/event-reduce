@@ -80,6 +80,9 @@ and `RunAction()` keeps it in sync with the results.
 - `RunAction()` returns the new results, like `append()`, and an error instead of throwing:
   `ErrRunFullQueryAgain` and `ErrUnknownAction`.
   `AlwaysWrong` is only used by the truth-table generator and returns `ErrUnknownAction`.
+- `CalculateActionName()`, `ResolveInput()` and `NewResultWindowBuffer()` return `ErrNegativeLimit`
+  as error for a negative `Limit`, instead of throwing.
+  Like in JavaScript, a `limit` of 0 returns no documents and the action is then always `DoNothing`.
 
 ## Result window buffer
 

@@ -91,7 +91,7 @@ export type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1
  *
  * The key is a binary-representation of the ordered state-list
  * like '010110110111...'
- * where the first '0' means that the first state (hasLimit) is false
+ * where the first '0' means that the first state (isInsert) is false
  */
 export type StateSet = string;
 export type StateSetToActionMap = Map<StateSet, ActionName>;

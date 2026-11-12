@@ -74,6 +74,9 @@ and `RunAction()` keeps it in sync with the results.
 - `ActionName` and `StateName` are enums, `ToJsName()` returns the name used by JavaScript.
 - `RunAction()` throws an `EventReduceException` for `RunFullQueryAgain` and `UnknownAction`.
   `AlwaysWrong` is only used by the truth-table generator and throws like `UnknownAction`.
+- `CalculateActionName()`, `ResolveInput()` and the `ResultWindowBuffer` constructor throw an
+  `EventReduceException` with the code `NEG_LIMIT` for a negative `Limit`.
+  Like in JavaScript, a `limit` of 0 returns no documents and the action is then always `DoNothing`.
 
 ## Result window buffer
 

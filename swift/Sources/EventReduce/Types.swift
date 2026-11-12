@@ -173,7 +173,8 @@ public enum StateName: String, CaseIterable {
     case doesMatchNow
 }
 
-/// Thrown by runAction() for the actions that cannot be applied to the results.
+/// Thrown by runAction() for the actions that cannot be applied to the results,
+/// and for invalid input like a negative limit or a negative buffer size.
 public enum EventReduceError: Error, Equatable {
     /// The query must be run over the database again.
     case runFullQueryAgain
