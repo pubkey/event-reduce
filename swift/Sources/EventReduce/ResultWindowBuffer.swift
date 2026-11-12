@@ -109,7 +109,7 @@ public func getRecommendedResultWindowBufferSize(_ limit: Int?) -> Int {
 /// and pass the rows to resetResultWindowBuffer() before using it.
 /// `queryParams` has the skip and limit that are shown to the user.
 /// `resultWindowBufferAllRows` keeps all rows on that side.
-/// Throws on negative sizes.
+/// Throws on negative sizes and on a negative limit.
 public func createResultWindowBuffer<D>(
     _ queryParams: QueryParams<D>,
     limitBufferSize: Int = 0,
@@ -117,6 +117,9 @@ public func createResultWindowBuffer<D>(
 ) throws -> ResultWindowBuffer<D> {
     guard limitBufferSize >= 0, skipBufferSize >= 0 else {
         throw EventReduceError.invalidResultWindowBufferSize
+    }
+    if let limit = queryParams.limit, limit < 0 {
+        throw EventReduceError.negativeLimit
     }
     // with limit 0 the result is always empty, so no rows are kept
     let isEmptyQuery = queryParams.limit == 0
