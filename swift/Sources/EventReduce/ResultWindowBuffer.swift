@@ -357,21 +357,11 @@ private func applySliceRule<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ ch
 }
 
 /// Compares two rows with the sort order of the query.
-/// Returns 0 only for two versions of the same row that sort at the same position.
-/// For different rows that the sort order sees as equal,
-/// the primary key decides, so that the order is always deterministic.
+/// Returns 0 for two versions of the same row that sort at the same position.
+/// The sort order is not allowed to see two different rows as equal,
+/// it must break ties itself, for example by the primary key.
 private func compareRows<D>(_ queryParams: QueryParams<D>, _ a: D, _ b: D) -> Int {
-    let result =
-        queryParams.areInIncreasingOrder(a, b) ? -1 : (queryParams.areInIncreasingOrder(b, a) ? 1 : 0)
-    if result != 0 {
-        return result
-    }
-    let idA = queryParams.getDocumentId(a)
-    let idB = queryParams.getDocumentId(b)
-    if isSameDocumentId(idA, idB) {
-        return 0
-    }
-    return idA < idB ? -1 : 1
+    queryParams.areInIncreasingOrder(a, b) ? -1 : (queryParams.areInIncreasingOrder(b, a) ? 1 : 0)
 }
 
 private func insertAtSortPosition<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ doc: D) {

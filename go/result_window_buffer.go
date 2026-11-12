@@ -362,24 +362,18 @@ func (b *ResultWindowBuffer[D]) applySliceRule(changeEvent ChangeEvent[D]) {
 
 // compareRows compares two rows with the sort comparator of the query.
 // Returns 0 only for two versions of the same row that sort at the same position.
-// For different rows that the comparator sees as equal,
-// the primary key decides, so that the order is always deterministic.
+// For two different rows it returns what the comparator returns: the comparator
+// is not allowed to return 0 for them, it must break ties itself, for example by the primary key.
 func (b *ResultWindowBuffer[D]) compareRows(a, c D) int {
-	idA := b.QueryParams.GetDocumentID(a)
-	idC := b.QueryParams.GetDocumentID(c)
 	result := cmp.Compare(b.QueryParams.SortComparator(a, c), 0)
-	if idA == idC {
+	if b.QueryParams.GetDocumentID(a) == b.QueryParams.GetDocumentID(c) {
 		// A deterministic comparator breaks ties by the primary key,
 		// which gives the same answer for both directions when the sort values are equal.
 		if result == 0 || result == cmp.Compare(b.QueryParams.SortComparator(c, a), 0) {
 			return 0
 		}
-		return result
 	}
-	if result != 0 {
-		return result
-	}
-	return cmp.Compare(idA, idC)
+	return result
 }
 
 // insertAtSortPosition inserts the row at its sort position and adds it to the KeyDocumentMap.
