@@ -31,10 +31,14 @@ To let it run on a server, use this command so you can exit the terminal and it 
 
 Optimize the binary decision diagramm to get the one which has the best performance.
 It uses `optimizeOrdering()` of the [binary-decision-diagram](https://github.com/pubkey/binary-decision-diagram) library
-to deterministically find the order of the state functions with the lowest expected cpu time per resolve.
+to find the order of the state functions with the lowest expected cpu time per resolve.
 The measured runtime of each state function is used as its cost and state sets that occur often in the example queries are weighted higher.
-It takes a few seconds and often proves that no better order exists.
+It takes a few seconds.
 If the found bdd is better than the current one, it is written to the generated files.
+
+The result is not the same on every run: some of the example procedures are random,
+so the weights of the state sets and the quality of a bdd differ a bit from run to run.
+That is fine, run it again when you want to try for a better bdd.
 
 ### Implementations in other languages
 

@@ -342,7 +342,8 @@ async function run() {
         /**
          * Optimizes the bdd to become small and fast.
          * Finds the ordering of the state functions with the lowest expected
-         * cpu time per resolve, deterministically and in seconds.
+         * cpu time per resolve, in seconds.
+         * The result differs a bit from run to run, because some of the example procedures are random.
          * Saves the bdd when it is better than the current one.
          */
         case 'optimize-bdd':
