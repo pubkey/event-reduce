@@ -26,6 +26,7 @@ export type {
     ChangeEventDelete,
     ChangeEventInsert,
     ChangeEventUpdate,
+    DocumentId,
     MongoQuery,
     QueryMatcher,
     QueryParams,

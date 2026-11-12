@@ -1,4 +1,5 @@
 import type {
+    DocumentId,
     WriteOperation
 } from './index.js';
 
@@ -10,7 +11,7 @@ export interface ChangeEventBase {
      * so it must have the same type: the string '1' never equals the number 1.
      * value of the primary key.
      */
-    id: string;
+    id: DocumentId;
 }
 
 export interface ChangeEventInsert<DocType> extends ChangeEventBase {

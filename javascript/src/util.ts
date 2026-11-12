@@ -1,4 +1,5 @@
 import type {
+    DocumentId,
     MongoQuery,
     DeepReadonlyObject,
     QueryParams
@@ -158,7 +159,7 @@ export function getProperty(object: any, path: string | string[], value?: any) {
  * from queryParams.getDocumentId() if set,
  * otherwise from document[queryParams.primaryKey].
  */
-export function getDocumentId<DocType>(queryParams: QueryParams<DocType>, doc: DocType): string {
+export function getDocumentId<DocType>(queryParams: QueryParams<DocType>, doc: DocType): DocumentId {
     return queryParams.getDocumentId ? queryParams.getDocumentId(doc) : (doc as any)[queryParams.primaryKey];
 }
 
@@ -189,7 +190,7 @@ export function compareDocuments<DocType>(
 export function indexOfDocumentId<DocType>(
     queryParams: QueryParams<DocType>,
     docs: DocType[],
-    id: string
+    id: DocumentId
 ): number {
     const getId = queryParams.getDocumentId;
     if (getId) {
