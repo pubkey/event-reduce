@@ -45,19 +45,19 @@ public func sortParamsChanged<D>(_ input: StateResolveFunctionInput<D>) -> Bool 
 public func wasInResult<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
     let id = input.changeEvent.id
     if let map = input.keyDocumentMap {
-        return map[id] != nil
+        return map[DocumentId(id)] != nil
     }
     return indexOfDocumentId(input.queryParams, input.previousResults, id) != nil
 }
 
 public func wasFirst<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
     guard let first = input.previousResults.first else { return false }
-    return input.queryParams.getDocumentId(first) == input.changeEvent.id
+    return isSameDocumentId(input.queryParams.getDocumentId(first), input.changeEvent.id)
 }
 
 public func wasLast<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
     guard let last = input.previousResults.last else { return false }
-    return input.queryParams.getDocumentId(last) == input.changeEvent.id
+    return isSameDocumentId(input.queryParams.getDocumentId(last), input.changeEvent.id)
 }
 
 /// Returns true if the changed document is the given result item.
@@ -65,7 +65,7 @@ public func wasLast<D>(_ input: StateResolveFunctionInput<D>) -> Bool {
 /// sort order. Because both document could be equal.
 /// So instead the sort states have to return true.
 private func isChangedDoc<D>(_ input: StateResolveFunctionInput<D>, _ resultItem: D) -> Bool {
-    input.queryParams.getDocumentId(resultItem) == input.changeEvent.id
+    isSameDocumentId(input.queryParams.getDocumentId(resultItem), input.changeEvent.id)
 }
 
 public func wasSortedBeforeFirst<D>(_ input: StateResolveFunctionInput<D>) -> Bool {

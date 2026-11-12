@@ -63,6 +63,9 @@ if action == .runFullQueryAgain {
 
 For big result sets, pass a dictionary from the id to the document as `keyDocumentMap`
 to both `calculateActionName()` and `runAction()`.
+Its type is `ResultKeyDocumentMap<D>`, a `[DocumentId: D]`: create a key with `DocumentId(id)`.
+`DocumentId` compares the bytes of the id, because for Swift's `String` the ids `"\u{E9}"` and `"e\u{301}"` are equal,
+while they are two different documents for a database.
 It is used to check whether a document is in the results without scanning them,
 and `runAction()` keeps it in sync with the results.
 
