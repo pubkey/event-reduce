@@ -91,6 +91,9 @@ def get_recommended_result_window_buffer_size(limit: int | None = None) -> int:
     """
     if not limit or limit < 0:
         return 0
+    if math.isinf(limit):
+        # the size never gets larger than 30, and the logarithm of infinity cannot be rounded
+        return 30
     return min(30, math.floor(math.log2(limit) + 19 / (1 + (400 / limit) ** 2)))
 
 
@@ -142,11 +145,16 @@ class ResultWindowBuffer(Generic[D]):
     def _skip(self) -> int:
         return self.query_params.skip or 0
 
+    def _limit(self) -> int | None:
+        """The limit of the query. An infinite limit (math.inf) is no limit, like in the JavaScript implementation."""
+        limit = self.query_params.limit
+        return None if limit is None or math.isinf(limit) else limit
+
     def query(self) -> ResultWindowBufferQuery:
         """The skip and limit to run the query of the buffer with."""
         skip = self._skip()
         buffer_skip = max(0, skip - self.skip_buffer_size)
-        limit = self.query_params.limit
+        limit = self._limit()
         buffer_limit = None
         if limit is not None and not math.isinf(self.limit_buffer_size):
             buffer_limit = int((skip - buffer_skip) + limit + self.limit_buffer_size)
@@ -172,7 +180,7 @@ class ResultWindowBuffer(Generic[D]):
         if not self._is_result_window_in_buffer():
             raise EventReduceError("RWB_OUTDATED")
         start = self._skip() - self.offset
-        limit = self.query_params.limit
+        limit = self._limit()
         return self.buffer[start : None if limit is None else start + limit]
 
     def apply_change_event(self, change_event: ChangeEvent[D]) -> ResultWindowBufferResult:
@@ -251,7 +259,7 @@ class ResultWindowBuffer(Generic[D]):
             return False
         if self.complete:
             return True
-        limit = self.query_params.limit
+        limit = self._limit()
         return limit is not None and len(self.buffer) >= start + limit
 
     def _trim(self) -> None:
@@ -269,7 +277,7 @@ class ResultWindowBuffer(Generic[D]):
             del self.buffer[:remove]
             self.offset += remove
 
-        limit = self.query_params.limit
+        limit = self._limit()
         if limit is not None:
             max_length = max(0, self._skip() - self.offset) + limit + self.limit_buffer_size
             if len(self.buffer) > max_length:
