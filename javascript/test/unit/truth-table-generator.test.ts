@@ -2,7 +2,8 @@ import * as assert from 'assert';
 
 import { Human } from '../../src/truth-table-generator/types.js';
 import { oneThatWasCrashing } from '../../src/truth-table-generator/procedures.js';
-import { generateTruthTable } from '../../src/truth-table-generator/index.js';
+import { generateTruthTable, getNextWorkingAction } from '../../src/truth-table-generator/index.js';
+import { orderedActionList } from '../../src/actions/index.js';
 import { StateResolveFunctionInput, MongoQuery } from '../../src/types/index.js';
 import { calculateActionFromMap } from '../../src/index.js';
 import { mingoCollectionCreator } from '../../src/truth-table-generator/database/mingo.js';
@@ -49,6 +50,24 @@ describe('truth-table-generator.test.ts', () => {
                 );
                 assert.ok(table.has(resultFromMap.stateSet));
             }
+        });
+    });
+    describe('.getNextWorkingAction()', () => {
+        const insertDoc: Human = { _id: 'a', name: 'alice', gender: 'f', age: 1 };
+        const input: StateResolveFunctionInput<Human> = {
+            previousResults: [],
+            queryParams: mingoCollectionCreator().getQueryParams({ selector: {}, sort: ['_id'] }),
+            changeEvent: { operation: 'INSERT', id: 'a', doc: insertDoc, previous: null }
+        };
+        it('should return the first action that calculates the results', () => {
+            const actionId = getNextWorkingAction(input, [insertDoc], 0);
+            assert.strictEqual(orderedActionList[actionId], 'insertFirst');
+        });
+        it('should not go on after the last action', () => {
+            assert.throws(
+                () => getNextWorkingAction(input, [insertDoc], orderedActionList.length),
+                { message: 'this should never happen' }
+            );
         });
     });
 });

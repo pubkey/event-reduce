@@ -147,7 +147,7 @@ export function getNextWorkingAction(
     log: boolean = false
 ): number {
     let t = lastWorkingActionId;
-    while (t <= orderedActionList.length) {
+    while (t < orderedActionList.length) {
         const actionName = orderedActionList[t];
         const doesWork = doesActionWork(
             input,
