@@ -13,7 +13,7 @@ We have to perform several steps to create a fully optimized and tested bdd:
 `npm run generate-truth-table`
 
 Calculate the initial truth table from the defined events and queries.
-It takes about 5 minutes and will write the result into `src/truth-table-generator/ouput/`.
+It takes about 5 minutes and will write the result into `src/truth-table-generator/output/`.
 
 ### npm run iterative-fuzzing
 
