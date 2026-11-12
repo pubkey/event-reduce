@@ -46,7 +46,7 @@ final class DocumentIdTests: XCTestCase {
                 useMap ? [DocumentId(first.id): first, DocumentId(last.id): last] : nil
             let event = ChangeEvent<Row>.insert(id: inserted.id, doc: inserted)
 
-            let action = calculateActionName(
+            let action = try calculateActionName(
                 StateResolveFunctionInput(
                     queryParams: queryParams, changeEvent: event, previousResults: results, keyDocumentMap: map))
             XCTAssertEqual(action, .insertAtSortPosition)
@@ -59,12 +59,12 @@ final class DocumentIdTests: XCTestCase {
         }
     }
 
-    func testDeleteOfADocumentWithAnEquivalentIdOutsideOfTheResults() {
+    func testDeleteOfADocumentWithAnEquivalentIdOutsideOfTheResults() throws {
         var params = queryParams
         params.limit = 1
         let inResults = Row(id: precomposed, age: 1)
         let other = Row(id: decomposed, age: 5)
-        let action = calculateActionName(
+        let action = try calculateActionName(
             StateResolveFunctionInput(
                 queryParams: params, changeEvent: .delete(id: other.id, previous: other),
                 previousResults: [inResults]))
