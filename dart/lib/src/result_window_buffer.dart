@@ -421,24 +421,18 @@ void _applySliceRule<D>(
 
 /// Compares two rows with the sort comparator of the query.
 /// Returns 0 only for two versions of the same row that sort at the same position.
-/// For different rows that the comparator sees as equal,
-/// the primary key decides, so that the order is always deterministic.
+/// For two different rows it returns what the comparator returns: the comparator
+/// is not allowed to return 0 for them, it must break ties itself, for example by the primary key.
 int _compareRows<D>(QueryParams<D> queryParams, D a, D b) {
-  final idA = queryParams.documentId(a);
-  final idB = queryParams.documentId(b);
   final result = queryParams.compare(a, b).sign;
-  if (idA == idB) {
+  if (queryParams.documentId(a) == queryParams.documentId(b)) {
     // A deterministic comparator breaks ties by the primary key,
     // which gives the same answer for both directions when the sort values are equal.
     if (result == 0 || result == queryParams.compare(b, a).sign) {
       return 0;
     }
-    return result;
   }
-  if (result != 0) {
-    return result;
-  }
-  return idA.compareTo(idB);
+  return result;
 }
 
 void _insertAtSortPosition<D>(ResultWindowBuffer<D> resultWindowBuffer, D doc) {

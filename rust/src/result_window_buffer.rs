@@ -126,7 +126,7 @@ pub struct ResultWindowBuffer<D, K> {
     complete: bool,
 }
 
-impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
+impl<D: Clone, K: Eq + Hash + Clone> ResultWindowBuffer<D, K> {
     /// Creates an empty result window buffer.
     /// Run the query with the skip and limit of query()
     /// and pass the rows to reset() before using it.
@@ -434,22 +434,16 @@ impl<D: Clone, K: Eq + Hash + Clone + Ord> ResultWindowBuffer<D, K> {
 
 /// Compares two rows with the sort comparator of the query.
 /// Returns Equal only for two versions of the same row that sort at the same position.
-/// For different rows that the comparator sees as equal,
-/// the primary key decides, so that the order is always deterministic.
-fn compare_rows<D, K: Ord>(query_params: &QueryParams<D, K>, a: &D, b: &D) -> Ordering {
-    let id_a = query_params.document_id(a);
-    let id_b = query_params.document_id(b);
+/// For two different rows it returns what the comparator returns: the comparator
+/// is not allowed to return Equal for them, it must break ties itself, for example by the primary key.
+fn compare_rows<D, K: Eq>(query_params: &QueryParams<D, K>, a: &D, b: &D) -> Ordering {
     let result = (query_params.sort_comparator)(a, b);
-    if id_a == id_b {
+    if query_params.document_id(a) == query_params.document_id(b) {
         // A deterministic comparator breaks ties by the primary key,
         // which gives the same answer for both directions when the sort values are equal.
         if result == Ordering::Equal || result == (query_params.sort_comparator)(b, a) {
             return Ordering::Equal;
         }
-        return result;
     }
-    if result != Ordering::Equal {
-        return result;
-    }
-    id_a.cmp(id_b)
+    result
 }

@@ -332,22 +332,17 @@ class ResultWindowBuffer(Generic[D]):
         """
         Compares two rows with the sort comparator of the query.
         Returns 0 only for two versions of the same row that sort at the same position.
-        For different rows that the comparator sees as equal,
-        the primary key decides, so that the order is always deterministic.
+        For two different rows it returns what the comparator returns: the comparator
+        is not allowed to return 0 for them, it must break ties itself, for example by the primary key.
         """
         query_params = self.query_params
-        id_a = query_params.get_document_id(a)
-        id_b = query_params.get_document_id(b)
         result = _sign(query_params.sort_comparator(a, b))
-        if id_a == id_b:
+        if query_params.get_document_id(a) == query_params.get_document_id(b):
             # A deterministic comparator breaks ties by the primary key,
             # which gives the same answer for both directions when the sort values are equal.
             if result == 0 or result == _sign(query_params.sort_comparator(b, a)):
                 return 0
-            return result
-        if result != 0:
-            return result
-        return -1 if id_a < id_b else 1
+        return result
 
     def _insert_at_sort_position(self, doc: D) -> None:
         # _compare() returns 0 only for another version of the same row, which was removed before
