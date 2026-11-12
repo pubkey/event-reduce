@@ -316,3 +316,59 @@ fn huge_limit_with_skip_buffer() {
     assert_eq!(ids(buffer.buffer()), json!(["a", "b", "c"]));
     assert_eq!(ids(buffer.results().unwrap()), json!(["b", "c"]));
 }
+
+/// When the key document map is out of sync and does not have a document that is in the results,
+/// the actions must still find the document in the results, like the JavaScript implementation.
+#[test]
+fn key_document_map_without_the_changed_document() {
+    let params = query_params(&json!({ "minAge": 0, "skip": null, "limit": null }));
+    let row = |id: &str, age: i64, name: &str| Doc {
+        id: id.to_string(),
+        age,
+        name: name.to_string(),
+    };
+    let a = row("a", 1, "");
+    let b = row("b", 2, "");
+    let run = |action: ActionName, event: ChangeEvent<Doc, String>| {
+        let mut results = vec![a.clone(), b.clone()];
+        let mut map: ResultKeyDocumentMap<Doc, String> = HashMap::new();
+        map.insert("b".to_string(), b.clone());
+        run_action(action, &params, &event, &mut results, Some(&mut map)).unwrap();
+        (results, map)
+    };
+
+    let (results, map) = run(
+        ActionName::RemoveExisting,
+        ChangeEvent::Delete {
+            id: "a".to_string(),
+            previous: a.clone(),
+        },
+    );
+    assert_eq!(ids(&results), json!(["b"]));
+    assert_eq!(map.len(), 1);
+
+    let changed = row("a", 1, "changed");
+    let (results, map) = run(
+        ActionName::ReplaceExisting,
+        ChangeEvent::Update {
+            id: "a".to_string(),
+            doc: changed.clone(),
+            previous: a.clone(),
+        },
+    );
+    assert_eq!(results, vec![changed.clone(), b.clone()]);
+    assert_eq!(map.get("a"), Some(&changed));
+
+    let moved = row("a", 5, "");
+    let (results, map) = run(
+        ActionName::RemoveExistingAndInsertAtSortPosition,
+        ChangeEvent::Update {
+            id: "a".to_string(),
+            doc: moved.clone(),
+            previous: a.clone(),
+        },
+    );
+    assert_eq!(ids(&results), json!(["b", "a"]));
+    assert_eq!(map.len(), 2);
+    assert_eq!(map.get("a"), Some(&moved));
+}

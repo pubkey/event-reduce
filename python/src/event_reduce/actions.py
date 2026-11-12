@@ -14,11 +14,12 @@ ORDERED_ACTION_LIST: list[ActionName] = list(ActionName)
 
 
 def _find_index_of_changed_doc(input: StateResolveFunctionInput[Any]) -> int:
-    """Returns the index of the changed document inside of the previous results or -1."""
-    id = input.change_event.id
-    if input.key_document_map is not None and id not in input.key_document_map:
-        return -1
-    return index_of_document_id(input.query_params, input.previous_results, id)
+    """
+    Returns the index of the changed document inside of the previous results or -1.
+    The results are always searched, also when the key document map does not have the id:
+    like in the JavaScript implementation, the results are what counts when the map is out of sync.
+    """
+    return index_of_document_id(input.query_params, input.previous_results, input.change_event.id)
 
 
 def _changed_doc(input: StateResolveFunctionInput[Any]) -> Any:

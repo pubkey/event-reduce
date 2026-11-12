@@ -44,14 +44,14 @@ ActionFunction<D> actionFunction<D>(ActionName action) =>
 
 /// Returns the index of the changed document inside of the previous results
 /// or -1 if it is not found.
-int _findIndexOfChangedDoc<D>(StateResolveFunctionInput<D> input) {
-  final id = input.changeEvent.id;
-  final map = input.keyDocumentMap;
-  if (map != null && !map.containsKey(id)) {
-    return -1;
-  }
-  return indexOfDocumentId(input.queryParams, input.previousResults, id);
-}
+/// The results are always searched, also when the key document map does not have the id:
+/// like in the JavaScript implementation, the results are what counts when the map is out of sync.
+int _findIndexOfChangedDoc<D>(StateResolveFunctionInput<D> input) =>
+    indexOfDocumentId(
+      input.queryParams,
+      input.previousResults,
+      input.changeEvent.id,
+    );
 
 /// The new document of the change event.
 /// Only the BDD knows that it exists for the given action.

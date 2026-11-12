@@ -62,14 +62,10 @@ func deleteKeyDocument[D any](input *StateResolveFunctionInput[D], id string) {
 }
 
 // findIndexOfChangedDoc returns the index of the changed document inside of the previous results or -1.
+// The results are always searched, also when the key document map does not have the id:
+// like in the JavaScript implementation, the results are what counts when the map is out of sync.
 func findIndexOfChangedDoc[D any](input *StateResolveFunctionInput[D]) int {
-	id := input.ChangeEvent.ID
-	if input.KeyDocumentMap != nil {
-		if _, ok := input.KeyDocumentMap[id]; !ok {
-			return -1
-		}
-	}
-	return IndexOfDocumentID(input.QueryParams, input.PreviousResults, id)
+	return IndexOfDocumentID(input.QueryParams, input.PreviousResults, input.ChangeEvent.ID)
 }
 
 // ActionDoNothing is the action doNothing.
