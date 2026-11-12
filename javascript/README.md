@@ -76,7 +76,8 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
         // a string[] with all fields that are used in the sorting
         sortFields: getSortFieldsOfQuery(query),
         skip: query.skip ? query.skip : undefined,
-        limit: query.limit ? query.limit : undefined,
+        // do not use `query.limit ? … : undefined`, that would turn limit 0 into "no limit"
+        limit: typeof query.limit === 'number' ? query.limit : undefined,
         // a function that returns true if the given document matches the query's selector
         queryMatcher: compileDocumentSelector(query.selector),
         // a function that can be used as comparator in Array.sort().

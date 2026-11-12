@@ -82,6 +82,10 @@ export async function minimongoFind<DocType>(
     collection: MinimongoCollection<DocType>,
     query: MongoQuery
 ): Promise<DocType[]> {
+    if (query.limit === 0) {
+        // limit 0 returns no documents, for minimongo it would mean "no limit"
+        return [];
+    }
     const results: DocType[] = await new Promise(
         (resolve, reject) => collection.find(
             query.selector,
@@ -127,7 +131,7 @@ export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> 
         primaryKey: '_id',
         sortFields: getSortFieldsOfQuery(query),
         skip: query.skip ? query.skip : undefined,
-        limit: query.limit ? query.limit : undefined,
+        limit: typeof query.limit === 'number' ? query.limit : undefined,
         queryMatcher: compileDocumentSelector(query.selector),
         sortComparator: compileSort(toMinimongoSort(sort))
     };
