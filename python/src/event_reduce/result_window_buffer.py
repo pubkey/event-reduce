@@ -268,12 +268,14 @@ class ResultWindowBuffer(Generic[D]):
         and rows after the window that are more than limit_buffer_size.
         """
         get_id = self.query_params.get_document_id
+        # pop() and not del: like Map.delete() in JavaScript, a row that the map does not have is no error,
+        # which happens when the rows of reset() had the same id twice
         rows_before_window = self._skip() - self.offset
         remove_from_start = min(rows_before_window - self.skip_buffer_size, len(self.buffer))
         if remove_from_start > 0:
             remove = int(remove_from_start)
             for doc in self.buffer[:remove]:
-                del self.key_document_map[get_id(doc)]
+                self.key_document_map.pop(get_id(doc), None)
             del self.buffer[:remove]
             self.offset += remove
 
@@ -283,7 +285,7 @@ class ResultWindowBuffer(Generic[D]):
             if len(self.buffer) > max_length:
                 keep = int(max_length)
                 for doc in self.buffer[keep:]:
-                    del self.key_document_map[get_id(doc)]
+                    self.key_document_map.pop(get_id(doc), None)
                 del self.buffer[keep:]
                 self.complete = False
 
