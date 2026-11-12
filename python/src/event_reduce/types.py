@@ -49,7 +49,11 @@ class QueryParams(Generic[D]):
     """
 
     get_document_id: Callable[[D], str]
-    """Returns the id of a document, must return the same value as the id of the change events."""
+    """
+    Returns the id of a document, must return the same value as the id of the change events.
+    Ids are usually strings. Other types work too, but the types must be the same on both sides:
+    ids are compared with ==, so the number 1 never equals the string "1".
+    """
     query_matcher: Callable[[D], bool]
     """Returns true if the document matches the query."""
     sort_comparator: Callable[[D, D], int]
