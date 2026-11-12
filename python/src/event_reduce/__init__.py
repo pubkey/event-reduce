@@ -53,9 +53,15 @@ def run_action(
     Applies the action to the results.
     For performance reasons, it mutates previous_results and the key_document_map
     and returns the mutated results.
-    Raises an EventReduceError for RUN_FULL_QUERY_AGAIN and UNKNOWN_ACTION.
+    Raises an EventReduceError for RUN_FULL_QUERY_AGAIN, UNKNOWN_ACTION
+    and for a name that is not an action.
     """
-    ACTION_FUNCTION_LIST[ORDERED_ACTION_LIST.index(action)](
+    try:
+        index = ORDERED_ACTION_LIST.index(action)
+    except ValueError:
+        # not a known action name, same error as in the JavaScript implementation
+        raise EventReduceError("UNK_ACT") from None
+    ACTION_FUNCTION_LIST[index](
         StateResolveFunctionInput(query_params, change_event, previous_results, key_document_map)
     )
     return previous_results
