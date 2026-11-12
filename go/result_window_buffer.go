@@ -233,7 +233,10 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvent(changeEvent ChangeEvent[D]) Res
 // Returns the new results, and if they changed,
 // or RunFullQueryAgain if the result window does not fit into the buffer anymore.
 // Then run the query of Query() and pass the rows to Reset().
-// Rows are compared with reflect.DeepEqual to find out if the results changed.
+// To find out if the results changed, the ids of the rows are compared, and the rows that
+// a change event was about are compared with reflect.DeepEqual. A row that no change event
+// was about is not compared: it cannot have changed, also when it is not equal to itself
+// for reflect.DeepEqual, like a row with a NaN value.
 func (b *ResultWindowBuffer[D]) ApplyChangeEvents(changeEvents []ChangeEvent[D]) ResultWindowBufferChangeResult[D] {
 	previousResults, err := b.Results()
 	if err != nil {
@@ -248,7 +251,19 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvents(changeEvents []ChangeEvent[D])
 	if err != nil {
 		return ResultWindowBufferChangeResult[D]{RunFullQueryAgain: true}
 	}
-	changed := !slices.EqualFunc(results, previousResults, func(a, c D) bool { return reflect.DeepEqual(a, c) })
+	changedIDs := make(map[string]struct{}, len(changeEvents))
+	for _, changeEvent := range changeEvents {
+		changedIDs[changeEvent.ID] = struct{}{}
+	}
+	getID := b.QueryParams.GetDocumentID
+	changed := !slices.EqualFunc(results, previousResults, func(a, c D) bool {
+		id := getID(a)
+		if id != getID(c) {
+			return false
+		}
+		_, wasChanged := changedIDs[id]
+		return !wasChanged || reflect.DeepEqual(a, c)
+	})
 	return ResultWindowBufferChangeResult[D]{Changed: changed, Results: results}
 }
 
