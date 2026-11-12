@@ -44,6 +44,15 @@ func TestNegativeLimit(t *testing.T) {
 	if _, err := eventreduce.NewResultWindowBuffer(limitQueryParams(-1), 0, 0); !errors.Is(err, eventreduce.ErrNegativeLimit) {
 		t.Errorf("NewResultWindowBuffer: got %v, want ErrNegativeLimit", err)
 	}
+	// the recommended size for a negative limit is 0, so the README flow reports the limit
+	negative := -1
+	if size := eventreduce.GetRecommendedResultWindowBufferSize(&negative); size != 0 {
+		t.Errorf("GetRecommendedResultWindowBufferSize(-1): got %d, want 0", size)
+	}
+	// the limit is checked before the sizes
+	if _, err := eventreduce.NewResultWindowBuffer(limitQueryParams(-1), -1, -1); !errors.Is(err, eventreduce.ErrNegativeLimit) {
+		t.Errorf("NewResultWindowBuffer with negative sizes: got %v, want ErrNegativeLimit", err)
+	}
 	if _, err := eventreduce.NewResultWindowBuffer(limitQueryParams(0), 0, 0); err != nil {
 		t.Errorf("NewResultWindowBuffer with limit 0: got %v", err)
 	}

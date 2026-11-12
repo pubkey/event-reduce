@@ -59,4 +59,18 @@ void main() {
     );
     createResultWindowBuffer(queryParams(0));
   });
+
+  test('a negative limit has a recommended buffer size of 0', () {
+    expect(getRecommendedResultWindowBufferSize(-1), 0);
+    expect(getRecommendedResultWindowBufferSize(-400), 0);
+    // the limit is checked before the sizes
+    expect(
+      () => createResultWindowBuffer(
+        queryParams(-1),
+        limitBufferSize: -1,
+        skipBufferSize: -1,
+      ),
+      throwsCode('NEG_LIMIT'),
+    );
+  });
 }

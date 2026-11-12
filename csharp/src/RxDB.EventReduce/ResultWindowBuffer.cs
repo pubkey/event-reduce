@@ -94,10 +94,11 @@ namespace RxDB.EventReduce
         /// The recommended buffer size for each side of the result window.
         /// About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
         /// Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+        /// Also returns 0 for a negative limit: the constructor throws for it.
         /// </summary>
         public static int GetRecommendedSize(int? limit)
         {
-            if (limit == null || limit == 0)
+            if (limit == null || limit <= 0)
             {
                 return 0;
             }
@@ -160,17 +161,17 @@ namespace RxDB.EventReduce
         /// Creates an empty result window buffer.
         /// <paramref name="queryParams"/> has the skip and limit that are shown to the user.
         /// <see cref="ResultWindowBuffer.AllRows"/> as a size keeps all rows on that side.
-        /// Throws on negative sizes.
+        /// Throws on negative sizes and on a negative limit.
         /// </summary>
         public ResultWindowBuffer(QueryParams<TDoc> queryParams, int limitBufferSize = 0, int skipBufferSize = 0)
         {
-            if (limitBufferSize < 0 || skipBufferSize < 0)
-            {
-                throw new EventReduceException("RWB_SIZE");
-            }
             if (queryParams.Limit is int limit && limit < 0)
             {
                 throw new EventReduceException("NEG_LIMIT");
+            }
+            if (limitBufferSize < 0 || skipBufferSize < 0)
+            {
+                throw new EventReduceException("RWB_SIZE");
             }
             // with limit 0 the result is always empty, so no rows are kept
             var isEmptyQuery = queryParams.Limit == 0;

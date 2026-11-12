@@ -87,8 +87,9 @@ def get_recommended_result_window_buffer_size(limit: int | None = None) -> int:
     The recommended buffer size for each side of the result window.
     About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
     Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+    Also returns 0 for a negative limit: creating the buffer raises for it.
     """
-    if not limit:
+    if not limit or limit < 0:
         return 0
     return min(30, math.floor(math.log2(limit) + 19 / (1 + (400 / limit) ** 2)))
 

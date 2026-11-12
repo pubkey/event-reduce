@@ -149,7 +149,7 @@ db.changes$.subscribe(async changeEvents => {
 
 | Function | Description |
 |---|---|
-| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. Sizes are rounded down and `Infinity` keeps all rows on that side. Throws `EventReduce:RWB_SIZE` for negative sizes and values that are not numbers, like `NaN`. |
+| `createResultWindowBuffer(queryParams, { limitBufferSize, skipBufferSize })` | Creates an empty buffer. Both sizes default to 0. Sizes are rounded down and `Infinity` keeps all rows on that side. Throws `EventReduce:NEG_LIMIT` for a negative limit and `EventReduce:RWB_SIZE` for negative sizes and values that are not numbers, like `NaN`. |
 | `getResultWindowBufferQuery(resultWindowBuffer, query)` | A copy of the query with the `skip` and `limit` of the buffer: `skip - skipBufferSize` (at least 0) and `limit` plus both buffers. The other fields of the query stay the same. `limit` is removed if all rows after the skip are needed. |
 | `resetResultWindowBuffer(resultWindowBuffer, rows)` | Loads the rows of that query. Call it after creating the buffer and after `'runFullQueryAgain'`. |
 | `applyChangeEventsToResultWindowBuffer(resultWindowBuffer, changeEvents)` | Updates the buffer with all events. Returns `{ runFullQueryAgain: true }`, or `{ runFullQueryAgain: false, changed, results }` with the visible result and whether it changed. |
@@ -195,7 +195,7 @@ with 5, 20 and 50 rows. `skip 20 + limit 20` behaves the same: 1,501 without a b
 We recommend `getRecommendedResultWindowBufferSize(limit)` for both sizes. It returns:
 
 ```ts
-limit ? Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2))) : 0
+limit > 0 ? Math.min(30, Math.floor(Math.log2(limit) + 19 / (1 + (400 / limit) ** 2))) : 0
 ```
 
 | limit | 1 | 2 | 3 | 4 | 10 | 20 | 100 | 200 | 500 | 1,000 | 2,712+ |

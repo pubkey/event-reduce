@@ -48,4 +48,15 @@ class LimitTest {
         assertEquals("NEG_LIMIT", assertFailsWith<EventReduceException> { createResultWindowBuffer(queryParams(-1)) }.code)
         createResultWindowBuffer(queryParams(0))
     }
+
+    @Test
+    fun negativeLimitHasRecommendedBufferSizeZero() {
+        assertEquals(0, getRecommendedResultWindowBufferSize(-1))
+        assertEquals(0, getRecommendedResultWindowBufferSize(-400))
+        // the limit is checked before the sizes
+        assertEquals(
+            "NEG_LIMIT",
+            assertFailsWith<EventReduceException> { createResultWindowBuffer(queryParams(-1), -1, -1) }.code,
+        )
+    }
 }

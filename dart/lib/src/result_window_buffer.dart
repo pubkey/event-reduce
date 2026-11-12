@@ -106,8 +106,9 @@ const Set<ActionName> _actionsThatDropARow = {
 /// The recommended buffer size for each side of the result window.
 /// About log2(limit) for small limits, grows faster around limit 400 and is at most 30.
 /// Returns 0 for a limit of 1 (like a find-one query) and for queries without a limit.
+/// Also returns 0 for a negative limit: createResultWindowBuffer() throws for it.
 int getRecommendedResultWindowBufferSize(int? limit) {
-  if (limit == null || limit == 0) {
+  if (limit == null || limit <= 0) {
     return 0;
   }
   final size =
@@ -121,18 +122,18 @@ int getRecommendedResultWindowBufferSize(int? limit) {
 /// and pass the rows to resetResultWindowBuffer() before using it.
 /// [queryParams] has the skip and limit that are shown to the user.
 /// Buffer sizes default to 0, [resultWindowBufferAllRows] keeps all rows on that side.
-/// Throws on negative sizes.
+/// Throws on negative sizes and on a negative limit.
 ResultWindowBuffer<D> createResultWindowBuffer<D>(
   QueryParams<D> queryParams, {
   int limitBufferSize = 0,
   int skipBufferSize = 0,
 }) {
-  if (limitBufferSize < 0 || skipBufferSize < 0) {
-    throw EventReduceError('RWB_SIZE');
-  }
   final limit = queryParams.limit;
   if (limit != null && limit < 0) {
     throw EventReduceError('NEG_LIMIT');
+  }
+  if (limitBufferSize < 0 || skipBufferSize < 0) {
+    throw EventReduceError('RWB_SIZE');
   }
   // with limit 0 the result is always empty, so no rows are kept
   final isEmptyQuery = queryParams.limit == 0;
