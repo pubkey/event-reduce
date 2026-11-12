@@ -77,7 +77,11 @@ export class PouchDbImplementation implements DatabaseImplementation<MongoQuery>
             },
             {
                 selector: {
-                    gender: 'f'
+                    gender: 'f',
+                    // pouchdb-find can only sort by a field that is in the selector
+                    age: {
+                        $gte: 0
+                    }
                 },
                 skip: 5,
                 limit: 10,
@@ -86,12 +90,24 @@ export class PouchDbImplementation implements DatabaseImplementation<MongoQuery>
         ];
     }
     getQueryParams(query: MongoQuery): QueryParams<any> {
-        return getQueryParamsByMongoQuery(query);
+        /**
+         * PouchDB sorts documents with the same sort value by their _id,
+         * in the same direction as the sort field.
+         * The comparator of EventReduce must sort in exactly the same way,
+         * so add the _id as last sort field.
+         */
+        const lastField: string = query.sort[query.sort.length - 1];
+        const sort = lastField.endsWith('_id') ? query.sort : query.sort.concat([lastField.startsWith('-') ? '-_id' : '_id']);
+        return getQueryParamsByMongoQuery({ ...query, sort });
     }
     async getRawResults(query: MongoQuery): Promise<Human[]> {
         // pouchdb-find replaces query.selector with its normalized form (gender: 'm' -> { $eq: 'm' }),
         // which minimongo does not understand, so give it a copy.
-        const res = await this.col.find({ ...query });
+        const res = await this.col.find({
+            ...query,
+            // pouchdb-find wants { age: 'desc' } for a descending sort, not '-age'
+            sort: query.sort.map((field: string) => field.startsWith('-') ? { [field.slice(1)]: 'desc' } : field)
+        });
         return res.docs;
     }
     async getAll(): Promise<Human[]> {
