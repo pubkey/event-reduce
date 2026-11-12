@@ -163,6 +163,24 @@ export function getDocumentId<DocType>(queryParams: QueryParams<DocType>, doc: D
 }
 
 /**
+ * Compares two different documents with the sort comparator of the query.
+ * The comparator is not allowed to return 0 for two different documents:
+ * EventReduce then does not know how the database orders them and would give wrong results.
+ * So this throws instead of going on with an order that is only a guess.
+ */
+export function compareDocuments<DocType>(
+    queryParams: QueryParams<DocType>,
+    a: DocType,
+    b: DocType
+): 1 | -1 {
+    const result: number = queryParams.sortComparator(a, b);
+    if (result === 0) {
+        throw new Error('EventReduce:CMP_ZERO');
+    }
+    return result as 1 | -1;
+}
+
+/**
  * Returns the index of the document with the given id
  * or -1 if it is not in the given documents.
  * Uses separate loops so that the common case without getDocumentId

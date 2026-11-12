@@ -4,6 +4,7 @@ import './clone-map.test.js';
 import './actions.test.js';
 import './run-action.test.js';
 import './limit.test.js';
+import './comparator-zero.test.js';
 import './id-types.test.js';
 import './states.test.js';
 import './array-index-sort.test.js';

@@ -454,8 +454,9 @@ function applySliceRule<DocType>(
 /**
  * Compares two rows with the sort comparator of the query.
  * Returns 0 only for two versions of the same row that sort at the same position.
- * For two different rows it returns what the comparator returns: the comparator
- * is not allowed to return 0 for them, it must break ties itself, for example by the primary key.
+ * For two different rows it returns what the comparator returns. The comparator
+ * is not allowed to return 0 for them, it must break ties itself, for example by the primary key,
+ * so that throws.
  */
 function compareRows<DocType>(queryParams: QueryParams<DocType>, a: DocType, b: DocType): number {
     const result: number = queryParams.sortComparator(a, b);
@@ -465,6 +466,8 @@ function compareRows<DocType>(queryParams: QueryParams<DocType>, a: DocType, b: 
         if (result === 0 || result === queryParams.sortComparator(b, a)) {
             return 0;
         }
+    } else if (result === 0) {
+        throw new Error('EventReduce:CMP_ZERO');
     }
     return result;
 }
