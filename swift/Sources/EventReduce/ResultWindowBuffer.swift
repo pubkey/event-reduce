@@ -32,9 +32,9 @@ public final class ResultWindowBuffer<D> {
     public let skipBufferSize: Int
     public internal(set) var buffer: [D] = []
     /// Map from the id of each row of the buffer to the row.
-    public var keyDocumentMap: [String: D] { map ?? [:] }
+    public var keyDocumentMap: ResultKeyDocumentMap<D> { map ?? [:] }
     /// Never nil, optional only to pass it to runAction() without copying it.
-    var map: [String: D]? = [:]
+    var map: ResultKeyDocumentMap<D>? = [:]
     /// Number of matching rows that sort before the first row of the buffer.
     public internal(set) var offset = 0
     /// True if there are no rows after the last row of the buffer.
@@ -154,10 +154,10 @@ public func getResultWindowBufferQuery<D>(_ resultWindowBuffer: ResultWindowBuff
 public func resetResultWindowBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ rows: [D]) {
     let query = getResultWindowBufferQuery(resultWindowBuffer)
     let getId = resultWindowBuffer.queryParams.getDocumentId
-    var map: [String: D] = [:]
+    var map: ResultKeyDocumentMap<D> = [:]
     map.reserveCapacity(rows.count)
     for row in rows {
-        map[getId(row)] = row
+        map[DocumentId(getId(row))] = row
     }
     resultWindowBuffer.buffer = rows
     resultWindowBuffer.map = map
@@ -281,7 +281,7 @@ private func trimBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) {
     let removeFromStart = min(rowsBeforeWindow - resultWindowBuffer.skipBufferSize, resultWindowBuffer.buffer.count)
     if removeFromStart > 0 {
         for doc in resultWindowBuffer.buffer[0..<removeFromStart] {
-            resultWindowBuffer.map?.removeValue(forKey: getId(doc))
+            resultWindowBuffer.map?.removeValue(forKey: DocumentId(getId(doc)))
         }
         resultWindowBuffer.buffer.removeFirst(removeFromStart)
         resultWindowBuffer.offset += removeFromStart
@@ -293,7 +293,7 @@ private func trimBuffer<D>(_ resultWindowBuffer: ResultWindowBuffer<D>) {
             resultWindowBuffer.limitBufferSize)
         if resultWindowBuffer.buffer.count > maxLength {
             for doc in resultWindowBuffer.buffer[maxLength...] {
-                resultWindowBuffer.map?.removeValue(forKey: getId(doc))
+                resultWindowBuffer.map?.removeValue(forKey: DocumentId(getId(doc)))
             }
             resultWindowBuffer.buffer.removeSubrange(maxLength...)
             resultWindowBuffer.complete = false
@@ -338,7 +338,7 @@ private func applySliceRule<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ ch
     let isBeforeNow = doesMatchNow && (doc.map(isBefore) ?? false)
 
     let id = changeEvent.id
-    if resultWindowBuffer.map?.removeValue(forKey: id) != nil,
+    if resultWindowBuffer.map?.removeValue(forKey: DocumentId(id)) != nil,
         let index = indexOfDocumentId(queryParams, resultWindowBuffer.buffer, id)
     {
         resultWindowBuffer.buffer.remove(at: index)
@@ -363,7 +363,7 @@ private func compareRows<D>(_ queryParams: QueryParams<D>, _ a: D, _ b: D) -> In
     }
     let idA = queryParams.getDocumentId(a)
     let idB = queryParams.getDocumentId(b)
-    if idA == idB {
+    if isSameDocumentId(idA, idB) {
         return 0
     }
     return idA < idB ? -1 : 1
@@ -372,5 +372,5 @@ private func compareRows<D>(_ queryParams: QueryParams<D>, _ a: D, _ b: D) -> In
 private func insertAtSortPosition<D>(_ resultWindowBuffer: ResultWindowBuffer<D>, _ doc: D) {
     let queryParams = resultWindowBuffer.queryParams
     pushAtSortPosition(&resultWindowBuffer.buffer, doc) { compareRows(queryParams, $0, $1) < 0 }
-    resultWindowBuffer.map?[queryParams.getDocumentId(doc)] = doc
+    resultWindowBuffer.map?[DocumentId(queryParams.getDocumentId(doc))] = doc
 }

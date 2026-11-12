@@ -129,9 +129,9 @@ final class TestSuiteTests: XCTestCase {
             let params = queryParams(testCase["query"]!)
             let event = changeEvent(testCase["changeEvent"]!)
             var results = docs(testCase["previousResults"])
-            var keyDocumentMap: [String: Doc]? =
+            var keyDocumentMap: ResultKeyDocumentMap<Doc>? =
                 testCase["useKeyDocumentMap"] == .bool(true)
-                ? Dictionary(uniqueKeysWithValues: results.map { ($0.id, $0) }) : nil
+                ? Dictionary(uniqueKeysWithValues: results.map { (DocumentId($0.id), $0) }) : nil
             let action: ActionName
             if let actionName = testCase["action"]?.string {
                 action = ActionName(rawValue: actionName)!

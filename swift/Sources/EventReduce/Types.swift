@@ -65,8 +65,49 @@ public struct QueryParams<D> {
     }
 }
 
+/// The id of a document as the key of a key document map.
+///
+/// Swift compares two `String`s by canonical equivalence, so the precomposed "é" (U+00E9)
+/// and "e" with a combining accent (U+0065 U+0301) are equal and have the same hash.
+/// Databases, and the other implementations of EventReduce, compare ids by their code units,
+/// for them these are the ids of two different documents.
+/// `DocumentId` is equal only if the UTF-8 bytes of the ids are equal.
+/// It can be written as a string literal: `["a": doc]`.
+public struct DocumentId: Hashable, ExpressibleByStringLiteral, CustomStringConvertible {
+    /// The id of the document.
+    public let string: String
+
+    public init(_ string: String) {
+        self.string = string
+    }
+
+    public init(stringLiteral value: String) {
+        self.string = value
+    }
+
+    public var description: String { string }
+
+    public static func == (lhs: DocumentId, rhs: DocumentId) -> Bool {
+        isSameDocumentId(lhs.string, rhs.string)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        for byte in string.utf8 {
+            hasher.combine(byte)
+        }
+    }
+}
+
+/// True if the two ids have the same UTF-8 bytes.
+/// Not `==`, which is also true for different ids that are canonically equivalent, see `DocumentId`.
+@inlinable
+public func isSameDocumentId(_ a: String, _ b: String) -> Bool {
+    a.utf8.elementsEqual(b.utf8)
+}
+
 /// Map from the id of each document in the results to the document.
-public typealias ResultKeyDocumentMap<D> = [String: D]
+/// Create a key with `DocumentId(id)`.
+public typealias ResultKeyDocumentMap<D> = [DocumentId: D]
 
 /// The input of the state functions and of calculateActionName().
 public struct StateResolveFunctionInput<D> {
