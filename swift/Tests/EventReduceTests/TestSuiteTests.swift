@@ -119,7 +119,8 @@ final class TestSuiteTests: XCTestCase {
                 changeEvent: changeEvent(testCase["changeEvent"]!),
                 previousResults: docs(testCase["previousResults"]))
             XCTAssertEqual(getStateSet(input), testCase["stateSet"]?.string, "state set of case #\(index)")
-            XCTAssertEqual(calculateActionName(input).rawValue, testCase["action"]?.string, "action of case #\(index)")
+            XCTAssertEqual(
+                try calculateActionName(input).rawValue, testCase["action"]?.string, "action of case #\(index)")
         }
     }
 
@@ -136,7 +137,7 @@ final class TestSuiteTests: XCTestCase {
             if let actionName = testCase["action"]?.string {
                 action = ActionName(rawValue: actionName)!
             } else {
-                action = calculateActionName(
+                action = try calculateActionName(
                     StateResolveFunctionInput(
                         queryParams: params, changeEvent: event, previousResults: results,
                         keyDocumentMap: keyDocumentMap))

@@ -168,6 +168,10 @@ namespace RxDB.EventReduce
             {
                 throw new EventReduceException("RWB_SIZE");
             }
+            if (queryParams.Limit is int limit && limit < 0)
+            {
+                throw new EventReduceException("NEG_LIMIT");
+            }
             // with limit 0 the result is always empty, so no rows are kept
             var isEmptyQuery = queryParams.Limit == 0;
             QueryParams = queryParams;

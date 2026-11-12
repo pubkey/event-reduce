@@ -62,6 +62,11 @@ export interface QueryParams<DocType> {
     getDocumentId?: (doc: DocType) => string;
     sortFields: string[];
     skip?: number;
+    /**
+     * Maximum amount of documents in the results, not set means no limit.
+     * Like in SQL, limit 0 means that the query returns no documents.
+     * A negative limit throws.
+     */
     limit?: number;
     queryMatcher: QueryMatcher<DocType>;
     sortComparator: DeterministicSortComparator<DocType>;

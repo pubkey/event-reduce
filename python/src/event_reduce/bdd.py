@@ -20,13 +20,26 @@ from typing import Any
 
 from .bdd_generated import PACKED_BDD
 from .states import STATE_RESOLVE_FUNCTION_BY_INDEX
-from .types import StateResolveFunctionInput
+from .types import EventReduceError, StateResolveFunctionInput
 
 _NODE_COUNT = len(PACKED_BDD) // 3
+_DO_NOTHING_ACTION_INDEX = 0
+"""The index of DO_NOTHING in ORDERED_ACTION_LIST."""
 
 
 def resolve_input(input: StateResolveFunctionInput[Any]) -> int:
-    """Walks the BDD and returns the index of the action in ORDERED_ACTION_LIST."""
+    """
+    Walks the BDD and returns the index of the action in ORDERED_ACTION_LIST.
+
+    Like in SQL, a query with limit 0 returns no documents: no change event can change
+    its empty results, so the action is always DO_NOTHING.
+    Raises an EventReduceError with the code NEG_LIMIT for a negative limit.
+    """
+    limit = input.query_params.limit
+    if limit is not None and limit <= 0:
+        if limit < 0:
+            raise EventReduceError("NEG_LIMIT")
+        return _DO_NOTHING_ACTION_INDEX
     bdd = PACKED_BDD
     fns = STATE_RESOLVE_FUNCTION_BY_INDEX
     n = _NODE_COUNT

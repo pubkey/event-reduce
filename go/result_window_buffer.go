@@ -95,10 +95,13 @@ type ResultWindowBuffer[D any] struct {
 // NewResultWindowBuffer creates an empty result window buffer.
 // queryParams has the skip and limit that are shown to the user.
 // ResultWindowBufferAllRows as a size keeps all rows on that side.
-// Returns ErrInvalidResultWindowBufferSize for negative sizes.
+// Returns ErrInvalidResultWindowBufferSize for negative sizes and ErrNegativeLimit for a negative limit.
 func NewResultWindowBuffer[D any](queryParams QueryParams[D], limitBufferSize, skipBufferSize int) (*ResultWindowBuffer[D], error) {
 	if limitBufferSize < 0 || skipBufferSize < 0 {
 		return nil, ErrInvalidResultWindowBufferSize
+	}
+	if queryParams.Limit != nil && *queryParams.Limit < 0 {
+		return nil, ErrNegativeLimit
 	}
 	// with limit 0 the result is always empty, so no rows are kept
 	isEmptyQuery := queryParams.Limit != nil && *queryParams.Limit == 0
@@ -195,7 +198,8 @@ func (b *ResultWindowBuffer[D]) ApplyChangeEvent(changeEvent ChangeEvent[D]) Res
 		PreviousResults: b.Buffer,
 		KeyDocumentMap:  b.KeyDocumentMap,
 	}
-	action := CalculateActionName(input)
+	// the limit of the input is at least 1, so the BDD can be walked directly
+	action := OrderedActionList[resolveBdd(input)]
 	var result ResultWindowBufferResult
 	if action == RunFullQueryAgain || dropsARow(action) {
 		// 2. EventReduce needs a row before or after the buffer, which it does not know,

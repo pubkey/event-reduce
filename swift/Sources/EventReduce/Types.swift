@@ -184,6 +184,8 @@ public enum EventReduceError: Error, Equatable {
     case resultWindowOutdated
     /// A buffer size of a result window buffer is negative.
     case invalidResultWindowBufferSize
+    /// The limit of the query is negative. A limit of 0 is allowed, the query then returns no documents.
+    case negativeLimit
 
     /// The error code that the JavaScript implementation throws as `EventReduce:<code>`.
     public var code: String {
@@ -192,6 +194,7 @@ public enum EventReduceError: Error, Equatable {
         case .unknownAction: return "UNK_ACT"
         case .resultWindowOutdated: return "RWB_OUTDATED"
         case .invalidResultWindowBufferSize: return "RWB_SIZE"
+        case .negativeLimit: return "NEG_LIMIT"
         }
     }
 }

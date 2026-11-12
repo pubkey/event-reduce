@@ -192,8 +192,8 @@ func TestStateSets(t *testing.T) {
 		if got := eventreduce.GetStateSet(input); got != c.StateSet {
 			t.Errorf("state set of case #%d: got %s, want %s", index, got, c.StateSet)
 		}
-		if got := eventreduce.CalculateActionName(input).String(); got != c.Action {
-			t.Errorf("action of case #%d: got %s, want %s", index, got, c.Action)
+		if got, err := eventreduce.CalculateActionName(input); err != nil || got.String() != c.Action {
+			t.Errorf("action of case #%d: got %s %v, want %s", index, got, err, c.Action)
 		}
 	}
 }
@@ -217,9 +217,13 @@ func TestActions(t *testing.T) {
 			if c.Action != "" {
 				action = actionByName(t, c.Action)
 			} else {
-				action = eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[doc]{
+				var err error
+				action, err = eventreduce.CalculateActionName(&eventreduce.StateResolveFunctionInput[doc]{
 					QueryParams: queryParams, ChangeEvent: changeEvent, PreviousResults: results, KeyDocumentMap: keyDocumentMap,
 				})
+				if err != nil {
+					t.Fatalf("action: %v", err)
+				}
 				if action.String() != c.ExpectedAction {
 					t.Fatalf("action: got %s, want %s", action, c.ExpectedAction)
 				}
