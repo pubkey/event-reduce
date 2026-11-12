@@ -134,6 +134,9 @@ export function createResultWindowBuffer<DocType>(
     queryParams: QueryParams<DocType>,
     sizes: ResultWindowBufferSizes
 ): ResultWindowBuffer<DocType> {
+    if (typeof queryParams.limit === 'number' && queryParams.limit < 0) {
+        throw new Error('EventReduce:NEG_LIMIT');
+    }
     const limitBufferSize = toBufferSize(sizes.limitBufferSize);
     const skipBufferSize = toBufferSize(sizes.skipBufferSize);
     // with limit 0 the result is always empty, so no rows are kept

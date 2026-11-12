@@ -220,6 +220,10 @@ var (
 	// ErrResultWindowOutdated is returned when the results of a result window buffer are read
 	// although its result window is not in the buffer.
 	ErrResultWindowOutdated = errors.New("EventReduce:RWB_OUTDATED")
+	// ErrNegativeLimit is the error for a negative limit of the QueryParams.
+	// ResolveInput, CalculateActionName and NewResultWindowBuffer return it.
+	// A limit of 0 is allowed: like in SQL, the query then returns no documents.
+	ErrNegativeLimit = errors.New("EventReduce:NEG_LIMIT")
 	// ErrInvalidResultWindowBufferSize is returned for a negative buffer size.
 	ErrInvalidResultWindowBufferSize = errors.New("EventReduce:RWB_SIZE")
 )

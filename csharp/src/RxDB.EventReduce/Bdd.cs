@@ -14,9 +14,25 @@ namespace RxDB.EventReduce
     /// <summary>Resolves the action with the BDD.</summary>
     public static class Bdd
     {
-        /// <summary>Walks the BDD and returns the index of the action in OrderedActionList.</summary>
+        /// <summary>The index of DoNothing in OrderedActionList.</summary>
+        private const int DoNothingActionIndex = 0;
+
+        /// <summary>
+        /// Walks the BDD and returns the index of the action in OrderedActionList.
+        /// Like in SQL, a query with limit 0 returns no documents: no change event can change
+        /// its empty results, so the action is always DoNothing.
+        /// Throws an <see cref="EventReduceException"/> with the code NEG_LIMIT for a negative limit.
+        /// </summary>
         public static int ResolveInput<TDoc>(StateResolveFunctionInput<TDoc> input)
         {
+            if (input.QueryParams.Limit is int limit && limit <= 0)
+            {
+                if (limit < 0)
+                {
+                    throw new EventReduceException("NEG_LIMIT");
+                }
+                return DoNothingActionIndex;
+            }
             var bdd = BddGenerated.PackedBdd;
             var n = bdd.Length / 3;
             var i = 0;

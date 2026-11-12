@@ -109,7 +109,7 @@ public func getRecommendedResultWindowBufferSize(_ limit: Int?) -> Int {
 /// and pass the rows to resetResultWindowBuffer() before using it.
 /// `queryParams` has the skip and limit that are shown to the user.
 /// `resultWindowBufferAllRows` keeps all rows on that side.
-/// Throws on negative sizes.
+/// Throws on negative sizes and on a negative limit.
 public func createResultWindowBuffer<D>(
     _ queryParams: QueryParams<D>,
     limitBufferSize: Int = 0,
@@ -117,6 +117,9 @@ public func createResultWindowBuffer<D>(
 ) throws -> ResultWindowBuffer<D> {
     guard limitBufferSize >= 0, skipBufferSize >= 0 else {
         throw EventReduceError.invalidResultWindowBufferSize
+    }
+    if let limit = queryParams.limit, limit < 0 {
+        throw EventReduceError.negativeLimit
     }
     // with limit 0 the result is always empty, so no rows are kept
     let isEmptyQuery = queryParams.limit == 0
@@ -207,10 +210,12 @@ public func applyChangeEventToResultWindowBuffer<D>(
     var bufferQueryParams = queryParams
     bufferQueryParams.skip = resultWindowBuffer.offset > 0 ? resultWindowBuffer.offset : nil
     bufferQueryParams.limit = resultWindowBuffer.buffer.count + (resultWindowBuffer.complete ? 1 : 0)
-    let action = calculateActionName(
-        StateResolveFunctionInput(
-            queryParams: bufferQueryParams, changeEvent: changeEvent,
-            previousResults: resultWindowBuffer.buffer, keyDocumentMap: resultWindowBuffer.map))
+    // the limit of this input is at least 1, so the BDD can be walked directly
+    let action = orderedActionList[
+        resolveBdd(
+            StateResolveFunctionInput(
+                queryParams: bufferQueryParams, changeEvent: changeEvent,
+                previousResults: resultWindowBuffer.buffer, keyDocumentMap: resultWindowBuffer.map))]
     let result: ResultWindowBufferResult
     if action == .runFullQueryAgain || actionsThatDropARow.contains(action) {
         // 2. EventReduce needs a row before or after the buffer, which it does not know,

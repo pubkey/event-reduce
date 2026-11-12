@@ -15,8 +15,24 @@ Layout of the entries:
 
 */
 
-/** Walks the BDD and returns the index of the action in [orderedActionList]. */
+/** The index of [ActionName.DoNothing] in [orderedActionList]. */
+private const val DO_NOTHING_ACTION_INDEX: Int = 0
+
+/**
+ * Walks the BDD and returns the index of the action in [orderedActionList].
+ *
+ * Like in SQL, a query with limit 0 returns no documents: no change event can change
+ * its empty results, so the action is always [ActionName.DoNothing].
+ * Throws an [EventReduceException] with the code NEG_LIMIT for a negative limit.
+ */
 public fun <D> resolveInput(input: StateResolveFunctionInput<D>): Int {
+    val limit = input.queryParams.limit
+    if (limit != null && limit <= 0) {
+        if (limit < 0) {
+            throw EventReduceException("NEG_LIMIT")
+        }
+        return DO_NOTHING_ACTION_INDEX
+    }
     val n = PACKED_BDD.size / 3
     var i = 0
     while (true) {

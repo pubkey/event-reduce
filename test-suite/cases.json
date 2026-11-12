@@ -1269,6 +1269,74 @@
           "age": 1
         }
       ]
+    },
+    {
+      "name": "calculates doNothing for an insert into a query with limit 0",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 0
+      },
+      "previousResults": [],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "INSERT",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 20
+        },
+        "previous": null
+      },
+      "expectedAction": "doNothing",
+      "expectedResults": [],
+      "expectedKeyDocumentMap": []
+    },
+    {
+      "name": "calculates doNothing for an update with a query with limit 0",
+      "query": {
+        "minAge": 0,
+        "skip": null,
+        "limit": 0
+      },
+      "previousResults": [],
+      "useKeyDocumentMap": false,
+      "changeEvent": {
+        "operation": "UPDATE",
+        "id": "a",
+        "doc": {
+          "id": "a",
+          "age": 30
+        },
+        "previous": {
+          "id": "a",
+          "age": 20
+        }
+      },
+      "expectedAction": "doNothing",
+      "expectedResults": []
+    },
+    {
+      "name": "calculates doNothing for a delete with a query with skip and limit 0",
+      "query": {
+        "minAge": 0,
+        "skip": 2,
+        "limit": 0
+      },
+      "previousResults": [],
+      "useKeyDocumentMap": true,
+      "changeEvent": {
+        "operation": "DELETE",
+        "id": "a",
+        "doc": null,
+        "previous": {
+          "id": "a",
+          "age": 20
+        }
+      },
+      "expectedAction": "doNothing",
+      "expectedResults": [],
+      "expectedKeyDocumentMap": []
     }
   ],
   "resultWindowBuffer": [

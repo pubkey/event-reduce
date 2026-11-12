@@ -31,7 +31,8 @@ export function mingoCollectionCreator(): Collection {
             return {
                 primaryKey: '_id',
                 skip: query.skip ? query.skip : undefined,
-                limit: query.limit ? query.limit : undefined,
+                // limit 0 is a real limit: the query returns no documents
+                limit: typeof query.limit === 'number' ? query.limit : undefined,
                 queryMatcher: d => queryInstance.test(d as any),
                 sortFields: getSortFieldsOfQuery(query),
                 sortComparator: getMingoSortComparator(query)
@@ -41,7 +42,7 @@ export function mingoCollectionCreator(): Collection {
             const queryInstance = new Query(query.selector as any);
             const queryParams = this.getQueryParams(query);
             const skip = query.skip ? query.skip : 0;
-            const limit = query.limit ? query.limit : Infinity;
+            const limit = typeof query.limit === 'number' ? query.limit : Infinity;
             const skipPlusLimit = skip + limit;
 
             let rows = data

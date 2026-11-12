@@ -20,8 +20,18 @@ Layout of the entries:
 
 */
 
+/// The index of `ActionName::DoNothing` in ORDERED_ACTION_LIST.
+const DO_NOTHING_ACTION_INDEX: usize = 0;
+
 /// Walks the BDD and returns the index of the action in ORDERED_ACTION_LIST.
+///
+/// Like in SQL, a query with limit 0 returns no documents: no change event can change
+/// its empty results, so the action is always `ActionName::DoNothing`.
+/// (A negative limit, which is an error in the other implementations, cannot be expressed here.)
 pub fn resolve_input<D, K: Eq + Hash>(input: &StateResolveFunctionInput<D, K>) -> usize {
+    if input.query_params.limit == Some(0) {
+        return DO_NOTHING_ACTION_INDEX;
+    }
     let n = PACKED_BDD.len() / 3;
     let mut i = 0;
     loop {

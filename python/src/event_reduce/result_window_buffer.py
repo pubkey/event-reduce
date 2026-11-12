@@ -119,6 +119,8 @@ class ResultWindowBuffer(Generic[D]):
         limit_buffer_size: BufferSize | None = None,
         skip_buffer_size: BufferSize | None = None,
     ) -> None:
+        if query_params.limit is not None and query_params.limit < 0:
+            raise EventReduceError("NEG_LIMIT")
         self.query_params = query_params
         """QueryParams of the original query, with the skip and limit that are shown to the user."""
         limit_size = _to_buffer_size(limit_buffer_size)

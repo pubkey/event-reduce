@@ -44,6 +44,34 @@ export * from './util.js';
 export * from './actions/index.js';
 export * from './result-window-buffer.js';
 
+/**
+ * Like in SQL, a query with limit 0 returns no documents.
+ * No change event can change its empty results, so the action is always doNothing.
+ * This also makes a limit that was calculated to 0 by mistake
+ * return nothing instead of all documents.
+ * A negative limit is always a mistake and throws.
+ * Returns true if the query has the limit 0.
+ */
+function isLimitZero(queryParams: QueryParams<any>): boolean {
+    const limit = queryParams.limit;
+    if (typeof limit === 'number' && limit <= 0) {
+        if (limit < 0) {
+            throw new Error('EventReduce:NEG_LIMIT');
+        }
+        return true;
+    }
+    return false;
+}
+
+/**
+ * The index of doNothing in orderedActionList and actionFunctionList.
+ */
+const DO_NOTHING_ACTION_ID = 0;
+
+function resolveActionId<DocType>(input: StateResolveFunctionInput<DocType>): number {
+    return isLimitZero(input.queryParams) ? DO_NOTHING_ACTION_ID : resolveInput(input);
+}
+
 export function calculateActionFromMap<DocType>(
     stateSetToActionMap: StateSetToActionMap,
     input: StateResolveFunctionInput<DocType>
@@ -52,6 +80,12 @@ export function calculateActionFromMap<DocType>(
     stateSet: StateSet
 } {
     const stateSet: StateSet = getStateSet(input);
+    if (isLimitZero(input.queryParams)) {
+        return {
+            action: 'doNothing',
+            stateSet
+        };
+    }
     const actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return {
@@ -69,10 +103,7 @@ export function calculateActionFromMap<DocType>(
 export function calculateActionName<DocType>(
     input: StateResolveFunctionInput<DocType>
 ): ActionName {
-    const resolvedActionId = resolveInput(
-        input
-    );
-    return orderedActionList[resolvedActionId];
+    return orderedActionList[resolveActionId(input)];
 }
 
 /**
@@ -83,7 +114,7 @@ export function calculateActionName<DocType>(
 export function calculateActionFunction<DocType>(
     input: StateResolveFunctionInput<DocType>
 ): ActionFunction<DocType> {
-    return actionFunctionList[resolveInput(input)];
+    return actionFunctionList[resolveActionId(input)];
 }
 
 /**

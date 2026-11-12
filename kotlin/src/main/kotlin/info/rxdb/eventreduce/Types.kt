@@ -128,5 +128,5 @@ public enum class StateName {
     public val jsName: String get() = name.replaceFirstChar { it.lowercaseChar() }
 }
 
-/** Thrown by runAction() for the actions that cannot be applied to the results. */
+/** Thrown by runAction() for the actions that cannot be applied to the results, and for invalid input like a negative limit. */
 public class EventReduceException(public val code: String) : RuntimeException("EventReduce:$code")
