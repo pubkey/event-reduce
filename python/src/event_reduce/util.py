@@ -84,8 +84,10 @@ def dict_query_params(
                 return True
         return False
 
-    def get_document_id(doc: dict[str, Any]) -> str:
-        return str(doc[primary_key])
+    def get_document_id(doc: dict[str, Any]) -> Any:
+        # The id is returned as it is, not converted to a str:
+        # an id is only equal to an id of the same type, so 1 and "1" are two different documents.
+        return doc[primary_key]
 
     return QueryParams(
         get_document_id=get_document_id,

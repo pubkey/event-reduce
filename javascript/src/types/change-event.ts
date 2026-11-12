@@ -5,7 +5,9 @@ import type {
 export interface ChangeEventBase {
     operation: WriteOperation;
     /**
-     * document id,
+     * document id.
+     * It is compared with === to the ids of the documents,
+     * so it must have the same type: the string '1' never equals the number 1.
      * value of the primary key.
      */
     id: string;
