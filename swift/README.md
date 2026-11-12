@@ -48,7 +48,8 @@ var results = [User(id: "a", age: 20), User(id: "b", age: 30)]
 // a change event from the change stream of your database
 let changeEvent = ChangeEvent<User>.insert(id: "c", doc: User(id: "c", age: 25))
 
-let action = calculateActionName(
+// throws EventReduceError.negativeLimit if the limit of the query is negative
+let action = try calculateActionName(
     StateResolveFunctionInput(queryParams: queryParams, changeEvent: changeEvent, previousResults: results))
 if action == .runFullQueryAgain {
     results = try await runQueryOnDatabase()  // EventReduce could not optimize this event
@@ -62,6 +63,9 @@ if action == .runFullQueryAgain {
 
 For big result sets, pass a dictionary from the id to the document as `keyDocumentMap`
 to both `calculateActionName()` and `runAction()`.
+Its type is `ResultKeyDocumentMap<D>`, a `[DocumentId: D]`: create a key with `DocumentId(id)`.
+`DocumentId` compares the bytes of the id, because for Swift's `String` the ids `"\u{E9}"` and `"e\u{301}"` are equal,
+while they are two different documents for a database.
 It is used to check whether a document is in the results without scanning them,
 and `runAction()` keeps it in sync with the results.
 

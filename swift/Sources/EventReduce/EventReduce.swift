@@ -1,7 +1,9 @@
 /// Returns the action that transforms the previous results into the new results.
 /// If it is `.runFullQueryAgain`, the query must be run over the database again.
-public func calculateActionName<D>(_ input: StateResolveFunctionInput<D>) -> ActionName {
-    orderedActionList[resolveInput(input)]
+/// For a query with limit 0 it is always `.doNothing`.
+/// Throws `EventReduceError.negativeLimit` for a negative limit.
+public func calculateActionName<D>(_ input: StateResolveFunctionInput<D>) throws -> ActionName {
+    orderedActionList[try resolveInput(input)]
 }
 
 /// Applies the action to the results, which are mutated in place.

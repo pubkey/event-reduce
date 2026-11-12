@@ -19,8 +19,22 @@ Layout of the entries of packedBdd:
 
 */
 
+/// The index of [ActionName.doNothing] in orderedActionList.
+const int _doNothingActionIndex = 0;
+
 /// Walks the BDD and returns the index of the action in orderedActionList.
+///
+/// Like in SQL, a query with limit 0 returns no documents: no change event can change
+/// its empty results, so the action is always [ActionName.doNothing].
+/// Throws an [EventReduceError] with the code NEG_LIMIT for a negative limit.
 int resolveInput<D>(StateResolveFunctionInput<D> input) {
+  final limit = input.queryParams.limit;
+  if (limit != null && limit <= 0) {
+    if (limit < 0) {
+      throw EventReduceError('NEG_LIMIT');
+    }
+    return _doNothingActionIndex;
+  }
   final n = packedBdd.length ~/ 3;
   var i = 0;
   while (true) {

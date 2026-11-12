@@ -130,6 +130,10 @@ ResultWindowBuffer<D> createResultWindowBuffer<D>(
   if (limitBufferSize < 0 || skipBufferSize < 0) {
     throw EventReduceError('RWB_SIZE');
   }
+  final limit = queryParams.limit;
+  if (limit != null && limit < 0) {
+    throw EventReduceError('NEG_LIMIT');
+  }
   // with limit 0 the result is always empty, so no rows are kept
   final isEmptyQuery = queryParams.limit == 0;
   int size(int size) => isEmptyQuery ? 0 : math.min(size, _maxBufferSize);

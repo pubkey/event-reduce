@@ -119,7 +119,8 @@ final class TestSuiteTests: XCTestCase {
                 changeEvent: changeEvent(testCase["changeEvent"]!),
                 previousResults: docs(testCase["previousResults"]))
             XCTAssertEqual(getStateSet(input), testCase["stateSet"]?.string, "state set of case #\(index)")
-            XCTAssertEqual(calculateActionName(input).rawValue, testCase["action"]?.string, "action of case #\(index)")
+            XCTAssertEqual(
+                try calculateActionName(input).rawValue, testCase["action"]?.string, "action of case #\(index)")
         }
     }
 
@@ -129,14 +130,14 @@ final class TestSuiteTests: XCTestCase {
             let params = queryParams(testCase["query"]!)
             let event = changeEvent(testCase["changeEvent"]!)
             var results = docs(testCase["previousResults"])
-            var keyDocumentMap: [String: Doc]? =
+            var keyDocumentMap: ResultKeyDocumentMap<Doc>? =
                 testCase["useKeyDocumentMap"] == .bool(true)
-                ? Dictionary(uniqueKeysWithValues: results.map { ($0.id, $0) }) : nil
+                ? Dictionary(uniqueKeysWithValues: results.map { (DocumentId($0.id), $0) }) : nil
             let action: ActionName
             if let actionName = testCase["action"]?.string {
                 action = ActionName(rawValue: actionName)!
             } else {
-                action = calculateActionName(
+                action = try calculateActionName(
                     StateResolveFunctionInput(
                         queryParams: params, changeEvent: event, previousResults: results,
                         keyDocumentMap: keyDocumentMap))

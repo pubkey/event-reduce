@@ -19,7 +19,9 @@ final class KeyDocumentMapTests: XCTestCase {
     private let a = Row(id: "a", age: 1)
     private let b = Row(id: "b", age: 2)
 
-    private func run(_ action: ActionName, _ event: ChangeEvent<Row>) throws -> ([Row], [String: Row]) {
+    private func run(
+        _ action: ActionName, _ event: ChangeEvent<Row>
+    ) throws -> ([Row], ResultKeyDocumentMap<Row>) {
         var results = [a, b]
         var keyDocumentMap: ResultKeyDocumentMap<Row>? = ["b": b]
         try runAction(

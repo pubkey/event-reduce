@@ -134,6 +134,10 @@ public fun <D> createResultWindowBuffer(
     if (limitBufferSize < 0 || skipBufferSize < 0) {
         throw EventReduceException("RWB_SIZE")
     }
+    val limit = queryParams.limit
+    if (limit != null && limit < 0) {
+        throw EventReduceException("NEG_LIMIT")
+    }
     // with limit 0 the result is always empty, so no rows are kept
     val isEmptyQuery = queryParams.limit == 0
     fun size(size: Int) = if (isEmptyQuery) 0 else minOf(size, MAX_BUFFER_SIZE)

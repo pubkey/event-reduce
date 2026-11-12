@@ -11,8 +11,26 @@ package eventreduce
 //   - With n = len(entries) / 3, a reference r < n points to the node with the id r,
 //     r >= n is a leaf with the action index r - n in OrderedActionList.
 
-// ResolveInput walks the BDD and returns the index of the action in OrderedActionList.
-func ResolveInput[D any](input *StateResolveFunctionInput[D]) int {
+// doNothingActionIndex is the index of DoNothing in OrderedActionList.
+const doNothingActionIndex = 0
+
+// ResolveInput returns the index of the action in OrderedActionList.
+// Like in SQL, a query with limit 0 returns no documents: no change event can change
+// its empty results, so the action is always DoNothing.
+// Returns ErrNegativeLimit for a negative limit.
+func ResolveInput[D any](input *StateResolveFunctionInput[D]) (int, error) {
+	if limit := input.QueryParams.Limit; limit != nil && *limit <= 0 {
+		if *limit < 0 {
+			return 0, ErrNegativeLimit
+		}
+		return doNothingActionIndex, nil
+	}
+	return resolveBdd(input), nil
+}
+
+// resolveBdd walks the BDD and returns the index of the action in OrderedActionList.
+// The limit of the query must be positive or not set.
+func resolveBdd[D any](input *StateResolveFunctionInput[D]) int {
 	bdd := PackedBdd
 	n := len(bdd) / 3
 	i := 0
