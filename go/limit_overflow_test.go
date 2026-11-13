@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	eventreduce "github.com/pubkey/event-reduce/go/v7"
+	eventreduce "github.com/pubkey/event-reduce/go/v8"
 )
 
 // A limit of math.MaxInt, like when it is used for "no limit", must not overflow.

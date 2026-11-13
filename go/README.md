@@ -10,13 +10,13 @@ so both always decide on the same action. It needs Go 1.22 or newer and has no d
 ## Installation
 
 ```sh
-go get github.com/pubkey/event-reduce/go/v7
+go get github.com/pubkey/event-reduce/go/v8
 ```
 
 ## Usage
 
 ```go
-import eventreduce "github.com/pubkey/event-reduce/go/v7"
+import eventreduce "github.com/pubkey/event-reduce/go/v8"
 
 type User struct {
 	ID  string

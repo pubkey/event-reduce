@@ -13,7 +13,7 @@ Add the repository as a package dependency in Xcode, or in your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/pubkey/event-reduce.git", from: "7.0.0")
+    .package(url: "https://github.com/pubkey/event-reduce.git", from: "8.0.0")
 ],
 targets: [
     .target(name: "MyApp", dependencies: [.product(name: "EventReduce", package: "event-reduce")])

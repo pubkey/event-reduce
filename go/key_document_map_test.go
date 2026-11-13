@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	eventreduce "github.com/pubkey/event-reduce/go/v7"
+	eventreduce "github.com/pubkey/event-reduce/go/v8"
 )
 
 // When the key document map is out of sync and does not have a document that is in the results,

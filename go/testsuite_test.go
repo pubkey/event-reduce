@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	eventreduce "github.com/pubkey/event-reduce/go/v7"
+	eventreduce "github.com/pubkey/event-reduce/go/v8"
 )
 
 type doc struct {
