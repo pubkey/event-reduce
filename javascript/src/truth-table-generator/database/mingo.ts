@@ -17,7 +17,7 @@ export function mingoCollectionCreator(): Collection {
             this.remove(docData._id);
             data.push(docData);
         },
-        remove(docId: string) {
+        remove(docId) {
             for (let i = 0; i < data.length; i++) {
                 const item = data[i];
                 if (item._id === docId) {

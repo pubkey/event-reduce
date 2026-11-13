@@ -8,6 +8,7 @@ import { getPackedBdd } from '../../src/bdd/bdd.generated.js';
 import type {
     ActionName,
     ChangeEvent,
+    DocumentId,
     QueryParams,
     StateResolveFunctionInput
 } from '../../src/types/index.js';
@@ -22,7 +23,7 @@ export type TestSuiteDoc = { id: string; age: number; name?: string; };
 export type TestSuiteQuery = { minAge: number; skip: number | null; limit: number | null; desc?: boolean; };
 export type TestSuiteChangeEvent = {
     operation: 'INSERT' | 'UPDATE' | 'DELETE';
-    id: string;
+    id: DocumentId;
     doc: TestSuiteDoc | null;
     previous: TestSuiteDoc | null;
 };

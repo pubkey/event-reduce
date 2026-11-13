@@ -119,7 +119,8 @@ export async function applyChangeEvent<DocType>(
         case 'DELETE':
             await minimongoRemove(
                 collection,
-                changeEvent.id
+                // the ids of this collection are strings
+                changeEvent.id as string
             );
             break;
     }

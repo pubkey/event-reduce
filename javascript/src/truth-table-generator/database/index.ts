@@ -1,4 +1,4 @@
-import type { ChangeEvent, MongoQuery, QueryParams } from '../../types';
+import type { ChangeEvent, DocumentId, MongoQuery, QueryParams } from '../../types';
 
 export * from './mingo.js';
 
@@ -12,7 +12,7 @@ export type CollectionCreator<DocType> = () => Collection;
 export interface Collection {
     getQueryParams(query: MongoQuery<any>): QueryParams<any>;
     upsert(doc: any): void;
-    remove(docId: string): void;
+    remove(docId: DocumentId): void;
     query(query: MongoQuery): any[];
 }
 

@@ -67,7 +67,9 @@ import {
 export function getQueryParamsByMongoQuery(query: MongoQuery): QueryParams<any> {
     const sort = query.sort ? query.sort : ['_id'];
     return {
-        // primary key of the documents
+        // primary key of the documents.
+        // Ids can be strings or numbers. They are compared with ===,
+        // so the id of a change event must have the same type as the id of the document.
         primaryKey: '_id',
         // (optional) a function that returns the id of a document,
         // for ids that are not stored in a single top-level field,

@@ -3,6 +3,7 @@ import type {
     ActionFunctionInput,
     ChangeEvent,
     ActionName,
+    DocumentId,
     MongoQuery
 } from '../types/index.js';
 import type {
@@ -294,7 +295,7 @@ export function doesProcedureFail(
  * and sets the previous document of updates and deletes to the current one.
  */
 export function makeProcedureConsistent(procedure: Procedure): Procedure {
-    const docs = new Map<string, Human>();
+    const docs = new Map<DocumentId, Human>();
     const ret: Procedure = [];
     for (const changeEvent of procedure) {
         const current = docs.get(changeEvent.id);

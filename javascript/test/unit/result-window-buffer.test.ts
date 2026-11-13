@@ -11,7 +11,7 @@ import {
     runAction
 } from '../../src/index.js';
 import type { ResultWindowBuffer, ResultWindowBufferResult, ResultWindowBufferSizes } from '../../src/index.js';
-import type { ChangeEvent, QueryParams } from '../../src/types/index.js';
+import type { ChangeEvent, DocumentId, QueryParams } from '../../src/types/index.js';
 import { seededRandom } from '../helper/test-suite.js';
 
 /**
@@ -57,20 +57,20 @@ function getQueryParams(query: TestQuery): QueryParams<Doc> {
 /**
  * Full query over all documents: filter, sort, skip, limit.
  */
-function runQuery(docs: Map<string, Doc>, queryParams: QueryParams<Doc>, skip: number, limit: number | undefined): Doc[] {
+function runQuery(docs: Map<DocumentId, Doc>, queryParams: QueryParams<Doc>, skip: number, limit: number | undefined): Doc[] {
     return Array.from(docs.values())
         .filter(queryParams.queryMatcher)
         .sort(queryParams.sortComparator)
         .slice(skip, limit === undefined ? undefined : skip + limit);
 }
 
-function fillResultWindowBuffer(resultWindowBuffer: ResultWindowBuffer<Doc>, docs: Map<string, Doc>) {
+function fillResultWindowBuffer(resultWindowBuffer: ResultWindowBuffer<Doc>, docs: Map<DocumentId, Doc>) {
     const { skip, limit } = getResultWindowBufferQuery(resultWindowBuffer, {});
     resetResultWindowBuffer(resultWindowBuffer, runQuery(docs, resultWindowBuffer.queryParams, skip, limit));
 }
 
 function randomChangeEvent(
-    docs: Map<string, Doc>,
+    docs: Map<DocumentId, Doc>,
     random: () => number,
     newId: () => string,
     weights: { insert: number; update: number; delete: number; }
@@ -307,7 +307,7 @@ describe('result-window-buffer.test.ts', () => {
             let idCounter = 0;
             const newId = () => 'id-' + (idCounter++);
             for (const skip of [0, 2]) {
-                const docs = new Map<string, Doc>();
+                const docs = new Map<DocumentId, Doc>();
                 for (let i = 0; i < 10; i++) {
                     const changeEvent = randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 });
                     docs.set(changeEvent.id, changeEvent.doc as Doc);
@@ -384,7 +384,7 @@ describe('result-window-buffer.test.ts', () => {
             let idCounter = 0;
             const newId = () => 'id-' + (idCounter++);
             for (const query of QUERIES) {
-                const docs = new Map<string, Doc>();
+                const docs = new Map<DocumentId, Doc>();
                 for (let i = 0; i < 30; i++) {
                     const changeEvent = randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 });
                     docs.set(changeEvent.id, changeEvent.doc as Doc);
@@ -432,7 +432,7 @@ describe('result-window-buffer.test.ts', () => {
                     const random = seededRandom(seed);
                     let idCounter = 0;
                     const newId = () => 'id-' + (idCounter++);
-                    const docs = new Map<string, Doc>();
+                    const docs = new Map<DocumentId, Doc>();
                     for (let i = 0; i < initialRows; i++) {
                         const changeEvent = randomChangeEvent(docs, random, newId, { insert: 1, update: 0, delete: 0 });
                         docs.set(changeEvent.id, changeEvent.doc as Doc);
@@ -505,7 +505,7 @@ describe('result-window-buffer.test.ts', () => {
                                 idCounter++;
                                 return Math.floor(random() * 1e9).toString(36) + '-' + idCounter;
                             };
-                            const docs = new Map<string, Doc>();
+                            const docs = new Map<DocumentId, Doc>();
                             const applyToDocs = (changeEvent: ChangeEvent<Doc>) => {
                                 if (changeEvent.operation === 'DELETE') {
                                     docs.delete(changeEvent.id);

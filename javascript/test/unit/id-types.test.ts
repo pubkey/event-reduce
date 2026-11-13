@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { calculateActionName, getStateSet, orderedStateList, runAction } from '../../src/index.js';
-import type { ChangeEvent, QueryParams, StateResolveFunctionInput } from '../../src/types/index.js';
+import type { ChangeEvent, DocumentId, QueryParams, StateResolveFunctionInput } from '../../src/index.js';
 
 /**
  * Ids are compared with ===, without any conversion:
@@ -22,13 +22,35 @@ describe('id-types.test.ts', () => {
         return runAction(action, queryParams, changeEvent, results, keyDocumentMap);
     }
 
+    it('the types allow number ids', () => {
+        type Doc = { id: number; age: number; };
+        const typedParams: QueryParams<Doc> = {
+            primaryKey: 'id',
+            getDocumentId: doc => doc.id,
+            sortFields: ['age', 'id'],
+            queryMatcher: () => true,
+            sortComparator: (a, b) => a.age !== b.age ? (a.age < b.age ? -1 : 1) : (a.id < b.id ? -1 : 1)
+        };
+        const previous: Doc = { id: 1, age: 1 };
+        const changed: Doc = { id: 1, age: 9 };
+        const other: Doc = { id: 2, age: 5 };
+        const changeEvent: ChangeEvent<Doc> = { operation: 'UPDATE', id: 1, doc: changed, previous };
+        const id: DocumentId = changeEvent.id;
+        const keyDocumentMap = new Map<DocumentId, Doc>([[1, previous], [2, other]]);
+        const results = [previous, other];
+        const action = calculateActionName({ queryParams: typedParams, changeEvent, previousResults: results, keyDocumentMap });
+        runAction(action, typedParams, changeEvent, results, keyDocumentMap);
+        assert.deepStrictEqual(results, [other, changed]);
+        assert.strictEqual(keyDocumentMap.get(id), changed);
+    });
+
     [false, true].forEach(withMap => {
         describe(withMap ? 'with a key document map' : 'without a key document map', () => {
             it('number ids work when the documents and the change events use numbers', () => {
                 const previous = { id: 1, age: 1 };
                 const other = { id: 2, age: 5 };
                 const changed = { id: 1, age: 9 };
-                const changeEvent: ChangeEvent<any> = { operation: 'UPDATE', id: 1 as any, doc: changed, previous };
+                const changeEvent: ChangeEvent<any> = { operation: 'UPDATE', id: 1, doc: changed, previous };
                 assert.deepStrictEqual(apply([previous, other], changeEvent, withMap), [other, changed]);
             });
             it('a string id never equals a number id', () => {
@@ -39,7 +61,7 @@ describe('id-types.test.ts', () => {
                     queryParams,
                     changeEvent,
                     previousResults: [numberDoc],
-                    keyDocumentMap: withMap ? new Map([[1 as any, numberDoc]]) : undefined
+                    keyDocumentMap: withMap ? new Map([[1, numberDoc]]) : undefined
                 };
                 // the document '1' is not in the results, although the document 1 is
                 assert.strictEqual(wasInResult(input), false);

@@ -4,7 +4,14 @@ export * from './mongo.js';
 
 export type WriteOperation = 'INSERT' | 'UPDATE' | 'DELETE';
 
-export type ResultKeyDocumentMap<DocType> = Map<string, DocType>;
+/**
+ * The id of a document, a string or a number.
+ * Ids are compared with ===, without any conversion:
+ * a string id never equals a number id, so '1' and 1 are two different documents.
+ */
+export type DocumentId = string | number;
+
+export type ResultKeyDocumentMap<DocType> = Map<DocumentId, DocType>;
 
 export type ActionName =
     'doNothing' |
@@ -59,7 +66,7 @@ export interface QueryParams<DocType> {
      * Must return the same value as the id of the change events.
      * If not set, document[primaryKey] is used.
      */
-    getDocumentId?: (doc: DocType) => string;
+    getDocumentId?: (doc: DocType) => DocumentId;
     sortFields: string[];
     skip?: number;
     /**
