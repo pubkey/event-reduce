@@ -26,7 +26,7 @@
         "async-test-util": "2.5.0",
         "event-reduce-js": "file:../../javascript/",
         "json-pretty-html": "1.1.6",
-        "minimongo": "7.1.2",
+        "minimongo": "8.0.0",
         "nedb": "1.8.0",
         "pouchdb-adapter-idb": "9.0.0",
         "pouchdb-adapter-indexeddb": "9.0.0",
