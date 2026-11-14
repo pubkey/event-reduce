@@ -107,7 +107,7 @@
   },
   "author": "pubkey",
   "devDependencies": {
-    "@stylistic/eslint-plugin": "5.10.0",
+    "@stylistic/eslint-plugin": "6.0.0",
     "@types/deep-equal": "1.0.4",
     "@types/mocha": "10.0.10",
     "@types/node": "26.6.6",

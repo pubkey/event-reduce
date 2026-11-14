@@ -39,7 +39,7 @@
         "webpack-cli": "7.3.1"
     },
     "devDependencies": {
-        "@stylistic/eslint-plugin": "5.10.0",
+        "@stylistic/eslint-plugin": "6.0.0",
         "assert": "2.1.0",
         "concurrently": "10.0.7",
         "css-loader": "7.1.5",
