@@ -122,7 +122,7 @@
     "eslint": "10.15.0",
     "mingo": "7.2.7",
     "mocha": "12.0.3",
-    "npm-run-all2": "9.0.4",
+    "npm-run-all2": "9.1.0",
     "pouchdb-selector-core": "9.0.0",
     "read-last-lines": "1.10.0",
     "rimraf": "6.1.4",
